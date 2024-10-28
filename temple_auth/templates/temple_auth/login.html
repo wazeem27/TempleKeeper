@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Temple Management System | Login</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+  <style>
+      body {
+            background-image: url("{% static 'img/plain.png' %}");  /* Static background image */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            margin: 0;
+        }
+        /* Custom styles for better error message visibility */
+        .error-message {
+            background-color: #f8d7da; /* Light red background */
+            color: #721c24; /* Dark red text */
+            border: 1px solid #f5c6cb; /* Light red border */
+            border-radius: 0.25rem; /* Rounded corners */
+            padding: 10px; /* Padding */
+            margin-bottom: 15px; /* Space below the alert */
+            display: none; /* Hide by default */
+        }
+        .error-message.show {
+            display: block; /* Show when there's an error */
+        }
+  </style>
+
+
+</head>
+
+<body >
+
+  <main>
+    <div class="container">
+        <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="pt-4 pb-2">
+                                    <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
+                                    <p class="text-center small">Enter your username & password to login</p>
+                                </div>
+
+                                <form method="post" class="row g-3 needs-validation" novalidate>
+                                    {% csrf_token %}
+                                    <div class="col-12">
+                                        <label for="yourUsername" class="form-label">Username</label>
+                                        <input type="text" name="username" class="form-control" id="yourUsername" required>
+                                        {% if form.username.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.username.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="yourPassword" class="form-label">Password</label>
+                                        <input type="password" name="password" class="form-control" id="yourPassword" required>
+                                        {% if form.password.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.password.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12">
+                                        <button class="btn w-100" type="submit" style="background-color: #ff7058">Login</button>
+                                    </div>
+
+                                   <!-- Error messages -->
+                                   <div class="col-12">
+                                    {% if form.non_field_errors %}
+                                        <div class="error-message show">
+                                            <strong>Error:</strong>
+                                            {% for error in form.non_field_errors %}
+                                                {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="credits">
+                            Powered by SpaceLink Innovation Pvt Ltd
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+</body>
+
+</html>

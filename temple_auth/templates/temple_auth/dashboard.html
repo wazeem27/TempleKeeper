@@ -1,0 +1,114 @@
+{% extends "temple_services/base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% endblock %}
+
+{% block main-content %}
+
+
+<main id="main" class="main">
+  <div class="pagetitle">
+      <h1>Tabs</h1>
+      <nav>
+          <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+              <li class="breadcrumb-item active">Dashboard</li>
+          </ol>
+      </nav>
+  </div><!-- End Page Title -->
+
+<!--###################-->
+
+<section class="section dashboard">
+  <div class="container">
+    <div class="row justify-content-center">
+
+      <!-- Sales Card -->
+      <div class="col-xxl-4 col-md-6 mb-4">
+        <a href="#" class="text-decoration-none">
+          <div class="card info-card sales-card">
+            <div class="card-body">
+              <h5 class="card-title">വാഴിപാട് പട്ടിക <span></span></h5>
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-card-list"></i>
+                </div>
+                <div class="ps-3">
+                  <h6> </h6>
+                  <span class="text-success small pt-1 fw-bold"> </span> <span class="text-muted small pt-2 ps-1"> </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Revenue Card -->
+      <div class="col-xxl-4 col-md-6 mb-4">
+        <a href="{% url 'bill-items' %}" class="text-decoration-none">
+        <div class="card info-card revenue-card">
+          <div class="card-body">
+            <h5 class="card-title">ബില്ലിംഗ് <span>|</span></h5>
+            <div class="d-flex align-items-center">
+              <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                <i class="bi bi-receipt"></i>
+              </div>
+              <div class="ps-3">
+                <h6> </h6>
+                <span class="text-success small pt-1 fw-bold"> </span> <span class="text-muted small pt-2 ps-1"> </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        </a>
+      </div>
+
+      <!-- Customers Card -->
+      <div class="col-xxl-4 col-md-6 mb-4">
+        <a href="{% url 'bill-items' %}" class="text-decoration-none">
+        <div class="card info-card customers-card">
+          <div class="card-body">
+            <h5 class="card-title">ബില്ലിംഗ് റിപ്പോർട്ട് <span>|</span></h5>
+            <div class="d-flex align-items-center">
+              <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                <i class="bi bi-graph-up"></i>
+              </div>
+              <div class="ps-3">
+                <h6> </h6>
+                <span class="text-danger small pt-1 fw-bold"> </span> <span class="text-muted small pt-2 ps-1"> </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        </a>
+      </div>
+
+      <!-- New Card 2 -->
+      <div class="col-xxl-4 col-md-6 mb-4">
+        <a href="#" class="text-decoration-none">
+        <div class="card info-card new-card-2">
+          <div class="card-body">
+            <h5 class="card-title">അഡ്മിൻ<span></span></h5>
+            <div class="d-flex align-items-center">
+              <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-danger">
+                <i class="bi bi-people"></i>
+              </div>
+              <div class="ps-3">
+                <h6> </h6>
+                <span class="text-danger small pt-1 fw-bold"> </span> <span class="text-muted small pt-2 ps-1"> </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        </div>
+      </a>
+        </div>
+</section>
+</main>
+
+{% endblock %}
