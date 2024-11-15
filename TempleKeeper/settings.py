@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&r^a-s=*+bo!onnltv_*je6m@s8q*kfje#w&9c35hh$o!cuer8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'billing_manager',
     'offering_services',
     'temple_inventory',
-    'temple_services',
 
 ]
 
@@ -164,3 +163,4 @@ EMAIL_USE_TLS = True
 CSRF_COOKIE_SECURE = True  # Use secure cookies for CSRF
 X_FRAME_OPTIONS = 'DENY'  # Prevent your site from being framed
 SECURE_BROWSER_XSS_FILTER = True
+

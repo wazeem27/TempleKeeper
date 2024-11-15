@@ -14,17 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
-from temple_auth.views import CustomLoginView, logout_view, temple_selection_view, dashboard_view
+from django.urls import path
+from billing_manager.views import BillingView, submit_billing
+
 
 urlpatterns = [
-    path('', CustomLoginView.as_view(), name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('temple-selection/', temple_selection_view, name='temple_selection'),
-    path('dashboard/', dashboard_view, name='dashboard'),
-    path('offering/',include('offering_services.urls')),
-    path('inventory/',include('temple_inventory.urls')),
-    path('billing/',include('billing_manager.urls')),
-    path('admin/', admin.site.urls),
+    path('add_bill/', BillingView.as_view(), name='add-bill'),
+    path('submit_billing/', submit_billing, name='submit-billing'),
+    # path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
+
 ]

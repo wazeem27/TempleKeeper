@@ -1,0 +1,162 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom-styles %}
+@media (max-width: 767.98px) {
+            .table thead {
+                display: none;
+            }
+            .table tbody, .table tr, .table td {
+                display: block;
+                width: 100%;
+            }
+            /* .table tr {
+                margin-bottom: 15px;
+            } */
+            .table td {
+                text-align: right;
+                /* padding-left: 50%; */
+                position: relative;
+            }
+            .table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 50%;
+                padding-left: 15px;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+
+{% endblock %}
+
+
+{% block main-content %}
+<div class="container mt-5">
+  <h2>Temple Offerings Billing Form</h2>
+  <form id="billing-form" method="POST">
+    {% csrf_token %}
+    
+    <!-- User Info -->
+    <div class="form-group">
+      <label for="billingName">Name:</label>
+      <input type="text" id="billingName" name="billingName" class="form-control" placeholder="Enter name" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="billingAddress">Address:</label>
+      <input type="text" id="billingAddress" name="billingAddress" class="form-control" placeholder="Enter address">
+    </div>
+    
+    <!-- Dropdown for selecting type of service -->
+    <div class="form-group">
+      <label for="serviceType">Select Service:</label>
+      <select id="serviceType" name="serviceType" class="form-control" required>
+        <option value="" disabled selected>Select service</option>
+        <option value="sadhangal">Sadhangal</option>
+        <option value="pooja">Pooja</option>
+      </select>
+    </div>
+    
+    <!-- Dynamic fields based on selection -->
+    <div id="dynamic-fields"></div>
+    
+    <!-- Form Actions -->
+    <button type="button" class="btn btn-primary" id="review-button">Review</button>
+    <button type="submit" class="btn btn-success" id="submit-button">Submit</button>
+  </form>
+  
+  <!-- Review Section (appears after clicking Review) -->
+  <div id="review-section" class="mt-4" style="display: none;">
+    <h3>Review Your Details</h3>
+    <p><strong>Name:</strong> <span id="review-billingName"></span></p>
+    <p><strong>Address:</strong> <span id="review-billingAddress"></span></p>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Details</th>
+          <th>Quantity</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody id="review-details"></tbody>
+    </table>
+    <button type="button" class="btn btn-secondary" id="back-button">Back</button>
+    <button type="submit" class="btn btn-success" id="confirm-submit-button">Confirm & Submit</button>
+  </div>
+</div>
+
+<!-- Bootstrap and jQuery (needed for proper styling and functionality) -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+  document.getElementById('serviceType').addEventListener('change', function() {
+    const serviceType = this.value;
+    const dynamicFields = document.getElementById('dynamic-fields');
+    dynamicFields.innerHTML = '';
+
+    if (serviceType === 'sadhangal') {
+      dynamicFields.innerHTML = `
+        <div class="form-group">
+          <label for="sadhangalName">Sadhangal Name:</label>
+          <input type="text" id="sadhangalName" name="sadhangalName" class="form-control" placeholder="Enter sadhangal name">
+        </div>
+        <div class="form-group">
+          <label for="sadhangalQty">Quantity:</label>
+          <input type="number" id="sadhangalQty" name="sadhangalQty" class="form-control" min="1" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+          <label for="sadhangalPrice">Price:</label>
+          <input type="number" id="sadhangalPrice" name="sadhangalPrice" class="form-control" placeholder="Enter price">
+        </div>
+      `;
+    } else if (serviceType === 'pooja') {
+      dynamicFields.innerHTML = `
+        <div class="form-group">
+          <label for="poojaName">Pooja Name:</label>
+          <input type="text" id="poojaName" name="poojaName" class="form-control" placeholder="Enter pooja name">
+        </div>
+        <div class="form-group">
+          <label for="poojaQty">Quantity:</label>
+          <input type="number" id="poojaQty" name="poojaQty" class="form-control" min="1" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+          <label for="poojaPrice">Price:</label>
+          <input type="number" id="poojaPrice" name="poojaPrice" class="form-control" placeholder="Enter price">
+        </div>
+      `;
+    }
+  });
+
+  document.getElementById('review-button').addEventListener('click', function() {
+    document.getElementById('review-billingName').textContent = document.getElementById('billingName').value;
+    document.getElementById('review-billingAddress').textContent = document.getElementById('billingAddress').value;
+
+    const serviceType = document.getElementById('serviceType').value;
+    const reviewDetails = document.getElementById('review-details');
+    reviewDetails.innerHTML = '';
+    
+    if (serviceType === 'sadhangal') {
+      const name = document.getElementById('sadhangalName').value;
+      const qty = document.getElementById('sadhangalQty').value;
+      const price = document.getElementById('sadhangalPrice').value;
+      reviewDetails.innerHTML = `<tr><td>Sadhangal</td><td>${name}</td><td>${qty}</td><td>${price}</td></tr>`;
+    } else if (serviceType === 'pooja') {
+      const name = document.getElementById('poojaName').value;
+      const qty = document.getElementById('poojaQty').value;
+      const price = document.getElementById('poojaPrice').value;
+      reviewDetails.innerHTML = `<tr><td>Pooja</td><td>${name}</td><td>${qty}</td><td>${price}</td></tr>`;
+    }
+
+    document.getElementById('review-section').style.display = 'block';
+  });
+
+  document.getElementById('back-button').addEventListener('click', function() {
+    document.getElementById('review-section').style.display = 'none';
+  });
+</script>
+{% endblock %}

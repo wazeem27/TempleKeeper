@@ -1,0 +1,372 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom-styles %}
+@media (max-width: 767.98px) {
+            .table thead {
+                display: none;
+            }
+            .table tbody, .table tr, .table td {
+                display: block;
+                width: 100%;
+            }
+            /* .table tr {
+                margin-bottom: 15px;
+            } */
+            .table td {
+                text-align: right;
+                /* padding-left: 50%; */
+                position: relative;
+            }
+            .table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 50%;
+                padding-left: 15px;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+
+{% endblock %}
+
+
+{% block main-content %}
+
+  <main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Tabs</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item active">Billing</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs nav-tabs-bordered d-flex" id="borderedTabJustified" role="tablist">
+                            <li class="nav-item flex-fill" role="presentation">
+                                <button class="nav-link w-100 active" id="home-tab" data-bs-toggle="tab" data-bs-target="#bordered-justified-home" type="button" role="tab" aria-controls="home" aria-selected="true">വഴിപാട്‌ ബുക്കിംഗ്</button>
+                            </li>
+                            <li class="nav-item flex-fill" role="presentation">
+                                <button class="nav-link w-100" id="review-tab" data-bs-toggle="tab" data-bs-target="#bordered-justified-review" type="button" role="tab" aria-controls="review" aria-selected="false">Review</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content pt-2" id="borderedTabJustifiedContent">
+                            <div class="tab-pane fade show active" id="bordered-justified-home" role="tabpanel" aria-labelledby="home-tab">
+                                <form class="row g-3" id="billing-form" action="{% url 'submit-billing' %}" method="POST">
+                                  {% csrf_token %}
+                                    <!-- Billing Basic Details -->
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">ബില്ലിംഗ് വിശദാംശങ്ങൾ</h5>
+                                            <div class="col-12">
+                                                <label for="billingName" class="form-label">പേര്</label>
+                                                <input type="text" class="form-control" id="billingName" name="billing_name" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="billingAddress" class="form-label">വിലാസം</label>
+                                                <input type="text" class="form-control" id="billingAddress" name="billing_address" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Vazhipadu Details -->
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">വഴിപാട് വിശദാംശങ്ങൾ</h5>
+                                            <table class="table table-striped">
+                                                <tbody id="vazhipadu-table-body">
+                                                    <!-- Rows will be added dynamically -->
+                                                </tbody>
+                                            </table>
+                                            <div class="text-center mt-3">
+                                                <button type="button" class="btn btn-outline-success" id="add-vazhipadu-row">Add +</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Things Details -->
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">സാധനങ്ങൾ</h5>
+                                            <table class="table table-striped">
+                                                <tbody id="things-table-body">
+                                                    <!-- Rows will be added dynamically -->
+                                                </tbody>
+                                            </table>
+                                            <div class="text-center">
+                                                <button type="button" class="btn btn-outline-success" id="add-things-row">Add +</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-primary" id="review-button">Review</button>
+                                        <button type="reset" class="btn btn-secondary">Reset</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="bordered-justified-review" role="tabpanel" aria-labelledby="review-tab">
+                              <h5 class="card-title">Review Your Details</h5>
+                          
+                              <!-- Billing Details Table -->
+                              <div class="card">
+                                  <div class="card-body">
+                                      <h6>ബില്ലിംഗ് വിശദാംശങ്ങൾ</h6>
+                                      <table class="table table-bordered">
+                                          <tr>
+                                              <th>പേര്</th>
+                                              <td id="review-billingName"></td>
+                                          </tr>
+                                          <tr>
+                                              <th>വിലാസം</th>
+                                              <td id="review-billingAddress"></td>
+                                          </tr>
+                                      </table>
+                                  </div>
+                              </div>
+                          
+                              <!-- Vazhipadu Details Table -->
+                              <div class="card">
+                                  <div class="card-body">
+                                      <h6>വഴിപാട് വിശദാംശങ്ങൾ</h6>
+                                      <table class="table table-bordered">
+                                          <thead>
+                                              <tr>
+                                                  <th>പേര്</th>
+                                                  <th>പൂജ</th>
+                                                  <th>നക്ഷത്രം</th>
+                                                  <th>വില</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody id="review-vazhipadu-table-body">
+                                              <!-- Rows will be added dynamically -->
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          
+                              <!-- Things Details Table -->
+                              <div class="card">
+                                  <div class="card-body">
+                                      <h6>സാധനങ്ങൾ</h6>
+                                      <table class="table table-bordered">
+                                          <thead>
+                                              <tr>
+                                                  <th>സാധനം</th>
+                                                  <th>എണ്ണം</th>
+                                                  <th>വില</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody id="review-things-table-body">
+                                              <!-- Rows will be added dynamically -->
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          
+                              <div class="text-center">
+                                <!-- Submit button triggers form submission -->
+                                <button type="button" class="btn btn-secondary" id="back-button">Back</button>
+                                <button type="button" class="btn btn-primary" id="submit-button">Submit</button>
+                              </div>
+                          </div>
+                        </div><!-- End Bordered Tabs Justified -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main><!-- End #main -->
+
+
+  <script src="assets/vendor/quill/quill.js"></script> -->
+  <script src="{% static 'assets/js/simple-datatables.js' %}"></script>
+
+{% endblock %}
+
+
+  {% block main-script %}
+  <script>
+    // Add Vazhipadu row
+    document.getElementById('add-vazhipadu-row').addEventListener('click', function() {
+        var tableBody = document.getElementById('vazhipadu-table-body');
+        var newRow = document.createElement('tr');
+        
+        newRow.innerHTML = `
+          <td><input type="text" name="name[]" class="form-control" placeholder="പേര്" required></td>
+          <td>
+              <select name="pooja[]" class="form-control pooja-select" required>
+                  <option value="" disabled selected>പൂജ</option>
+                  {% for vazhipadu in vazhipadu_items %}
+                      <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{ vazhipadu.name }}</option>
+                  {% endfor %}
+              </select>
+          </td>
+          <td>
+              <select name="nakshatram[]" class="form-control" required>
+                  <option value="" disabled selected>നക്ഷത്രം</option>
+                  {% for star in star_items %}
+                      <option value="{{ star.name }}">{{ star.name }}</option>
+                  {% endfor %}
+              </select>
+          </td>
+          <td><input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly></td>
+          <td><button type="button" class="btn btn-danger remove-row">X</button></td>
+      `;
+        tableBody.appendChild(newRow);
+    
+        // Add event listener to the newly created select box
+        newRow.querySelector('.pooja-select').addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var price = selectedOption.getAttribute('data-price');
+            if (price) {
+                newRow.querySelector('.pooja-price').value = price;
+            }
+        });
+    });
+    
+    // Event delegation to handle removing rows
+    document.getElementById('vazhipadu-table-body').addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-row')) {
+            event.target.closest('tr').remove();
+        }
+    });
+    
+    // Add Things row
+    document.getElementById('add-things-row').addEventListener('click', function() {
+        var tableBody = document.getElementById('things-table-body');
+        var newRow = document.createElement('tr');
+
+        newRow.innerHTML = `
+        <td>
+            <select name="thing[]" class="form-control thing-select" required>
+                <option value="" disabled selected>സാധനം</option>
+                {% for inventory in inventory_items %}
+                    <option value="{{ inventory.name }}" data-price="{{ inventory.price }}">{{ inventory.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="number" name="quantity[]" class="form-control quantity-input" placeholder="എണ്ണം" required></td>
+        <td><input type="number" name="thing_price[]" class="form-control thing-price" placeholder="വില" readonly></td>
+        <td><button type="button" class="btn btn-danger remove-row">X</button></td>
+        `;
+        tableBody.appendChild(newRow);
+
+        var thingSelect = newRow.querySelector('.thing-select');
+        var quantityInput = newRow.querySelector('.quantity-input');
+        var priceInput = newRow.querySelector('.thing-price');
+
+        // Add event listener to the select box to update the quantity and price
+        thingSelect.addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var price = selectedOption.getAttribute('data-price');
+
+            if (price) {
+                // Set quantity to 1 and calculate the price
+                quantityInput.value = 1;
+                priceInput.value = price;  // Initially show the price for 1 unit
+            }
+        });
+
+        // Add event listener to the quantity input to update the price when the quantity changes
+        quantityInput.addEventListener('input', function() {
+            var selectedOption = thingSelect.options[thingSelect.selectedIndex];
+            var price = selectedOption.getAttribute('data-price');
+
+            if (price) {
+                var quantity = quantityInput.value;
+                priceInput.value = (price * quantity).toFixed(2);  // Update the total price
+            }
+        });
+    });
+
+    // Event delegation to handle removing rows
+    document.getElementById('things-table-body').addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-row')) {
+            event.target.closest('tr').remove();
+        }
+    });
+    
+    // Review button logic
+    document.getElementById('review-button').addEventListener('click', function() {
+        const billingName = document.getElementById('billingName').value;
+        const billingAddress = document.getElementById('billingAddress').value;
+    
+        document.getElementById('review-billingName').innerText = billingName;
+        document.getElementById('review-billingAddress').innerText = billingAddress;
+    
+        // Vazhipadu table review
+        const vazhipaduTableBody = document.getElementById('vazhipadu-table-body');
+        const reviewVazhipaduTableBody = document.getElementById('review-vazhipadu-table-body');
+        reviewVazhipaduTableBody.innerHTML = ''; 
+        let vazhipaduTotalPrice = 0;
+    
+        Array.from(vazhipaduTableBody.children).forEach(row => {
+            const inputs = row.querySelectorAll('input, select');
+            const newRow = document.createElement('tr');
+            const price = parseFloat(inputs[3].value) || 0;
+            vazhipaduTotalPrice += price;
+            newRow.innerHTML = `
+                <td>${inputs[0].value}</td>
+                <td>${inputs[1].value}</td>
+                <td>${inputs[2].value}</td>
+                <td>${price.toFixed(2)}</td>
+            `;
+            reviewVazhipaduTableBody.appendChild(newRow);
+        });
+    
+        const vazhipaduTotalRow = document.createElement('tr');
+        vazhipaduTotalRow.innerHTML = `
+            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+            <td><strong>${vazhipaduTotalPrice.toFixed(2)}</strong></td>
+        `;
+        reviewVazhipaduTableBody.appendChild(vazhipaduTotalRow);
+    
+        // Things table review
+        const thingsTableBody = document.getElementById('things-table-body');
+        const reviewThingsTableBody = document.getElementById('review-things-table-body');
+        reviewThingsTableBody.innerHTML = ''; 
+        let thingsTotalPrice = 0;
+    
+        Array.from(thingsTableBody.children).forEach(row => {
+            const inputs = row.querySelectorAll('select, input');
+            const price = parseFloat(inputs[2].value) || 0;
+            thingsTotalPrice += price;
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${inputs[0].value}</td>
+                <td>${inputs[1].value}</td>
+                <td>${price.toFixed(2)}</td>
+            `;
+            reviewThingsTableBody.appendChild(newRow);
+        });
+    
+        const thingsTotalRow = document.createElement('tr');
+        thingsTotalRow.innerHTML = `
+            <td colspan="2" class="text-end"><strong>Total:</strong></td>
+            <td><strong>${thingsTotalPrice.toFixed(2)}</strong></td>
+        `;
+        reviewThingsTableBody.appendChild(thingsTotalRow);
+    
+        // Switch to review tab
+        const reviewTab = new bootstrap.Tab(document.getElementById('review-tab'));
+        reviewTab.show();
+    });
+    
+    // Back button logic
+    document.getElementById('back-button').addEventListener('click', function() {
+        const homeTab = new bootstrap.Tab(document.getElementById('home-tab'));
+        homeTab.show();
+    });
+    
+    // Submit form programmatically on "Submit" button click
+    document.getElementById('submit-button').addEventListener('click', function() {
+        document.getElementById('billing-form').submit(); // This submits the form
+    });
+    </script>
+{% endblock %}
