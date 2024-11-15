@@ -30,7 +30,7 @@ class Command(BaseCommand):
             try:
                 # Use get_or_create to avoid duplicates
                 item, created = InventoryItem.objects.get_or_create(
-                    temple=Temple.objects.first()
+                    temple=Temple.objects.first(),
                     name=name,
                     description="",
                     defaults={'price': price, 'count': count}

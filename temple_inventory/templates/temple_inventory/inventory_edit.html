@@ -1,0 +1,69 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>സാധനങ്ങള്‍</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item active">Inventory</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    {% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+
+
+
+
+<div class="container mt-5">
+    <!-- <h2>Edit Inventory Item</h2> -->
+    <form method="POST" action="{% url 'inventory-edit' item.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ item.id }}">
+        <div class="mb-3">
+            <label for="itemName" class="form-label">ഐറ്റം</label>
+            <input type="text" class="form-control" id="itemName" name="name" value="{{ item.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="itemPrice" class="form-label">വില</label>
+            <input type="number" class="form-control" id="itemPrice" name="price" value="{{ item.price }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="itemCount" class="form-label">എണ്ണം</label>
+            <input type="number" class="form-control" id="itemCount" name="count" value="{{ item.count }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="itemDescription" class="form-label">വിശദാംശം</label>
+            <textarea class="form-control" id="itemDescription" name="description">{{ item.description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a href="{% url 'inventory-list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+{% endblock %}

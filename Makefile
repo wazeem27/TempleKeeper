@@ -12,7 +12,7 @@ delete_migrations:
 
 # Target to make migrations
 makemigrations:
-	$(DJANGO_MANAGE) makemigrations temple_inventory offering_services temple_services temple_auth billing_manager
+	$(DJANGO_MANAGE) makemigrations temple_inventory offering_services temple_auth billing_manager
 	$(DJANGO_MANAGE) migrate
 
 permissions:
@@ -29,6 +29,9 @@ load_inventories:
 load_vazhipadu:
 	$(DJANGO_MANAGE) load_vazhipadu_offerings
 
+load_stars:
+	$(DJANGO_MANAGE) load_stars
+
 # Target to delete migrations, make migrations, and migrate
-all: delete_migrations makemigrations
+all: delete_migrations makemigrations permissions load_inventories load_vazhipadu load_stars
 

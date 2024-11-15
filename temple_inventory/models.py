@@ -5,7 +5,7 @@ from temple_auth.models import Temple
 
 class InventoryItem(models.Model):
     temple = models.ForeignKey(Temple, on_delete=models.CASCADE, related_name='inventory_items')
-    name = models.CharField(max_length=255, unique=True, verbose_name="Item Name")
+    name = models.CharField(max_length=255, verbose_name="Item Name")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Price per Item")
     count = models.PositiveIntegerField(default=0, verbose_name="Available Count")
     description = models.TextField(blank=True, null=True, verbose_name="Description")
