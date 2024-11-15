@@ -1,0 +1,324 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% endblock %}
+
+
+{% block custom-styles %}
+
+/* General Styles */
+.pagetitle h1 {
+    font-size: 1.75rem;
+    color: #343a40;
+    margin-bottom: 20px;
+}
+
+.breadcrumb {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.breadcrumb-item {
+    font-size: 0.875rem;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table th {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+.table td {
+    text-align: center;
+}
+
+/* Responsive table for mobile view */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Button styles */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: white;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    justify-content: space-between;
+}
+
+/* Custom Scroll for Modal */
+.modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Handle mobile responsiveness */
+@media (max-width: 767.98px) {
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow: scroll;
+        width: 100%;
+    }
+
+    /* Adjust table cells and headers for mobile */
+    .table th, .table td {
+        white-space: nowrap;
+        padding: 10px;
+        font-size: 14px;
+        text-align: left;
+        display: block;
+    }
+
+    /* Ensure table headers are aligned with their respective cells */
+    .table th::before {
+        content: attr(data-label);
+        font-weight: bold;
+        padding-right: 10px;
+    }
+}
+
+{% endblock %}
+
+
+
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>വഴിപ്പാട്</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item active">Vazhipadu</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    {% if messages %}
+    <div role="alert">
+        {% for message in messages %}
+            <div style="padding: 10px; margin: 5px 0;">
+                {% if message.tags == 'success' %}
+                    <div style="color: green; background-color: #d4edda; border: 1px solid green;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div style="color: red; background-color: #f8d7da; border: 1px solid red;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: orange; background-color: #fff3cd; border: 1px solid orange;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Set a timeout to remove alert messages after 5 seconds
+        setTimeout(() => {
+            const alertMessages = document.querySelectorAll('.alert-message');
+            alertMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease'; // Optional: add transition effect
+                message.style.opacity = '0'; // Fade out the message
+                setTimeout(() => {
+                    message.remove(); // Remove the message from the DOM
+                }, 500); // Wait for the fade-out effect to complete
+            });
+        }, 5000); // 5 seconds
+    </script>
+
+{% endif %}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addOfferingModal">Add New Offering</button>
+                        <!-- Table with stripped rows -->
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">വഴിപ്പാട്</th>
+                                        <th scope="col">വില</th>
+                                        <th scope="col">വിശദാംശം</th>
+                                        <th scope="col">Edit</th>
+                                        <th scope="col">Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in offerings %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.price }}</td>
+                                        <td>{{ item.description }}</td>
+                                        <td>
+                                            <a href="{% url 'offerings-edit' item.id %}" class="btn btn-warning btn-sm">Edit</a>
+                                        </td>
+                                        <td>
+                                            <!-- Delete Button triggers modal -->
+                                            <button class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                                    data-id="{{ item.id }}" data-name="{{ item.name }}">Delete</button>
+                                            
+                                            <!-- The form that will handle the deletion -->
+                                            <form id="deleteForm-{{ item.id }}" method="POST" action="{% url 'offerings-delete' item.id %}" style="display: none;">
+                                                {% csrf_token %}
+                                                <input type="hidden" id="deleteItemId-{{ item.id }}" name="id" value="{{ item.id }}">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+<!-- Add Offering Modal -->
+<div class="modal fade" id="addOfferingModal" tabindex="-1" aria-labelledby="addOfferingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOfferingModalLabel">പുതിയത് ചേർക്കുക</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addOfferingForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="offeringName" class="form-label">വഴിപാട്</label>
+                        <input type="text" class="form-control" id="offeringName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="offeringPrice" class="form-label">വില</label>
+                        <input type="number" class="form-control" id="offeringPrice" name="price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="offeringDescription" class="form-label">വിശദാംശം</label>
+                        <textarea class="form-control" id="offeringDescription" name="description"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Offering Modal -->
+
+        </div>
+    </section>
+
+    <!-- Modal for Confirming Deletion -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    നിങ്ങൾ ഈ വാഴിപ്പാട് "<span id="deleteItemName"></span>" നീക്കം ചെയ്യണമെന്ന് ഉറപ്പാണോ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<!-- Bootstrap CSS -->
+
+<!-- Bootstrap JS and Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+<script>
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            const itemName = this.getAttribute('data-name');
+            
+            // Update modal content
+            document.getElementById('deleteItemName').innerText = itemName;
+            document.getElementById('deleteConfirmBtn').setAttribute('data-id', itemId);
+            
+            // Check if the modal opens properly (debugging step)
+            console.log("Delete button clicked. Item ID: " + itemId + ", Item Name: " + itemName);
+        });
+    });
+
+    // Attach click event to the "Delete" button in the modal
+    document.getElementById('deleteConfirmBtn').addEventListener('click', function() {
+        const itemId = this.getAttribute('data-id');
+        const form = document.getElementById('deleteForm-' + itemId);
+        
+        // Debugging the form submission (check if the correct form is being selected)
+        console.log("Form is submitting for Item ID: " + itemId);
+
+        form.submit();
+    });
+
+
+    document.querySelectorAll('.delete-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var itemName = this.getAttribute('data-name');
+            var itemId = this.getAttribute('data-id');
+            document.getElementById('deleteItemName').textContent = itemName;
+            document.getElementById('deleteConfirmBtn').setAttribute('data-id', itemId);
+        });
+    });
+
+    document.getElementById('deleteConfirmBtn').addEventListener('click', function () {
+        var itemId = this.getAttribute('data-id');
+        var form = document.getElementById('deleteForm-' + itemId);
+        form.submit();
+    });
+
+
+</script>
+{% endblock %}

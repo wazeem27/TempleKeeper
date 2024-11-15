@@ -1,0 +1,59 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% endblock %}
+
+{% block main-content %}
+
+
+<main id="main" class="main">
+  <div class="pagetitle">
+      <h1>{{ temple.temple_name }} ({{ temple.temple_place }})</h1>
+      <nav>
+          <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+              <li class="breadcrumb-item active">ഇൻവെൻ്ററി</li>
+          </ol>
+      </nav>
+  </div><!-- End Page Title -->
+
+<!--###################-->
+
+<section class="section dashboard">
+  <div class="container">
+    <div class="row justify-content-center">
+
+      <!-- Sales Card -->
+      <div class="col-xxl-4 col-md-6 mb-4">
+        <a href="{% url 'offerings-list' %}" class="text-decoration-none">
+          <div class="card info-card sales-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+            <div class="card-body text-center">
+              <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">പൂജ ലിസ്റ്റ്</h5> <!-- Larger font size, centered title -->
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Customers Card -->
+      <div class="col-xxl-4 col-md-6 mb-4">
+        <a href="{% url 'inventory-list' %}" class="text-decoration-none">
+          <div class="card info-card customers-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+            <div class="card-body text-center">
+              <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">സാധനങ്ങള്‍</h5> <!-- Larger font size, centered title -->
+            </div>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+</main>
+
+{% endblock %}

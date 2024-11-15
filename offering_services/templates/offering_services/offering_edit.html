@@ -1,0 +1,65 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>വഴിപാട്</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item active">Offering</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    {% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+
+
+
+
+<div class="container mt-5">
+    <!-- <h2>Edit Offering Item</h2> -->
+    <form method="POST" action="{% url 'offerings-edit' offering.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ offering.id }}">
+        <div class="mb-3">
+            <label for="offeringName" class="form-label">വഴിപാട്</label>
+            <input type="text" class="form-control" id="offeringName" name="name" value="{{ offering.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="offeringPrice" class="form-label">വില</label>
+            <input type="number" class="form-control" id="offeringPrice" name="price" value="{{ offering.price }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="offeringDescription" class="form-label">വിശദാംശം</label>
+            <textarea class="form-control" id="offeringDescription" name="description">{{ offering.description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a href="{% url 'offerings-list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+{% endblock %}
