@@ -10,8 +10,13 @@ class Temple(models.Model):
     temple_bill_mid = models.CharField(max_length=400, blank=True, null=True)
     temple_bill_footer = models.CharField(max_length=320, blank=True, null=True)
 
+    class Meta:
+        unique_together = ['temple_name', 'temple_place']  # Ensures unique combination of name and location
+        verbose_name = 'Temple'
+        verbose_name_plural = 'Temples'
+
     def __str__(self):
-        return self.temple_name
+        return f"{self.temple_name} - {self.temple_place}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # Call the original save method
