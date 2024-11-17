@@ -3,38 +3,41 @@
 
 {% block custom-styles %}
 @media (max-width: 767.98px) {
-            .table thead {
-                display: none;
-            }
-            .table tbody, .table tr, .table td {
-                display: block;
-                width: 100%;
-            }
-            /* .table tr {
-                margin-bottom: 15px;
-            } */
-            .table td {
-                text-align: right;
-                /* padding-left: 50%; */
-                position: relative;
-            }
-            .table td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 0;
-                width: 50%;
-                padding-left: 15px;
-                font-weight: bold;
-                text-align: left;
-            }
-        }
+    .table thead {
+        display: none;
+    }
+    .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+    }
+    .table tr {
+        margin-bottom: 10px;
+    }
+    .table td {
+        text-align: right;
+        position: relative;
+        padding-left: 50%;
+    }
+    .table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-weight: bold;
+        text-align: left;
+    }
+    .table td input,
+    .table td select {
+        width: 100%;
+    }
+}
+
 
 {% endblock %}
 
-
 {% block main-content %}
-
-  <main id="main" class="main">
+<main id="main" class="main">
     <div class="pagetitle">
         <h1>Tabs</h1>
         <nav>
@@ -80,11 +83,12 @@
                                     <div class="card">
                                         <div class="card-body">
                                             <h5 class="card-title">വഴിപാട് വിശദാംശങ്ങൾ</h5>
-                                            <table class="table table-striped">
-                                                <tbody id="vazhipadu-table-body">
-                                                    <!-- Rows will be added dynamically -->
-                                                </tbody>
-                                            </table>
+
+                                            
+                                            <div class="container" id="vazhipadu-form-container">
+                                            </div>
+                            
+
                                             <div class="text-center mt-3">
                                                 <button type="button" class="btn btn-outline-success" id="add-vazhipadu-row">Add +</button>
                                             </div>
@@ -94,11 +98,10 @@
                                     <div class="card">
                                         <div class="card-body">
                                             <h5 class="card-title">സാധനങ്ങൾ</h5>
-                                            <table class="table table-striped">
-                                                <tbody id="things-table-body">
-                                                    <!-- Rows will be added dynamically -->
-                                                </tbody>
-                                            </table>
+
+                                            <div class="container" id="things-form-container">
+                                            </div>
+
                                             <div class="text-center">
                                                 <button type="button" class="btn btn-outline-success" id="add-things-row">Add +</button>
                                             </div>
@@ -184,7 +187,7 @@
 </main><!-- End #main -->
 
 
-  <script src="assets/vendor/quill/quill.js"></script> -->
+  <script src="assets/vendor/quill/quill.js"></script>
   <script src="{% static 'assets/js/simple-datatables.js' %}"></script>
 
 {% endblock %}
@@ -194,33 +197,42 @@
   <script>
     // Add Vazhipadu row
     document.getElementById('add-vazhipadu-row').addEventListener('click', function() {
-        var tableBody = document.getElementById('vazhipadu-table-body');
-        var newRow = document.createElement('tr');
-        
+        var containerBody = document.getElementById('vazhipadu-form-container');
+
+        var newRow = document.createElement('div');
         newRow.innerHTML = `
-          <td><input type="text" name="name[]" class="form-control" placeholder="പേര്" required></td>
-          <td>
-              <select name="pooja[]" class="form-control pooja-select" required>
-                  <option value="" disabled selected>പൂജ</option>
-                  {% for vazhipadu in vazhipadu_items %}
-                      <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{ vazhipadu.name }}</option>
-                  {% endfor %}
-              </select>
-          </td>
-          <td>
-              <select name="nakshatram[]" class="form-control" required>
-                  <option value="" disabled selected>നക്ഷത്രം</option>
-                  {% for star in star_items %}
-                      <option value="{{ star.name }}">{{ star.name }}</option>
-                  {% endfor %}
-              </select>
-          </td>
-          <td><input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly></td>
-          <td><button type="button" class="btn btn-danger remove-row">X</button></td>
-      `;
-        tableBody.appendChild(newRow);
-    
-        // Add event listener to the newly created select box
+            <div class="row" id="vazhipadu-form-row">
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="pooja[]" class="form-control pooja-select" required>
+                        <option value="" disabled selected>പൂജ</option>
+                        {% for vazhipadu in vazhipadu_items %}
+                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{ vazhipadu.name }}</option>
+                        {% endfor %}
+                    </select>    
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="nakshatram[]" class="form-control" required>
+                        <option value="" disabled selected>നക്ഷത്രം</option>
+                        {% for star in star_items %}
+                        <option value="{{ star.name }}">{{ star.name }}</option>
+                        {% endfor %}
+                    </select>    
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                   <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button> 
+                </div>
+            </div>
+        `;
+
+        containerBody.appendChild(newRow);
+
+        // Add event listener to the newly created select box for 'pooja' field
         newRow.querySelector('.pooja-select').addEventListener('change', function() {
             var selectedOption = this.options[this.selectedIndex];
             var price = selectedOption.getAttribute('data-price');
@@ -229,33 +241,34 @@
             }
         });
     });
-    
-    // Event delegation to handle removing rows
-    document.getElementById('vazhipadu-table-body').addEventListener('click', function(event) {
-        if (event.target.classList.contains('remove-row')) {
-            event.target.closest('tr').remove();
-        }
-    });
-    
+
     // Add Things row
     document.getElementById('add-things-row').addEventListener('click', function() {
-        var tableBody = document.getElementById('things-table-body');
-        var newRow = document.createElement('tr');
+        var containerBody = document.getElementById('things-form-container');
 
+        var newRow = document.createElement('div');
         newRow.innerHTML = `
-        <td>
-            <select name="thing[]" class="form-control thing-select" required>
-                <option value="" disabled selected>സാധനം</option>
-                {% for inventory in inventory_items %}
-                    <option value="{{ inventory.name }}" data-price="{{ inventory.price }}">{{ inventory.name }}</option>
-                {% endfor %}
-            </select>
-        </td>
-        <td><input type="number" name="quantity[]" class="form-control quantity-input" placeholder="എണ്ണം" required></td>
-        <td><input type="number" name="thing_price[]" class="form-control thing-price" placeholder="വില" readonly></td>
-        <td><button type="button" class="btn btn-danger remove-row">X</button></td>
+            <div class="row" id="vazhipadu-form-row">
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="thing[]" class="form-control thing-select" required>
+                        <option value="" disabled selected>സാധനം</option>
+                        {% for inventory in inventory_items %}
+                        <option value="{{ inventory.name }}" data-price="{{ inventory.price }}">{{ inventory.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="number" name="quantity[]" class="form-control quantity-input" placeholder="എണ്ണം" required>  
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="number" name="thing_price[]" class="form-control thing-price" placeholder="വില" readonly>   
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
+                </div>
+            </div>
         `;
-        tableBody.appendChild(newRow);
+        containerBody.appendChild(newRow);
 
         var thingSelect = newRow.querySelector('.thing-select');
         var quantityInput = newRow.querySelector('.quantity-input');
@@ -285,13 +298,19 @@
         });
     });
 
-    // Event delegation to handle removing rows
-    document.getElementById('things-table-body').addEventListener('click', function(event) {
+    // Remove row event listener
+    document.getElementById('vazhipadu-form-container').addEventListener('click', function(event) {
         if (event.target.classList.contains('remove-row')) {
-            event.target.closest('tr').remove();
+            event.target.closest('.row').remove();
         }
     });
-    
+
+    document.getElementById('things-form-container').addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-row')) {
+            event.target.closest('.row').remove();
+        }
+    });
+
     // Review button logic
     document.getElementById('review-button').addEventListener('click', function() {
         const billingName = document.getElementById('billingName').value;
@@ -301,7 +320,7 @@
         document.getElementById('review-billingAddress').innerText = billingAddress;
     
         // Vazhipadu table review
-        const vazhipaduTableBody = document.getElementById('vazhipadu-table-body');
+        const vazhipaduTableBody = document.getElementById('vazhipadu-form-container');
         const reviewVazhipaduTableBody = document.getElementById('review-vazhipadu-table-body');
         reviewVazhipaduTableBody.innerHTML = ''; 
         let vazhipaduTotalPrice = 0;
@@ -328,7 +347,7 @@
         reviewVazhipaduTableBody.appendChild(vazhipaduTotalRow);
     
         // Things table review
-        const thingsTableBody = document.getElementById('things-table-body');
+        const thingsTableBody = document.getElementById('things-form-container');
         const reviewThingsTableBody = document.getElementById('review-things-table-body');
         reviewThingsTableBody.innerHTML = ''; 
         let thingsTotalPrice = 0;
@@ -366,7 +385,8 @@
     
     // Submit form programmatically on "Submit" button click
     document.getElementById('submit-button').addEventListener('click', function() {
-        document.getElementById('billing-form').submit(); // This submits the form
+        document.getElementById('billing-form').submit();
     });
-    </script>
+</script>
+
 {% endblock %}

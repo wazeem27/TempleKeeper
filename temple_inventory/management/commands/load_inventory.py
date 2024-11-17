@@ -13,13 +13,8 @@ class Command(BaseCommand):
         # List of inventory items to be inserted (name, price, count)
         inventory_items = [
             ("തേങ്ങ", 20.00, 100),
-            ("പൂക്കള്", 10.00, 200),
             ("ആഗരം", 5.00, 150),
-            ("പഴങ്ങൾ", 30.00, 50),
-            ("പലഹാരം", 15.00, 75),
-            ("അരിപ്പൊടി", 50.00, 30),
             ("നെയ്യ്", 100.00, 20),
-            ("എണ്ണ", 80.00, 25),
             # Add more items as needed
         ]
 

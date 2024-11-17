@@ -36,6 +36,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
         context['vazhipadu_items'] = self.get_vazhipadu_queryset(temple)
         context['inventory_items'] = self.get_inventory_queryset(temple)
         context['star_items'] = self.get_star_queryset()
+        context['temple'] = temple
         
         return context
 
@@ -49,7 +50,14 @@ class BillListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # Specify an ordering for the Bill objects
         return Bill.objects.order_by('-created_at')
+    
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
 
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['temple'] = temple
+        return context
 
 @login_required
 def submit_billing(request: HttpRequest) -> HttpResponse:
@@ -82,7 +90,7 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                 'quantity': request.POST.getlist('quantity[]'),
                 'thing_price': request.POST.getlist('thing_price[]')
             }
-            return redirect('billing')  # Redirect back to the billing page
+            return redirect('add-bill')  # Redirect back to the billing page
 
         # Begin a transaction to ensure atomicity
         try:
@@ -149,7 +157,6 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                 return redirect(reverse('bill-detail', kwargs={'pk': bill.id}))  # Redirect to the bill detail page
 
         except Exception as e:
-            import ipdb;ipdb.set_trace()
             # If any exception occurs, rollback the transaction to prevent partial saves
             messages.error(request, f"An error occurred while processing the billing: {e}")
             return redirect('add-bill')  # Redirect to an error page or billing form if something goes wrong
@@ -168,6 +175,9 @@ class BillDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         # Add any additional data if necessary
         context["title"] = f"Bill Details for {self.object.customer_name}"
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['temple'] = temple
         return context
 
 

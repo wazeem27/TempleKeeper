@@ -1,0 +1,276 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom-styles %}
+.table td, .table th {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .pagetitle h1 {
+        font-size: 1.5rem;
+    }
+    
+    .breadcrumb-item {
+        font-size: 0.875rem;
+    }
+    
+    .table td {
+        font-size: 0.875rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.8rem;
+    }
+}
+
+.report-card .card-header {
+    background-color: #f0f8ff;
+    font-weight: bold;
+}
+
+.report-card .card-body {
+    background-color: #e9f7f9;
+}
+
+.report-insight {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.card-summary {
+    background-color: #d1f7e0; /* Light green background */
+    color: #495057;
+    font-weight: bold;
+}
+
+.card-summary ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.revenue-summary {
+    background-color: #fffbcc; /* Soft yellow background */
+    padding: 1rem;
+    color: #495057;
+    font-weight: bold;
+}
+
+.revenue-trend {
+    background-color: #f9f9f9;
+    padding: 1rem;
+    margin-top: 1rem;
+    color: #495057;
+    border-radius: 5px;
+}
+
+.user-performance-card {
+    background-color: #ffebcc; /* Light orange background */
+    color: #495057;
+    padding: 1rem;
+}
+
+.user-performance-card ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+{% endblock %}
+
+{% block main-content %}
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Billing & Inventory Insights</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Billing & Inventory Report</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section dashboard">
+        <div class="row">
+            <!-- Revenue Insights Card -->
+            <div class="col-md-4">
+                <div class="card report-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Today's Revenue Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-insight">
+                            <strong>Total Revenue Today:</strong> ₹{{ total_today_amount|floatformat:2 }}
+                        </div>
+                        <div class="report-insight">
+                            <strong>Revenue Compared to Yesterday:</strong> ₹{{ revenue_comparison_yesterday|floatformat:2 }}
+                        </div>
+                        <div class="report-insight">
+                            <strong>Highest Single Transaction:</strong> ₹{{ highest_transaction_today }}
+                        </div>
+                        <div class="report-insight">
+                            <strong>Revenue Breakdown by Offering Type:</strong>
+                            <ul>
+                                {% for offering in revenue_breakdown %}
+                                    <li>{{ offering.name }}: ₹{{ offering.revenue|floatformat:2 }} ({{ offering.quantity_sold }} units sold)</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- End Revenue Insights Card -->
+            </div>
+
+            <!-- Stock and Inventory Insights -->
+            <div class="col-md-4">
+                <div class="card report-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Stock and Inventory Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-insight">
+                            <strong>Remaining Stock Levels:</strong>
+                            <ul>
+                                {% for item in inventory_items %}
+                                    <li>{{ item.name }}: {{ item.stock_quantity }} remaining ({{ item.sold_today }} sold today)</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="report-insight">
+                            <strong>Inventory Depletion Rate:</strong>
+                            <ul>
+                                {% for item in inventory_depletion_rate %}
+                                    <li>{{ item.name }}: {{ item.depletion_rate }}% depletion</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="report-insight">
+                            <strong>Stock Replenishment Needed:</strong>
+                            <ul>
+                                {% for item in low_stock_items %}
+                                    <li>{{ item.name }}: Only {{ item.stock_quantity }} left</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- End Stock and Inventory Insights -->
+            </div>
+
+            <!-- Bill Distribution Insights -->
+            <div class="col-md-4">
+                <div class="card report-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Bill Distribution Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-insight">
+                            <strong>Bill Distribution by Offering:</strong>
+                            <ul>
+                                {% for offering in bill_distribution %}
+                                    <li>{{ offering.name }}: {{ offering.bill_count }} bills ({{ offering.percentage }}%)</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="report-insight">
+                            <strong>Bill Distribution by Customer Type:</strong>
+                            <ul>
+                                {% for customer in customer_types %}
+                                    <li>{{ customer.type }}: {{ customer.bill_count }} bills ({{ customer.percentage }}%)</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- End Bill Distribution Insights -->
+            </div>
+
+            <!-- User-Specific Bill Insights -->
+            <div class="col-md-4">
+                <div class="card user-performance-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Top Bill Processors Today</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-insight">
+                            <strong>Most Bills Processed Today:</strong> {{ top_user_today.name }} ({{ top_user_today.bill_count }} bills)
+                        </div>
+                        <div class="report-insight">
+                            <strong>Top Revenue Generator Today:</strong> {{ top_user_revenue_today.name }} (₹{{ top_user_revenue_today.total_amount|floatformat:2 }})
+                        </div>
+                        <div class="report-insight">
+                            <strong>Least Active User Today:</strong> {{ least_active_user_today.name }} ({{ least_active_user_today.bill_count }} bills)
+                        </div>
+                    </div>
+                </div><!-- End User-Specific Insights -->
+            </div>
+
+            <!-- Revenue Trend Analysis -->
+            <div class="col-12">
+                <div class="card revenue-trend">
+                    <div class="card-header">
+                        <h5 class="card-title">Revenue Trend Analysis (Weekly)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-insight">
+                            <strong>Revenue for the Last 7 Days:</strong>
+                            <ul>
+                                {% for day in revenue_trend %}
+                                    <li>{{ day.date }}: ₹{{ day.revenue|floatformat:2 }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- End Revenue Trend Analysis -->
+            </div>
+
+            <!-- Past Billings Table -->
+            <div class="col-12">
+                <div class="card recent-sales">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Past Billings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="text-center">
+                                    <tr>
+                                        <th>Receipt No:</th>
+                                        <th>Customer</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Processed By</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in bills %}
+                                    <tr>
+                                        <td>#{{ bill.id }}</td>
+                                        <td><strong>{{ bill.customer_name }}</strong></td>
+                                        <td class="text-end">{{ bill.total_amount }}</td>
+                                        <td>{{ bill.created_at }}</td>
+                                        <td>{{ bill.processed_by.name }}</td>
+                                        <td>
+                                            <a href="{% url 'bill-detail' bill.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- End Recent Sales Table -->
+            </div>
+        </div>
+    </section>
+</main><!-- End #main -->
+{% endblock %}

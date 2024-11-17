@@ -47,7 +47,7 @@
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active">Billing</li>
+                <li class="breadcrumb-item active">Billing Report</li>
             </ol>
         </nav>
     </div><!-- End Page Title -->
@@ -59,7 +59,7 @@
 
                     <!-- Card Header -->
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Recent Sales</h5>
+                        <h5 class="card-title mb-0">Past Bills</h5>
                     </div><!-- End Card Header -->
 
                     <!-- Card Body -->
@@ -68,10 +68,10 @@
                             <table class="table table-bordered table-hover">
                                 <thead class="text-center">
                                     <tr>
-                                        <th>#</th>
+                                        <th>Receipt No:</th>
                                         <th>Customer</th>
                                         <th>Address</th>
-                                        <th>Price</th>
+                                        <th>Amount</th>
                                         <th>Date</th>
                                         <th>Action</th>
                                     </tr>
@@ -79,9 +79,9 @@
                                 <tbody>
                                     {% for bill in bills %}
                                     <tr>
-                                        <td><a href="#">#{{ bill.id }}</a></td>
+                                        <td>#{{ bill.id }}</td>
                                         <td>
-                                            <strong>{{ bill.customer_name }}</strong>
+                                            {{ bill.customer_name }}
                                         </td>
                                         <td>{{ bill.customer_address }}</td>
                                         <td class="text-end">{{ bill.total_amount }}</td>
@@ -90,7 +90,7 @@
                                             <a href="{% url 'bill-detail' bill.id %}" class="btn btn-sm btn-primary">
                                                 <i class="bi bi-eye"></i> View
                                             </a>
-                                            <a href="{% url 'bill-detail' bill.id %}" class="btn btn-sm btn-success">
+                                            <a href="{% url 'receipt' bill.id %}" class="btn btn-sm btn-success" target="_blank">
                                                 <i class="bi bi-printer"></i> Print
                                             </a>
                                         </td>
