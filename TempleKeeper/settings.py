@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&r^a-s=*+bo!onnltv_*je6m@s8q*kfje#w&9c35hh$o!cuer8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", "0.0.0.0", "localhost"]
 
 
 # Application definition
@@ -148,8 +148,8 @@ SITE_ID = 1
 
 # Session settings (to store temple selection in session)
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_SECURE = True  # Use secure cookies in production
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# SESSION_COOKIE_SECURE = True  # Use secure cookies in production
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Email settings (use Gmail SMTP or other for sending emails)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -160,7 +160,17 @@ EMAIL_HOST_PASSWORD = 'your-email-password'
 EMAIL_USE_TLS = True
 
 # Secure settings for production
-CSRF_COOKIE_SECURE = True  # Use secure cookies for CSRF
+# CSRF_COOKIE_SECURE = True  # Use secure cookies for CSRF
 X_FRAME_OPTIONS = 'DENY'  # Prevent your site from being framed
 SECURE_BROWSER_XSS_FILTER = True
 
+TIME_ZONE = 'Asia/Kolkata'  # Set time zone to IST
+USE_TZ = True  # Ensure Django uses timezone-aware datetimes
+
+
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# ALLOWED_HOSTS = ["*", "0.0.0.0", "localhost"]
+SESSION_COOKIE_DOMAIN = None

@@ -7,26 +7,33 @@ class Command(BaseCommand):
 
     sample_temples = [
         {
-            "temple_name": "Shree Vishnu Temple",
-            "temple_place": "Thrissur",
-            "temple_bill_title": "Shree Vishnu Temple Billing",
-            "temple_bill_mid": "Welcome to Shree Vishnu Temple",
-            "temple_bill_footer": "Thank you for your donation!",
+            "temple_name": "ശ്രീ വിഷ്ണു ക്ഷേത്രം",
+            "temple_place": "ഇരിഞ്ഞാലക്കുട",
+            "temple_bill_title": "ശ്രീ വിഷ്ണു ക്ഷേത്രം",
+            "temple_bill_mid": "തൃശ്ശൂർ",
+            "temple_bill_footer": "ഓം വിഘ്‌നേശ്വരായ നമഃ"
         },
         {
-            "temple_name": "Shree Durga Temple",
-            "temple_place": "Kochi",
-            "temple_bill_title": "Shree Durga Temple Billing",
-            "temple_bill_mid": "Welcome to Shree Durga Temple",
-            "temple_bill_footer": "Thank you for your support!",
+            "temple_name": "ശ്രീ ദുർഗാ ക്ഷേത്രം",
+            "temple_place": "കലൂർ",
+            "temple_bill_title": "ശ്രീ ദുർഗാ ക്ഷേത്രം",
+            "temple_bill_mid": "കൊച്ചി",
+            "temple_bill_footer": "ഓം ദുർഗായै നമഃ"
         },
         {
-            "temple_name": "Shree Shiva Temple",
-            "temple_place": "Kottayam",
-            "temple_bill_title": "Shree Shiva Temple Billing",
-            "temple_bill_mid": "Welcome to Shree Shiva Temple",
-            "temple_bill_footer": "Thank you for visiting!",
+            "temple_name": "ശ്രീ ശിവ ക്ഷേത്രം",
+            "temple_place": "ആലപ്പാട്",
+            "temple_bill_title": "ശ്രീ ശിവ ക്ഷേത്രം",
+            "temple_bill_mid": "കോട്ടയം",
+            "temple_bill_footer": "ഓം നമഃ ശിവായ"
         },
+        {
+            "temple_name": "ശ്രീ വിഘ്നേശ്വര ക്ഷേത്രം",
+            "temple_place": "കോടുങ്ങല്ലൂർ",
+            "temple_bill_title": "ശ്രീ വിഘ്നേശ്വര ക്ഷേത്രം",
+            "temple_bill_mid": "വിനയാഗപുരം ",
+            "temple_bill_footer": "ഓം വിഘ്നേശ്വരായ നമഃ"
+        }
     ]
 
     def handle(self, *args, **kwargs):

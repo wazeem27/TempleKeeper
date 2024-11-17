@@ -1,0 +1,116 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom-styles %}
+
+.table td, .table th {
+    vertical-align: middle; /* Align content in cells */
+    padding: 0.75rem; /* Add comfortable padding */
+}
+
+.card-title {
+    font-size: 1.25rem; /* Slightly larger title */
+    font-weight: bold;
+}
+
+.table th {
+    background-color: #f8f9fa; /* Light gray background for headers */
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .pagetitle h1 {
+        font-size: 1.5rem; /* Adjust title size for mobile */
+    }
+    
+    .breadcrumb-item {
+        font-size: 0.875rem; /* Smaller breadcrumb text */
+    }
+    
+    .table td {
+        font-size: 0.875rem; /* Adjust font size for table content */
+    }
+    
+    .btn-sm {
+        font-size: 0.8rem; /* Smaller button text for mobile */
+    }
+}
+
+{% endblock %}
+
+
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Billing</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Billing</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section dashboard">
+        <div class="row">
+            <div class="col-12">
+                <div class="card recent-sales">
+
+                    <!-- Card Header -->
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Recent Sales</h5>
+                    </div><!-- End Card Header -->
+
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="text-center">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Customer</th>
+                                        <th>Address</th>
+                                        <th>Price</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in bills %}
+                                    <tr>
+                                        <td><a href="#">#{{ bill.id }}</a></td>
+                                        <td>
+                                            <strong>{{ bill.customer_name }}</strong>
+                                        </td>
+                                        <td>{{ bill.customer_address }}</td>
+                                        <td class="text-end">{{ bill.total_amount }}</td>
+                                        <td>{{ bill.created_at|date:"D, d M Y H:i" }}</td>
+                                        <td class="text-center">
+                                            <a href="{% url 'bill-detail' bill.id %}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            <a href="{% url 'bill-detail' bill.id %}" class="btn btn-sm btn-success">
+                                                <i class="bi bi-printer"></i> Print
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div><!-- End Card Body -->
+
+                </div>
+            </div>
+        </div>
+    </section>
+</main><!-- End #main -->
+
+
+
+
+<script src="assets/vendor/quill/quill.js"></script> 
+<script src="{% static 'assets/js/simple-datatables.js' %}"></script>
+
+{% endblock %}

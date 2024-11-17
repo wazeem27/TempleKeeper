@@ -37,6 +37,7 @@ class UserProfile(models.Model):
     temples = models.ManyToManyField(Temple, blank=True)  # Multiple temples for each user
     is_approved_by_admin = models.BooleanField(default=False)  # For admin approval
     is_staff = models.BooleanField(default=False)  # To differentiate between admin and counter users
+    is_split_bill = models.BooleanField(default=False)  # To differentiate between admin and counter users
 
     def __str__(self):
         return self.user.username

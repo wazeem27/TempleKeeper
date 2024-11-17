@@ -3,12 +3,14 @@ from django.conf import settings
 from decimal import Decimal
 from temple_inventory.models import InventoryItem
 from temple_auth.models import Temple
-from offering_services.models import VazhipaduOffering
+from offering_services.models import VazhipaduOffering, Star
 
 
 class Bill(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="User")
     temple = models.ForeignKey(Temple, on_delete=models.CASCADE, verbose_name="Temple")
+    customer_name = models.CharField(max_length=255, verbose_name="Customer Name")
+    customer_address = models.TextField(blank=True, null=True, verbose_name="Customer Address")
     inventory_items = models.ManyToManyField(InventoryItem, through='BillInventoryItem')
     vazhipadu_offerings = models.ManyToManyField(VazhipaduOffering, through='BillVazhipaduOffering')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Total Amount")
@@ -18,6 +20,7 @@ class Bill(models.Model):
         return f"Bill #{self.id} for {self.user.username} at {self.temple.temple_name}"
 
     class Meta:
+        ordering = ['-created_at']
         permissions = [
             ("can_add_bill", "Can add bill"),
             ("can_change_bill", "Can change bill"),
@@ -39,6 +42,8 @@ class BillInventoryItem(models.Model):
 class BillVazhipaduOffering(models.Model):
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='bill_vazhipadu_offerings')
     vazhipadu_offering = models.ForeignKey(VazhipaduOffering, on_delete=models.CASCADE)
+    person_name = models.CharField(max_length=255, verbose_name="Person Name")
+    person_star = models.ForeignKey(Star, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)  # Default quantity for offerings
     price = models.DecimalField(max_digits=10, decimal_places=2)
 

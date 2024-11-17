@@ -43,6 +43,7 @@ def logout_view(request):
 @login_required
 def temple_selection_view(request):
     user_profile = request.user.userprofile
+    import ipdb;ipdb.set_trace()
     if not request.user.is_staff and not user_profile.temples.exists():
         messages.error(request, "No access to any temple.")
         return redirect('dashboard')

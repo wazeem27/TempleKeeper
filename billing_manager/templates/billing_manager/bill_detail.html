@@ -1,0 +1,163 @@
+{% extends "temple_auth/base.html" %}
+{% load static %}
+
+{% block custom-styles %}
+
+.card-title {
+    font-size: 1.5rem; /* Slightly larger title */
+    font-weight: bold;
+}
+
+.list-group-item {
+    padding: 0.75rem 1rem; /* Comfortable padding */
+}
+
+.table {
+    font-size: 0.875rem; /* Smaller font for readability on mobile */
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .card-header .btn {
+        width: 100%;
+        margin-bottom: 0.5rem; /* Stack buttons for small screens */
+    }
+    
+    .card-title {
+        font-size: 1.25rem; /* Slightly smaller on mobile */
+    }
+}
+
+
+{% endblock %}
+
+
+{% block main-content %}
+
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Bill Details</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'bill-list' %}">Bills</a></li>
+                <li class="breadcrumb-item active">Bill #{{ bill.id }}</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section bill-detail">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Bill Details</h5>
+
+                        <p><strong>Customer Name:</strong> {{ bill.customer_name }}</p>
+                        <p><strong>Customer Address:</strong> {{ bill.customer_address }}</p>
+                        <p><strong>Temple:</strong> {{ bill.temple.temple_name }}</p>
+                        <p><strong>Total Amount:</strong> ₹{{ bill.total_amount }}</p>
+                        <p><strong>Billed By:</strong> {{ user.username }}</p>
+                        <p><strong>Created At:</strong> {{ bill.created_at|date:"D, d M Y H:i" }}</p>
+
+                        <div class="d-flex justify-content-start gap-3">
+                            <a href="" class="btn btn-primary btn-sm">Edit</a>
+                            <form method="post" action="" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                            <a href="{% url 'receipt' bill.id %}" class="btn btn-success btn-sm" target="_blank">View & Print Receipt</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Vazhipadu Offerings Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Vazhipadu List</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Offering Name</th>
+                                    <th>Customer</th>
+                                    <th>Star</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for offering in bill.bill_vazhipadu_offerings.all %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ offering.vazhipadu_offering.name }}</td>
+                                    <td>{{ offering.person_name }}</td>
+                                    <td>{{ offering.person_star.name }}</td>
+                                    <td>₹{{ offering.price }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No offerings found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Inventory Items Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Other</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item Name</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in bill.bill_inventory_items.all %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ item.inventory_item.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>₹{{ item.price }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No inventory items found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </section>
+</main><!-- End #main -->
+
+
+<script src="assets/vendor/quill/quill.js"></script> 
+<script src="{% static 'assets/js/simple-datatables.js' %}"></script>
+
+{% endblock %}
