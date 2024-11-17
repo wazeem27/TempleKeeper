@@ -7,11 +7,11 @@ class Command(BaseCommand):
 
     sample_temples = [
         {
-            "temple_name": "ശ്രീ വിഷ്ണു ക്ഷേത്രം",
-            "temple_place": "ഇരിഞ്ഞാലക്കുട",
-            "temple_bill_title": "ശ്രീ വിഷ്ണു ക്ഷേത്രം",
-            "temple_bill_mid": "തൃശ്ശൂർ",
-            "temple_bill_footer": "ഓം വിഘ്‌നേശ്വരായ നമഃ"
+            "temple_name": "ഓട്ടറാട്ട് കാട്ടുകണ്ടത്തിൽ പാലത്തിങ്കൽ ധർമ്മദൈവ ക്ഷേത്രം",
+            "temple_place": "",
+            "temple_bill_title": "ഓട്ടറാട്ട് കാട്ടുകണ്ടത്തിൽ പാലത്തിങ്കൽ ധർമ്മദൈവ ക്ഷേത്രം",
+            "temple_bill_mid": "കാര",
+            "temple_bill_footer": ""
         },
         {
             "temple_name": "ശ്രീ ദുർഗാ ക്ഷേത്രം",
