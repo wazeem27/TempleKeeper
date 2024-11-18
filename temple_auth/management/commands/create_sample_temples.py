@@ -12,27 +12,6 @@ class Command(BaseCommand):
             "temple_bill_title": "ഓട്ടറാട്ട് കാട്ടുകണ്ടത്തിൽ പാലത്തിങ്കൽ ധർമ്മദൈവ ക്ഷേത്രം",
             "temple_bill_mid": "കാര",
             "temple_bill_footer": ""
-        },
-        {
-            "temple_name": "ശ്രീ ദുർഗാ ക്ഷേത്രം",
-            "temple_place": "കലൂർ",
-            "temple_bill_title": "ശ്രീ ദുർഗാ ക്ഷേത്രം",
-            "temple_bill_mid": "കൊച്ചി",
-            "temple_bill_footer": "ഓം ദുർഗായै നമഃ"
-        },
-        {
-            "temple_name": "ശ്രീ ശിവ ക്ഷേത്രം",
-            "temple_place": "ആലപ്പാട്",
-            "temple_bill_title": "ശ്രീ ശിവ ക്ഷേത്രം",
-            "temple_bill_mid": "കോട്ടയം",
-            "temple_bill_footer": "ഓം നമഃ ശിവായ"
-        },
-        {
-            "temple_name": "ശ്രീ വിഘ്നേശ്വര ക്ഷേത്രം",
-            "temple_place": "കോടുങ്ങല്ലൂർ",
-            "temple_bill_title": "ശ്രീ വിഘ്നേശ്വര ക്ഷേത്രം",
-            "temple_bill_mid": "വിനയാഗപുരം ",
-            "temple_bill_footer": "ഓം വിഘ്നേശ്വരായ നമഃ"
         }
     ]
 
