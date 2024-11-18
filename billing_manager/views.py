@@ -22,10 +22,10 @@ class BillingView(LoginRequiredMixin, TemplateView):
         return InventoryItem.objects.filter(temple=temple)
 
     def get_vazhipadu_queryset(self, temple: Temple) -> Any:
-        return VazhipaduOffering.objects.filter(temple=temple)
+        return VazhipaduOffering.objects.filter(temple=temple).order_by('id')
 
     def get_star_queryset(self) -> Any:
-        return Star.objects.all()
+        return Star.objects.all().order_by('id')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)

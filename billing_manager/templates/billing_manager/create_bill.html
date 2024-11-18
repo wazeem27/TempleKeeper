@@ -66,19 +66,6 @@
                                 <form class="row g-3" id="billing-form" action="{% url 'submit-billing' %}" method="POST">
                                   {% csrf_token %}
                                     <!-- Billing Basic Details -->
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">ബില്ലിംഗ് വിശദാംശങ്ങൾ</h5>
-                                            <div class="col-12">
-                                                <label for="billingName" class="form-label">പേര്</label>
-                                                <input type="text" class="form-control" id="billingName" name="billing_name" required>
-                                            </div>
-                                            <div class="col-12">
-                                                <label for="billingAddress" class="form-label">വിലാസം</label>
-                                                <input type="text" class="form-control" id="billingAddress" name="billing_address" required>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <!-- Vazhipadu Details -->
                                     <div class="card">
                                         <div class="card-body">
@@ -116,33 +103,19 @@
                             <div class="tab-pane fade" id="bordered-justified-review" role="tabpanel" aria-labelledby="review-tab">
                               <h5 class="card-title">Review Your Details</h5>
                           
-                              <!-- Billing Details Table -->
-                              <div class="card">
-                                  <div class="card-body">
-                                      <h6>ബില്ലിംഗ് വിശദാംശങ്ങൾ</h6>
-                                      <table class="table table-bordered">
-                                          <tr>
-                                              <th>പേര്</th>
-                                              <td id="review-billingName"></td>
-                                          </tr>
-                                          <tr>
-                                              <th>വിലാസം</th>
-                                              <td id="review-billingAddress"></td>
-                                          </tr>
-                                      </table>
-                                  </div>
-                              </div>
+
                           
                               <!-- Vazhipadu Details Table -->
                               <div class="card">
                                   <div class="card-body">
                                       <h6>വഴിപാട് വിശദാംശങ്ങൾ</h6>
+                                      <div class="table-responsive">
                                       <table class="table table-bordered">
                                           <thead>
                                               <tr>
                                                   <th>പേര്</th>
-                                                  <th>പൂജ</th>
                                                   <th>നക്ഷത്രം</th>
+                                                  <th>പൂജ</th>
                                                   <th>വില</th>
                                               </tr>
                                           </thead>
@@ -150,6 +123,7 @@
                                               <!-- Rows will be added dynamically -->
                                           </tbody>
                                       </table>
+                                      </div>
                                   </div>
                               </div>
                           
@@ -157,6 +131,7 @@
                               <div class="card">
                                   <div class="card-body">
                                       <h6>സാധനങ്ങൾ</h6>
+                                      <div class="table-responsive">
                                       <table class="table table-bordered">
                                           <thead>
                                               <tr>
@@ -169,6 +144,7 @@
                                               <!-- Rows will be added dynamically -->
                                           </tbody>
                                       </table>
+                                      </div>
                                   </div>
                               </div>
                           
@@ -206,18 +182,18 @@
                     <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
                 </div>
                 <div class="col-12 col-sm-2 text-center p-3">
-                    <select name="pooja[]" class="form-control pooja-select" required>
-                        <option value="" disabled selected>പൂജ</option>
-                        {% for vazhipadu in vazhipadu_items %}
-                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{ vazhipadu.name }}</option>
+                    <select name="nakshatram[]" class="form-control" required>
+                        <option value="" disabled selected>നക്ഷത്രം</option>
+                        {% for star in star_items %}
+                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
                         {% endfor %}
                     </select>    
                 </div>
                 <div class="col-12 col-sm-2 text-center p-3">
-                    <select name="nakshatram[]" class="form-control" required>
-                        <option value="" disabled selected>നക്ഷത്രം</option>
-                        {% for star in star_items %}
-                        <option value="{{ star.name }}">{{ star.name }}</option>
+                    <select name="pooja[]" class="form-control pooja-select" required>
+                        <option value="" disabled selected>വഴിപാട്</option>
+                        {% for vazhipadu in vazhipadu_items %}
+                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.id}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
                         {% endfor %}
                     </select>    
                 </div>
