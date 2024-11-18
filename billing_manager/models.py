@@ -9,8 +9,6 @@ from offering_services.models import VazhipaduOffering, Star
 class Bill(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="User")
     temple = models.ForeignKey(Temple, on_delete=models.CASCADE, verbose_name="Temple")
-    customer_name = models.CharField(max_length=255, verbose_name="Customer Name")
-    customer_address = models.TextField(blank=True, null=True, verbose_name="Customer Address")
     inventory_items = models.ManyToManyField(InventoryItem, through='BillInventoryItem')
     vazhipadu_offerings = models.ManyToManyField(VazhipaduOffering, through='BillVazhipaduOffering')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Total Amount")
@@ -43,7 +41,7 @@ class BillVazhipaduOffering(models.Model):
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='bill_vazhipadu_offerings')
     vazhipadu_offering = models.ForeignKey(VazhipaduOffering, on_delete=models.CASCADE)
     person_name = models.CharField(max_length=255, verbose_name="Person Name")
-    person_star = models.ForeignKey(Star, on_delete=models.CASCADE)
+    person_star = models.ForeignKey(Star, on_delete=models.CASCADE, blank=True, null=True)  # Optional field
     quantity = models.PositiveIntegerField(default=1)  # Default quantity for offerings
     price = models.DecimalField(max_digits=10, decimal_places=2)
 

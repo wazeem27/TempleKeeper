@@ -64,41 +64,20 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
     """Handle billing submission and create the associated records for the specified temple."""
     if request.method == 'POST':
         # Extract and validate input data
-        billing_name = request.POST.get('billing_name', '').strip()
-        billing_address = request.POST.get('billing_address', '').strip()
 
         # Retrieve the current temple from the session
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-
         # Prices from the POST data
         pooja_price = sum(map(float, request.POST.getlist('pooja_price[]')))
         thing_price = sum(map(float, request.POST.getlist('thing_price[]')))
 
-        # Validation for billing name
-        if not billing_name:
-            messages.error(request, "Billing name and address are required.")
-            # Preserve input values in session for pre-filling the form
-            request.session['billing_data'] = {
-                'billing_name': billing_name,
-                'billing_address': billing_address,
-                'names': request.POST.getlist('names[]'),
-                'pooja': request.POST.getlist('pooja[]'),
-                'customer_star': request.POST.getlist('nakshatram[]'),
-                'vazhipadu_price': request.POST.getlist('pooja_price[]'),
-                'thing': request.POST.getlist('thing[]'),
-                'quantity': request.POST.getlist('quantity[]'),
-                'thing_price': request.POST.getlist('thing_price[]')
-            }
-            return redirect('add-bill')  # Redirect back to the billing page
 
         # Begin a transaction to ensure atomicity
         try:
             with transaction.atomic():
                 # Create the bill instance
                 bill = Bill.objects.create(
-                    customer_name=billing_name,
-                    customer_address=billing_address,
                     user=request.user,
                     temple=temple,
                     total_amount=Decimal(pooja_price + thing_price)
@@ -174,7 +153,6 @@ class BillDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Add any additional data if necessary
-        context["title"] = f"Bill Details for {self.object.customer_name}"
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         context['temple'] = temple
@@ -201,6 +179,5 @@ class ReceiptView(LoginRequiredMixin, DetailView):
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         # Add any additional data if necessary
-        context["title"] = f"Bill Details for {self.object.customer_name}"
         context["temple"] = temple
         return context

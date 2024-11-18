@@ -60,8 +60,6 @@
         <!-- Bill Header -->
         <div class="bill-header">
             <h1>Bill #{{ bill.id }}</h1>
-            <p><strong>Customer Name:</strong> {{ bill.customer_name }}</p>
-            <p><strong>Customer Address:</strong> {{ bill.customer_address }}</p>
             <p><strong>Temple:</strong> {{ bill.temple.temple_name }}</p>
             <p><strong>Billed By:</strong> {{ user.username }}</p>
             <p><strong>Created At:</strong> {{ bill.created_at|date:"D, d M Y H:i" }}</p>

@@ -121,7 +121,7 @@
         <h1>സാധനങ്ങള്‍</h1>
         <nav>
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
                 <li class="breadcrumb-item active">Inventory</li>
             </ol>
         </nav>
@@ -176,6 +176,7 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th>Sl no:</th>
                                         <th scope="col">ഐറ്റം</th>
                                         <th scope="col">വില</th>
                                         <th scope="col">എണ്ണം</th>
@@ -186,6 +187,7 @@
                                 <tbody>
                                     {% for item in items %}
                                     <tr>
+                                        <td>{{ item.id }}</td>
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.price }}</td>
                                         <td>{{ item.count }}</td>

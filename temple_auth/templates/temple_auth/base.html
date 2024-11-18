@@ -44,9 +44,9 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="index.html" class="logo d-flex align-items-center">
+      <a href="{% url 'dashboard' %}" class="logo d-flex align-items-center">
         <img src="img/logo.png" alt="">
-        <span class="d-none d-lg-block" style="font-size: 0.9em;">{{ temple.temple_name }} ({{ temple.temple_place }})</span>
+        <span class="d-none d-lg-block" style="font-size: 0.9em;">{{ temple.temple_name }}</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
@@ -131,7 +131,7 @@
 
       <li class="nav-item">
         <a class="nav-link " href="{% url 'dashboard' %}">
-          <i class="bi bi-grid"></i>
+          <i class="bi bi-0-circle"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->

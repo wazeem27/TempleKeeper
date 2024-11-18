@@ -121,7 +121,7 @@
         <h1>Vazhipadu</h1>
         <nav>
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
                 <li class="breadcrumb-item active">Vazhipadu</li>
             </ol>
         </nav>
@@ -175,6 +175,7 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th>Sl no:</th>
                                         <th scope="col">വഴിപ്പാട്</th>
                                         <th scope="col">വില</th>
                                         <th scope="col">വിശദാംശം</th>
@@ -185,6 +186,7 @@
                                 <tbody>
                                     {% for item in offerings %}
                                     <tr>
+                                        <td>{{ item.id }}</td>
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.price }}</td>
                                         <td>{{ item.description }}</td>

@@ -16,7 +16,7 @@ class InventoryItemView(View):
     def get(self, request, *args, **kwargs):
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-        items = InventoryItem.objects.filter(temple=temple).order_by('name')
+        items = InventoryItem.objects.filter(temple=temple).order_by('id')
         context = {'items': items, 'temple': temple}
         return render(request, self.template_name, context)
 
