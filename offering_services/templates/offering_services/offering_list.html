@@ -1,9 +1,10 @@
-{% extends "temple_auth/base.html" %}
+{% extends "temple_auth/new_base.html" %}
 {% load static %}
 
 {% block custom_style %}
 
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 {% endblock %}
 
@@ -172,7 +173,7 @@
                         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addOfferingModal">Add New Offering</button>
                         <!-- Table with stripped rows -->
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-bordered table-hover">
                                 <thead>
                                     <tr>
                                         <th>Sl no:</th>
@@ -183,7 +184,7 @@
                                         <th scope="col">Delete</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="sortable-table">
                                     {% for item in offerings %}
                                     <tr>
                                         <td>{{ item.id }}</td>
@@ -321,6 +322,23 @@
         form.submit();
     });
 
+    // Enable drag-and-drop sorting
+    const sortable = new Sortable(document.getElementById('sortable-table'), {
+        animation: 150, // Animation speed in ms
+        ghostClass: 'bg-warning', // Highlighted class for the dragged row
+        onEnd: function () {
+            updateRowNumbers(); // Update row numbers after sorting
+        }
+    });
 
+    // Function to update the # column values
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll("#sortable-table tr");
+        rows.forEach((row, index) => {
+            row.querySelector("td:first-child").textContent = index + 1;
+        });
+    }
 </script>
+
+
 {% endblock %}

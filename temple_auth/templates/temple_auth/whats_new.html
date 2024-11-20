@@ -1,0 +1,50 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% endblock %}
+
+{% block main-content %}
+
+
+<main id="main" class="main">
+  <div class="pagetitle">
+      <h1>{{ temple.temple_name }}</h1>
+      <nav>
+          <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+              <li class="breadcrumb-item active">What's New</li>
+          </ol>
+      </nav>
+  </div><!-- End Page Title -->
+
+<!--###################-->
+
+
+
+<section class="section faq">
+    <div class="row">
+      <div class="col-lg-6">
+
+        <div class="card basic">
+          <div class="card-body">
+            <h5 class="card-title">Updates and Feature addition</h5>
+
+            <div>
+              <h6>Navigation bar</h6>
+              <p>Fixed Navigation bar issues for both mobile and desktop view</p>
+            </div>
+
+
+
+          </div>
+        </div>
+    </div>
+</div>
+</section>
+</main>
+
+{% endblock %}

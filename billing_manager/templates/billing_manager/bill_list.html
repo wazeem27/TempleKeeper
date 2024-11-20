@@ -1,4 +1,4 @@
-{% extends "temple_auth/base.html" %}
+{% extends "temple_auth/new_base.html" %}
 {% load static %}
 
 {% block custom-styles %}
@@ -69,6 +69,7 @@
                                 <thead class="text-center">
                                     <tr>
                                         <th>Receipt No:</th>
+                                        <th>Billed By</th>
                                         <th>Amount</th>
                                         <th>Date</th>
                                         <th>Action</th>
@@ -78,6 +79,7 @@
                                     {% for bill in bills %}
                                     <tr>
                                         <td>#{{ bill.id }}</td>
+                                        <td>{{ bill.user.username }}</td>
                                         <td class="text-end">{{ bill.total_amount }}</td>
                                         <td>{{ bill.created_at|date:"D, d M Y H:i" }}</td>
                                         <td class="text-center">

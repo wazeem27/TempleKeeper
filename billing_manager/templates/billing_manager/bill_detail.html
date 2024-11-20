@@ -1,4 +1,4 @@
-{% extends "temple_auth/base.html" %}
+{% extends "temple_auth/new_base.html" %}
 {% load static %}
 
 {% block custom-styles %}
@@ -81,6 +81,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Vazhipadu List</h5>
+                        <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -107,6 +108,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,6 +121,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Other</h5>
+                        <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -143,6 +146,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

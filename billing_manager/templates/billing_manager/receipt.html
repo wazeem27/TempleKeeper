@@ -150,10 +150,10 @@
             <span class="float-end">തിയതി: {{ bill.created_at|date:"d/m/Y" }}</span>
         </p>
 
-        <div class="line"></div>
 
         <!-- Check if there are any inventory items -->
         {% if bill.vazhipadu_offerings.exists %}
+        <div class="line"></div>
         <!-- First Table -->
         <table class="table table-borderless">
             <thead>
@@ -179,10 +179,11 @@
         </table>
         {% endif %}
 
-        <div class="line"></div>
+        
 
         <!-- Second Table -->
         {% if bill.inventory_items.exists %}
+        <div class="line"></div>
         <table class="table table-borderless">
             <thead>
                 <tr>

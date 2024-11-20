@@ -1,0 +1,76 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<!-- <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"> -->
+
+{% endblock %}
+
+{% block main-content %}
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Dashboard</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+      </nav>
+
+      <section class="section dashboard">
+        <div class="container">
+          <div class="row justify-content-center">
+      
+            <!-- Sales Card -->
+            <div class="col-xxl-4 col-md-6 mb-4">
+              <a href="{% url 'ofering_main' %}" class="text-decoration-none">
+                <div class="card info-card sales-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                  <div class="card-body text-center">
+                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Vazhipadu List</h5> <!-- Larger font size -->
+                  </div>
+                </div>
+              </a>
+            </div>
+      
+            <!-- Revenue Card -->
+            <div class="col-xxl-4 col-md-6 mb-4">
+              <a href="{% url 'add-bill' %}" class="text-decoration-none">
+                <div class="card info-card revenue-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                  <div class="card-body text-center">
+                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Billing</h5> <!-- Larger font size -->
+                  </div>
+                </div>
+              </a>
+            </div>
+      
+            <!-- Customers Card -->
+            <div class="col-xxl-4 col-md-6 mb-4">
+              <a href="{% url 'bill-list' %}" class="text-decoration-none">
+                <div class="card info-card customers-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                  <div class="card-body text-center">
+                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Billing Report</h5> <!-- Larger font size -->
+                  </div>
+                </div>
+              </a>
+            </div>
+      
+            <!-- New Card 2 -->
+            <div class="col-xxl-4 col-md-6 mb-4">
+              <a href="#" class="text-decoration-none">
+                <div class="card info-card new-card-2" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                  <div class="card-body text-center">
+                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Admin</h5> <!-- Larger font size -->
+                  </div>
+                </div>
+              </a>
+            </div>
+      
+          </div>
+        </div>
+      </section>
+
+  </main><!-- End #main -->
+
+{% endblock %}

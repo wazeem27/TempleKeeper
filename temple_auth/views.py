@@ -67,4 +67,14 @@ def dashboard_view(request):
         return redirect('temple_selection')
 
     temple = get_object_or_404(Temple, id=temple_id)
-    return render(request, 'temple_auth/dashboard.html', {'temple': temple})
+    return render(request, 'temple_auth/new_dashboard.html', {'temple': temple})
+
+
+@login_required
+def whats_new_page(request):
+    temple_id = request.session.get('temple_id')
+    if not temple_id:
+        return redirect('temple_selection')
+
+    temple = get_object_or_404(Temple, id=temple_id)
+    return render(request, 'temple_auth/whats_new.html', {'temple': temple})

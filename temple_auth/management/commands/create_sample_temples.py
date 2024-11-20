@@ -7,8 +7,9 @@ class Command(BaseCommand):
 
     sample_temples = [
         {
-            "temple_name": "ഓട്ടറാട്ട് കാട്ടുകണ്ടത്തിൽ പാലത്തിങ്കൽ ധർമ്മദൈവ ക്ഷേത്രം",
+            "temple_name": "ഓട്ടറാട്ട്-കാട്ടുകണ്ടത്തിൽ-പാലത്തിങ്കൽ ധർമ്മദൈവ ക്ഷേത്രം",
             "temple_place": "",
+            'temple_short_name': 'ധർമ്മദൈവ ക്ഷേത്രം',
             "temple_bill_title": "ഓട്ടറാട്ട് കാട്ടുകണ്ടത്തിൽ പാലത്തിങ്കൽ ധർമ്മദൈവ ക്ഷേത്രം",
             "temple_bill_mid": "കാര",
             "temple_bill_footer": ""

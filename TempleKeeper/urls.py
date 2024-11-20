@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from temple_auth.views import CustomLoginView, logout_view, temple_selection_view, dashboard_view
+from temple_auth.views import CustomLoginView, logout_view, temple_selection_view, dashboard_view, whats_new_page
 
 urlpatterns = [
     path('', CustomLoginView.as_view(), name='login'),
@@ -27,4 +27,5 @@ urlpatterns = [
     path('inventory/',include('temple_inventory.urls')),
     path('billing/',include('billing_manager.urls')),
     path('admin/', admin.site.urls),
+    path('updates/', whats_new_page, name='updates'),
 ]

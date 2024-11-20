@@ -39,12 +39,12 @@ class Command(BaseCommand):
 
                 elif group_name == "Temple Admin":
                     # Assign the first two temples
-                    user_profile.temples.set(all_temples[:2])
+                    user_profile.temples.set(all_temples)
                     self.stdout.write(self.style.SUCCESS(f'UserProfile for "{username}" linked to first two temples.'))
 
                 elif group_name == "Billing Assistant":
                     # Assign the last temple only.,m,
-                    user_profile.temples.set(all_temples[:1])
+                    user_profile.temples.set(all_temples)
                     self.stdout.write(self.style.SUCCESS(f'UserProfile for "{username}" linked to last temple only.'))
 
             else:
