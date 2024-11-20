@@ -193,7 +193,7 @@
                     <select name="pooja[]" class="form-control pooja-select" required>
                         <option value="" disabled selected>വഴിപാട്</option>
                         {% for vazhipadu in vazhipadu_items %}
-                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.id}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
+                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
                         {% endfor %}
                     </select>    
                 </div>

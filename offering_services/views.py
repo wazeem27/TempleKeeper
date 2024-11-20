@@ -4,6 +4,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from temple_auth.models import Temple
 from django.views.generic import View
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views import View
 from .forms import VazhipaduOfferingForm
 from .models import VazhipaduOffering
 
@@ -15,7 +18,7 @@ class VazhipaduOfferingView(View):
     def get(self, request, *args, **kwargs):
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-        offerings = VazhipaduOffering.objects.filter(temple=temple).order_by('id')
+        offerings = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
         context = {'offerings': offerings, 'temple': temple}
         return render(request, self.template_name, context)
 
@@ -81,3 +84,33 @@ def offering_main_view(request):
 
     temple = get_object_or_404(Temple, id=temple_id)
     return render(request, 'offering_services/offering_main.html', {'temple': temple})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateOrderView(View):
+    def post(self, request, *args, **kwargs):
+        import json
+        from django.http import JsonResponse
+
+        try:
+            data = json.loads(request.body)
+
+            if not isinstance(data, list):
+                return JsonResponse({'success': False, 'error': 'Invalid data format. Expected a list.'})
+
+            for item in data:
+                if item['id'] == item['order']:
+                    return JsonResponse({'success': False, 'error': 'ID and Order cannot be the same'})
+
+            # Bulk update (optimized)
+            updates = [
+                VazhipaduOffering(id=item['id'], order=item['order'])
+                for item in data
+            ]
+            VazhipaduOffering.objects.bulk_update(updates, ['order'])
+
+            return JsonResponse({'success': True})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})

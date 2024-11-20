@@ -17,7 +17,7 @@ Including another URLconf
 from django.urls import path
 from offering_services.views import (
     offering_main_view, VazhipaduOfferingView, VazhipaduOfferingDeleteView,
-    VazhipaduOfferingUpdateView
+    VazhipaduOfferingUpdateView, UpdateOrderView
 )
 
 
@@ -27,5 +27,6 @@ urlpatterns = [
     path('offerings/', VazhipaduOfferingView.as_view(), name='offerings-list'),
     path('offerings/delete/<int:pk>/', VazhipaduOfferingDeleteView.as_view(), name='offerings-delete'),
     path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
+    path('update-order/', UpdateOrderView.as_view(), name='update_order'),
 
 ]

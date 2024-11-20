@@ -7,8 +7,6 @@ DJANGO_MANAGE=python3 manage.py
 .PHONY: delete_migrations makemigrations migrate all
 
 # Target to delete all migrations
-delete_migrations:
-	find . -path "*/migrations/*" -type d -exec rm -rf {} +
 
 # Target to make migrations
 makemigrations:
@@ -31,6 +29,12 @@ load_vazhipadu:
 
 load_stars:
 	$(DJANGO_MANAGE) load_stars
+
+delete_migrations:
+	rm -rf temple_auth/migrations
+	rm -rf temple_inventory/migrations
+	rm -rf billing_manager/migrations
+	rm -rf offering_services/migrations
 
 # Target to delete migrations, make migrations, and migrate
 all: delete_migrations makemigrations permissions load_inventories load_vazhipadu load_stars

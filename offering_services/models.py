@@ -9,6 +9,7 @@ class VazhipaduOffering(models.Model):
     name = models.CharField(max_length=100, verbose_name='Offering Name')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Price')
     description = models.TextField(blank=True, verbose_name='Description')
+    order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated At')
 
@@ -18,7 +19,7 @@ class VazhipaduOffering(models.Model):
     class Meta:
         verbose_name = 'Vazhipadu Offering'
         verbose_name_plural = 'Vazhipadu Offerings'
-        ordering = ['name']
+        ordering = ['order']
         permissions = [
             ("can_add_vazhipaduoffering", "Can add vazhipadu offering"),  # Change permission codename
             ("can_change_vazhipaduoffering", "Can change vazhipadu offering"),

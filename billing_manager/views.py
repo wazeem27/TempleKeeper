@@ -22,7 +22,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
         return InventoryItem.objects.filter(temple=temple)
 
     def get_vazhipadu_queryset(self, temple: Temple) -> Any:
-        return VazhipaduOffering.objects.filter(temple=temple).order_by('id')
+        return VazhipaduOffering.objects.filter(temple=temple).order_by('order')
 
     def get_star_queryset(self) -> Any:
         return Star.objects.all().order_by('id')
