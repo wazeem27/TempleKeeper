@@ -73,6 +73,36 @@
 
                                             
                                             <div class="container" id="vazhipadu-form-container">
+
+                                                <div class="row" id="vazhipadu-form-row">
+                                                    <div class="col-12 col-sm-2 text-center p-3">
+                                                        <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
+                                                    </div>
+                                                    <div class="col-12 col-sm-2 text-center p-3">
+                                                        <select name="nakshatram[]" class="form-control" required>
+                                                            <option value="" disabled selected>നക്ഷത്രം</option>
+                                                            {% for star in star_items %}
+                                                            <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                                                            {% endfor %}
+                                                        </select>    
+                                                    </div>
+                                                    <div class="col-12 col-sm-2 text-center p-3">
+                                                        <select name="pooja[]" class="form-control pooja-select" required>
+                                                            <option value="" disabled selected>വഴിപാട്</option>
+                                                            {% for vazhipadu in vazhipadu_items %}
+                                                            <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
+                                                            {% endfor %}
+                                                        </select>    
+                                                    </div>
+                                                    <div class="col-12 col-sm-2 text-center p-3">
+                                                        <input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly>
+                                                    </div>
+                                                    <div class="col-12 col-sm-2 text-center p-3">
+                                                       <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button> 
+                                                    </div>
+                                                </div>
+
+
                                             </div>
                             
 
