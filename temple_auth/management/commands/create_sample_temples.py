@@ -20,6 +20,7 @@ class Command(BaseCommand):
         for temple_data in self.sample_temples:
             temple_name = temple_data["temple_name"]
             temple_place = temple_data["temple_place"]
+            temple_short_name = temple_data["temple_short_name"]
             temple_bill_title = temple_data["temple_bill_title"]
             temple_bill_mid = temple_data["temple_bill_mid"]
             temple_bill_footer = temple_data["temple_bill_footer"]
@@ -28,6 +29,7 @@ class Command(BaseCommand):
                 temple_name=temple_name,
                 defaults={
                     "temple_place": temple_place,
+                    "temple_short_name": temple_short_name,
                     "temple_bill_title": temple_bill_title,
                     "temple_bill_mid": temple_bill_mid,
                     "temple_bill_footer": temple_bill_footer,

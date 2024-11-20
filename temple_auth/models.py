@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 class Temple(models.Model):
     temple_name = models.CharField(max_length=500)
     temple_place = models.CharField(max_length=120, blank=True, null=True)  # Optional field
+    temple_short_name = models.CharField(max_length=120, blank=True, null=True)  # Optional field
     temple_bill_title = models.CharField(max_length=300, blank=True, null=True)
     temple_bill_mid = models.CharField(max_length=400, blank=True, null=True)
     temple_bill_footer = models.CharField(max_length=320, blank=True, null=True)
