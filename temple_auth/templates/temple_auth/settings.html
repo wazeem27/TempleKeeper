@@ -1,0 +1,291 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+form {
+  max-width: 600px;
+  margin: auto;
+}
+
+.form-check-label span {
+  font-size: 0.9rem; /* Slightly smaller text */
+}
+
+button.btn-primary {
+  border-radius: 25px; /* Rounded button */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+button.btn-primary:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+form.p-3 {
+  background: #f8f9fa; /* Light gray background */
+}
+
+label.fw-bold {
+  font-weight: 600; /* Make labels bold */
+}
+
+form {
+  max-width: 600px;
+  margin: auto;
+}
+
+input.form-control {
+  border-radius: 5px; /* Rounded input fields */
+}
+
+button.btn-primary {
+  border-radius: 25px; /* Rounded button */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+button.btn-primary:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+form.p-3 {
+  background: #f8f9fa; /* Light gray background */
+}
+
+label.fw-bold {
+  font-weight: 600; /* Make labels bold */
+}
+
+.text-center {
+  margin-top: 20px;
+}
+
+.row.mb-3.align-items-center {
+  margin-bottom: 1.5rem;
+}
+
+
+{% endblock %}
+
+{% block main-content %}
+
+
+
+
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+        <h1>Dashboard</h1>
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+            <li class="breadcrumb-item active">Settings</li>
+          </ol>
+        </nav>
+        {% if messages %}
+        <div class="alert alert-success" role="alert">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-8">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <!-- Bordered Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                </li>
+
+
+
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Change Password</button>
+                </li>
+
+              </ul>
+              <div class="tab-content pt-2">
+
+                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                  <!-- Settings Form -->
+                  <form method="POST" action="{% url 'update_split_receipt' %}" class="p-3 border rounded bg-light shadow-sm">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label for="is_split_bill" class="col-md-4 col-lg-3 col-form-label fw-bold">Split Receipt</label>
+                      <div class="col-md-8 col-lg-9">
+                        <div class="form-check d-flex align-items-center">
+                          <input class="form-check-input me-2" type="checkbox" id="is_split_bill" name="is_split_bill" 
+                                 {% if user_profile.is_split_bill %}checked{% endif %}>
+                          <label class="form-check-label" for="is_split_bill">
+                            <span class="text-muted fst-italic">
+                              Checking this box will generate an individual receipt for each item in a bill.
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-primary px-4 py-2">Save</button>
+                    </div>
+                  </form>
+
+                </div>
+
+
+                <div class="tab-pane fade pt-3" id="profile-change-password">
+                  <!-- Change Password Form -->
+                  <form method="POST" action="{% url 'update_temple_bill' %}" class="p-3 border rounded bg-light shadow-sm">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label for="templeBillTitle" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Header</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input 
+                          name="temple_bill_title" 
+                          type="text" 
+                          class="form-control" 
+                          id="templeBillTitle" 
+                          placeholder="Enter Bill Header" 
+                          value="{{ temple.temple_bill_title }}">
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label for="templeBillMid" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Mid Content</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input 
+                          name="temple_bill_mid" 
+                          type="text" 
+                          class="form-control" 
+                          id="templeBillMid" 
+                          placeholder="Enter Bill Mid Content" 
+                          value="{{ temple.temple_bill_mid }}">
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label for="templeBillFooter" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Footer</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input 
+                          name="temple_bill_footer" 
+                          type="text" 
+                          class="form-control" 
+                          id="templeBillFooter" 
+                          placeholder="Enter Bill Footer" 
+                          value="{{ temple.temple_bill_footer }}">
+                      </div>
+                    </div>
+                    
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-primary px-4 py-2">Save Changes</button>
+                    </div>
+                  </form>
+                  
+                </div>
+
+              </div><!-- End Bordered Tabs -->
+
+            </div>
+          </div>
+
+        </div>
+        <div class="col-xl-4">
+            <div class="card">
+              <div class="card-title text-center" style="color: black;">
+                  Sample Bill View
+              </div>
+                <div class="card-body center">
+                    <!-- Receipt Content -->
+                    <div class="receipt-card" style="width: 80mm; padding: 5mm; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+                        <!-- Print Icon -->
+                        <div class="print-icon" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 1.5rem; color: #000;" onclick="window.print()" title="Print">
+                            <i class="fas fa-print"></i>
+                        </div>
+        
+                        <!-- Header -->
+                        <p class="text-center mb-1 mt-1" style="font-weight: bold;">{{ temple.temple_place }}</p>
+                        <p class="text-center mb-1" style="font-weight: bold;">{{ temple.temple_bill_title }}</p>
+                        <p class="text-center mb-1 mt-1" style="font-size: 0.8rem;">{{ temple.temple_bill_mid }}</p>
+                        <p class="text-center mb-1 mt-1" style="font-weight: bold; font-size: 0.9rem;">വഴിപാട് രസീത്</p>
+                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+                        <!-- Receipt Number and Date -->
+                        <p class="mb-1" style="font-size: 0.8rem;">
+                            <span>രസീത് നം: {{ bill.id }}</span>
+                            <span class="float-end">തിയതി: {{ bill.created_at|date:"d/m/Y" }}</span>
+                        </p>
+                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+                        <!-- Vazhipadu Table -->
+                        <table class="table table-borderless" style="font-size: 0.8rem;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>പേര്</th>
+                                    <th>നക്ഷത്രം</th>
+                                    <th>വഴിപാട്</th>
+                                    <th class="text-end">രൂപ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Abin</td>
+                                    <td>അശ്വതി</td>
+                                    <td>പുഷ്‌പാഞ്ജലി</td>
+                                    <td class="text-end">10</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+                        <!-- Inventory Items Table -->
+                        <table class="table table-borderless" style="font-size: 0.8rem;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ഐറ്റം</th>
+                                    <th>എണ്ണം</th>
+                                    <th class="text-end">വില</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>തേങ്ങ</td>
+                                    <td>1</td>
+                                    <td class="text-end">20</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+                        <!-- Total -->
+                        <p class="total mb-1" style="font-size: 0.9rem; font-weight: bold; text-align: right;">Total: ₹30</p>
+        
+                        <!-- Footer -->
+                        <div class="footer" style="text-align: center; font-size: 0.7rem; margin-top: 4px;">
+                            <p class="thanks" style="font-weight: bold;">{{ temple.temple_bill_footer }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+      
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+{% endblock %}

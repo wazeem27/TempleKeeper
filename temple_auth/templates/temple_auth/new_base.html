@@ -18,10 +18,11 @@
 
   <!-- Template Main CSS File -->
   <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+  <style>
   {% block custom_style %}
 
   {% endblock %}
-
+  </style>
 </head>
 
 <body>
@@ -62,7 +63,7 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="">
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'settings' %}">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
               </a>

@@ -78,3 +78,42 @@ def whats_new_page(request):
 
     temple = get_object_or_404(Temple, id=temple_id)
     return render(request, 'temple_auth/whats_new.html', {'temple': temple})
+
+
+@login_required
+def settings_view(request):
+    temple_id = request.session.get('temple_id')
+    if not temple_id:
+        return redirect('temple_selection')
+    
+    user_profile = UserProfile.objects.get(user=request.user)  # Get the logged-in user's profile
+
+    temple = get_object_or_404(Temple, id=temple_id)
+    return render(request, 'temple_auth/settings.html', {'temple': temple, 'user_profile': user_profile})
+
+
+def update_temple_bill(request):
+    if request.method == "POST":
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        temple.temple_bill_title = request.POST.get('temple_bill_title', '')
+        temple.temple_bill_mid = request.POST.get('temple_bill_mid', '')
+        temple.temple_bill_footer = request.POST.get('temple_bill_footer', '')
+        temple.save()
+        messages.success(request, "Bill details updated successfully!")
+        return redirect('settings')  # Redirect after saving
+
+
+
+def update_split_receipt(request):
+    user_profile = UserProfile.objects.get(user=request.user)  # Get the logged-in user's profile
+
+    if request.method == "POST":
+        # Update the is_split_bill field based on the checkbox
+        is_split_bill = request.POST.get('is_split_bill') == 'on'
+        user_profile.is_split_bill = is_split_bill
+        user_profile.save()
+
+        # Add a success message
+        messages.success(request, "Split receipt preference updated successfully!")
+        return redirect('settings')  # Redirect after saving

@@ -46,3 +46,4 @@ class UserProfile(models.Model):
     def has_selected_temple(self):
         # Helper method to check if the user has selected a temple
         return hasattr(self, 'selected_temple') and self.selected_temple is not None
+

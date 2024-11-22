@@ -87,7 +87,7 @@
                                                         </select>    
                                                     </div>
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                        <select name="pooja[]" class="form-control pooja-select" required>
+                                                        <select name="pooja[]" class="form-control pooja-select" id="pooja-select" onchange="updateStaticPoojaPrice()" required>
                                                             <option value="" disabled selected>വഴിപാട്</option>
                                                             {% for vazhipadu in vazhipadu_items %}
                                                             <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
@@ -95,7 +95,7 @@
                                                         </select>    
                                                     </div>
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                        <input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly>
+                                                        <input type="number" name="pooja_price[]" class="form-control pooja-price" id="pooja-price" placeholder="വില" readonly>
                                                     </div>
                                                     <div class="col-12 col-sm-2 text-center p-3">
                                                        <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button> 
@@ -388,6 +388,21 @@
     document.getElementById('submit-button').addEventListener('click', function() {
         document.getElementById('billing-form').submit();
     });
+
+    function updateStaticPoojaPrice() {
+    const poojaSelect = document.getElementById('pooja-select');
+    const priceInput = document.getElementById('pooja-price');
+
+    // Get the selected option
+    const selectedOption = poojaSelect.options[poojaSelect.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+
+    // Update the price input field
+    if (price) {
+        priceInput.value = price;
+    }
+}
+
 </script>
 
 {% endblock %}
