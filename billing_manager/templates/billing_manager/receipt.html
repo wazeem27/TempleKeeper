@@ -17,6 +17,18 @@
             align-items: center;
             height: 100vh;
         }
+        .breadcrumb {
+    background-color: #f8f9fa; /* Match the background of the page */
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 0.9rem; /* Adjust font size */
+}
+.breadcrumb-item a {
+    color: #007bff; /* Match primary color */
+}
+.breadcrumb-item a:hover {
+    text-decoration: underline; /* Highlight on hover */
+}
 
         .receipt-card {
             width: 80mm; /* Set to 80mm width for mobile printer */
@@ -128,6 +140,21 @@
     </style>
 </head>
 <body>
+
+    <div class="pagetitle">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <!-- Breadcrumb -->
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'add-bill' %}" class="text-decoration-none">Home</a>
+                    </li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+    
+
     <div class="receipt-card">
         <!-- Print Icon -->
         <div class="print-icon" onclick="window.print()" title="Print">
@@ -155,7 +182,7 @@
 
 
         <!-- Check if there are any inventory items -->
-        {% if bill.vazhipadu_offerings.exists %}
+        {% if bill.bill_vazhipadu_offerings.exists %}
         <div class="line"></div>
         <!-- First Table -->
         <table class="table table-borderless">
@@ -185,24 +212,26 @@
         
 
         <!-- Second Table -->
-        {% if bill.inventory_items.exists %}
+        {% if bill.bill_other_items.exists %}
         <div class="line"></div>
         <table class="table table-borderless">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>ഐറ്റം</th>
-                    <th>എണ്ണം</th>
-                    <th class="text-end">വില</th>
+                    <th>പേര്</th>
+                    <th>നക്ഷത്രം</th>
+                    <th>വഴിപാട്</th>
+                    <th class="text-end">രൂപ</th>
                 </tr>
             </thead>
             <tbody>
-                {% for inventory in bill.bill_inventory_items.all %}
+                {% for other in bill.bill_other_items.all %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ inventory.inventory_item.name }}</td>
-                    <td>{{ inventory.quantity }}</td>
-                    <td class="text-end">{{ inventory.price }}</td>
+                    <td>{{ other.person_name }}</td>
+                    <td>{{ other.person_star.name }}</td>
+                    <td>{{ other.vazhipadu }}</td>
+                    <td class="text-end">{{ other.price }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -221,5 +250,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+window.addEventListener('load', function () {
+            window.print();
+        });
+    </script>
 </body>
 </html>

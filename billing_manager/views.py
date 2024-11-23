@@ -13,7 +13,7 @@ from offering_services.models import VazhipaduOffering, Star
 from temple_auth.models import Temple
 from collections import defaultdict
 from django.utils.timezone import localtime
-from billing_manager.models import Bill, BillInventoryItem, BillVazhipaduOffering
+from billing_manager.models import Bill, BillOther, BillVazhipaduOffering
 from typing import Dict, Any
 from temple_auth.models import UserProfile
 
@@ -51,40 +51,6 @@ class BillListView(LoginRequiredMixin, ListView):
     context_object_name = 'bills'
     paginate_by = 10
 
-    def get_queryset(self):
-        # Base queryset filtered by temple
-        temple_id = self.request.session.get('temple_id')
-        if not temple_id:
-            return Bill.objects.none()  # If no temple_id, return an empty queryset
-
-        queryset = Bill.objects.prefetch_related(
-            'vazhipadu_offerings',
-            'bill_vazhipadu_offerings__vazhipadu_offering',
-            'bill_vazhipadu_offerings__person_star',
-            'user'
-        ).filter(temple_id=temple_id).order_by('id')
-
-        # Get search and date range filter parameters
-        search_query = self.request.GET.get('q', '')
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
-
-        # Filter by search query
-        if search_query:
-            queryset = queryset.filter(
-                Q(id__icontains=search_query) |
-                Q(user__username__icontains=search_query) |
-                Q(bill_vazhipadu_offerings__vazhipadu_offering__name__icontains=search_query) |
-                Q(bill_vazhipadu_offerings__person_name__icontains=search_query)
-            ).distinct()
-
-        # Filter by date range
-        if start_date:
-            queryset = queryset.filter(created_at__date__gte=parse_date(start_date))
-        if end_date:
-            queryset = queryset.filter(created_at__date__lte=parse_date(end_date))
-
-        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -98,13 +64,15 @@ class BillListView(LoginRequiredMixin, ListView):
         bills = context['object_list']
         bill_dataset = []
 
-        for bill in bills:
+        bills = Bill.objects.all().order_by('id')
+        for bill in bills.order_by('id'):
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
-            sub_receipt_counter = iter("abcdefghijklmnopqrstuvwxyz")
+            sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
+            counter = 0
 
             # Construct the dataset
-            for idx, vazhipadu_bill in enumerate(vazhipadu_list, start=1):
-                subreceipt = '-' if len(vazhipadu_list) == 1 else next(sub_receipt_counter)
+            for vazhipadu_bill in vazhipadu_list:
+                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
 
                 bill_entry = {
                     'receipt': bill.id,
@@ -117,6 +85,24 @@ class BillListView(LoginRequiredMixin, ListView):
                     'amount': vazhipadu_bill.price,
                 }
                 bill_dataset.append(bill_entry)
+                counter +=1
+            other_list = bill.bill_other_items.all()
+            # Construct the dataset
+            for other_bill in other_list:
+                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
+
+                bill_entry = {
+                    'receipt': bill.id,
+                    'sub_receipt': subreceipt,
+                    'created_at': localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
+                    'created_by': bill.user.username,
+                    'vazhipadu_name': other_bill.vazhipadu,
+                    'name': other_bill.person_name,
+                    'star': other_bill.person_star.name if vazhipadu_bill.person_star else "",
+                    'amount': other_bill.price,
+                }
+                bill_dataset.append(bill_entry)       
+                counter += 1     
 
         # Add paginated dataset and filters to the context
         context['bills'] = bill_dataset
@@ -137,8 +123,10 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
         temple = get_object_or_404(Temple, id=temple_id)
 
         # Extract price lists from POST data
-        pooja_price_list = list(map(float, request.POST.getlist('pooja_price[]')))
-        thing_price_list = list(map(float, request.POST.getlist('thing_price[]')))
+        pooja_price_list = request.POST.getlist('pooja_price[]')
+        pooja_price_list = 0 if not bool(pooja_price_list[0]) else list(map(float,pooja_price_list)) 
+        other_price_list = list(map(float, request.POST.getlist('other_price[]')))
+
 
         # Retrieve user profile for split bill preference
         user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple_id)
@@ -148,12 +136,14 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
             with transaction.atomic():
                 if user_profile.is_split_bill:
                     # Create separate bills for each offering or item
+                    bill_objects = []
+
                     if request.POST.getlist('pooja[]'):
                         names = request.POST.getlist('name[]')
                         vazhipadu_list = request.POST.getlist('pooja[]')
                         stars = request.POST.getlist('nakshatram[]')
                         vazhipadu_prices = request.POST.getlist('pooja_price[]')
-
+                        
                         for index, vazhipadu_name in enumerate(vazhipadu_list):
                             if vazhipadu_name.strip():
                                 vazhipadu_offering = get_object_or_404(
@@ -167,6 +157,7 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                                     temple=temple,
                                     total_amount=price
                                 )
+                                bill_objects.append(bill)
 
                                 # Create associated BillVazhipaduOffering record
                                 BillVazhipaduOffering.objects.create(
@@ -178,44 +169,52 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                                     price=price
                                 )
 
-                    if request.POST.getlist('thing[]'):
-                        thing_names = request.POST.getlist('thing[]')
-                        thing_quantities = request.POST.getlist('quantity[]')
-                        thing_prices = request.POST.getlist('thing_price[]')
+                    if request.POST.getlist('other_name[]'):
+                        other_names = request.POST.getlist('other_name[]')
+                        other_stars = request.POST.getlist('other_nakshatram[]')
+                        other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
+                        other_prices = request.POST.getlist('other_price[]')
 
-                        for index, thing_name in enumerate(thing_names):
-                            if thing_name.strip():
-                                inventory_item = get_object_or_404(
-                                    InventoryItem, name=thing_name, temple=temple)
-                                quantity = int(thing_quantities[index])
-                                price = Decimal(thing_prices[index])
+                        for index, other_name in enumerate(other_names):
+                            if other_name.strip():
+                                other_star = get_object_or_404(Star, name=other_stars[index])
+                                vazhipadu = other_vazhipadugal[index]
+                                price = Decimal(other_prices[index])
 
                                 # Create a new bill for this inventory item
                                 bill = Bill.objects.create(
                                     user=request.user,
                                     temple=temple,
-                                    total_amount=price * quantity
+                                    total_amount=price
                                 )
+                                bill_objects.append(bill)
 
                                 # Create associated BillInventoryItem record
-                                BillInventoryItem.objects.create(
+                                BillOther.objects.create(
                                     bill=bill,
-                                    inventory_item=inventory_item,
-                                    quantity=quantity,
+                                    person_name=other_name,
+                                    person_star=other_star,
+                                    vazhipadu=vazhipadu,
                                     price=price
                                 )
+                    bill_ids = ",".join([str(bill.id) for bill in bill_objects])
+                    for bill in bill_objects:
+                        bill.related_bills = bill_ids
+                        bill.save()
 
                     messages.success(request, "Separate bills have been successfully recorded.")
-                    return redirect('bill-list')
+                    query_string = f"ids={'&'.join(map(str, [bill.id for bill in bill_objects]))}"
+                    url = f"{reverse('view_multi_receipt')}?{query_string}"
+                    return redirect(url)
 
                 else:
                     # Create a single consolidated bill
                     total_pooja_price = sum(pooja_price_list)
-                    total_thing_price = sum(thing_price_list)
+                    total_other_price = sum(other_price_list)
                     bill = Bill.objects.create(
                         user=request.user,
                         temple=temple,
-                        total_amount=Decimal(total_pooja_price + total_thing_price)
+                        total_amount=Decimal(total_pooja_price + total_other_price)
                     )
 
                     # Add offerings to the single bill
@@ -242,27 +241,28 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                                 )
 
                     # Add inventory items to the single bill
-                    if request.POST.getlist('thing[]'):
-                        thing_names = request.POST.getlist('thing[]')
-                        thing_quantities = request.POST.getlist('quantity[]')
-                        thing_prices = request.POST.getlist('thing_price[]')
+                    if request.POST.getlist('other_name[]'):
+                        other_names = request.POST.getlist('other_name[]')
+                        other_stars = request.POST.getlist('other_nakshatram[]')
+                        other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
+                        other_prices = request.POST.getlist('other_price[]')
 
-                        for index, thing_name in enumerate(thing_names):
-                            if thing_name.strip():
-                                inventory_item = get_object_or_404(
-                                    InventoryItem, name=thing_name, temple=temple)
-                                quantity = int(thing_quantities[index])
-                                price = Decimal(thing_prices[index])
+                        for index, other_name in enumerate(other_names):
+                            if other_name.strip():
+                                other_star = get_object_or_404(Star, name=other_stars[index])
+                                vazhipadu = other_vazhipadugal[index]
+                                price = Decimal(other_prices[index])
 
-                                BillInventoryItem.objects.create(
+                                BillOther.objects.create(
                                     bill=bill,
-                                    inventory_item=inventory_item,
-                                    quantity=quantity,
+                                    person_name=other_name,
+                                    person_star=other_star,
+                                    vazhipadu=vazhipadu,
                                     price=price
                                 )
 
                     messages.success(request, "Billing details have been successfully recorded.")
-                    return redirect(reverse('bill-detail', kwargs={'pk': bill.id}))
+                    return redirect(reverse('receipt', kwargs={'pk': bill.id}))
 
         except Exception as e:
             # Rollback transaction on error
@@ -310,4 +310,46 @@ class ReceiptView(LoginRequiredMixin, DetailView):
         temple = get_object_or_404(Temple, id=temple_id)
         # Add any additional data if necessary
         context["temple"] = temple
+        return context
+
+
+
+class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/new_bill_receipt.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Fetch the temple based on session data
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['temple'] = temple
+
+        # Get the list of bill IDs from query parameters
+        query_string = self.request.META.get('QUERY_STRING', '')
+        bill_ids = query_string.split('=')[1].split('&') if '=' in query_string else []
+        # Fetch bills belonging to the temple
+        bills = Bill.objects.filter(id__in=bill_ids, temple_id=temple_id)
+        bill_list = []
+        for bill in bills:
+            bill_dict = {}
+            bill_dict['id'] = bill.id
+            bill_dict['date'] = bill.created_at
+            vazhipadu = bill.bill_vazhipadu_offerings.first()
+            if vazhipadu:
+                bill_dict['name'] = vazhipadu.person_name
+                bill_dict['star'] = vazhipadu.person_star
+                bill_dict['vazhipadu'] = vazhipadu.vazhipadu_offering.name
+                bill_dict['price'] = vazhipadu.price
+                bill_list.append(bill_dict)
+            else:
+                other = bill.bill_other_items.first()
+                bill_dict['name'] = other.person_name
+                bill_dict['star'] = other.person_star.name
+                bill_dict['vazhipadu'] = other.vazhipadu
+                bill_dict['price'] = other.price
+                bill_list.append(bill_dict)  
+                
+        context['bills'] = bill_list
+
         return context

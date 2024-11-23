@@ -57,9 +57,7 @@
                             <li class="nav-item flex-fill" role="presentation">
                                 <button class="nav-link w-100 active" id="home-tab" data-bs-toggle="tab" data-bs-target="#bordered-justified-home" type="button" role="tab" aria-controls="home" aria-selected="true">വഴിപാട്‌ ബുക്കിംഗ്</button>
                             </li>
-                            <li class="nav-item flex-fill" role="presentation">
-                                <button class="nav-link w-100" id="review-tab" data-bs-toggle="tab" data-bs-target="#bordered-justified-review" type="button" role="tab" aria-controls="review" aria-selected="false">Review</button>
-                            </li>
+
                         </ul>
                         <div class="tab-content pt-2" id="borderedTabJustifiedContent">
                             <div class="tab-pane fade show active" id="bordered-justified-home" role="tabpanel" aria-labelledby="home-tab">
@@ -114,7 +112,7 @@
                                     <!-- Things Details -->
                                     <div class="card">
                                         <div class="card-body">
-                                            <h5 class="card-title">സാധനങ്ങൾ</h5>
+                                            <h5 class="card-title">Other</h5>
 
                                             <div class="container" id="things-form-container">
                                             </div>
@@ -125,65 +123,10 @@
                                         </div>
                                     </div>
                                     <div class="text-center">
-                                        <button type="button" class="btn btn-primary" id="review-button">Review</button>
-                                        <button type="reset" class="btn btn-secondary">Reset</button>
+                                        <button type="button" class="btn btn-primary" id="submit-button">Submit & Print</button>
                                     </div>
                                 </form>
                             </div>
-                            <div class="tab-pane fade" id="bordered-justified-review" role="tabpanel" aria-labelledby="review-tab">
-                              <h5 class="card-title">Review Your Details</h5>
-                          
-
-                          
-                              <!-- Vazhipadu Details Table -->
-                              <div class="card">
-                                  <div class="card-body">
-                                      <h6>വഴിപാട് വിശദാംശങ്ങൾ</h6>
-                                      <div class="table-responsive">
-                                      <table class="table table-bordered">
-                                          <thead>
-                                              <tr>
-                                                  <th>പേര്</th>
-                                                  <th>നക്ഷത്രം</th>
-                                                  <th>പൂജ</th>
-                                                  <th>വില</th>
-                                              </tr>
-                                          </thead>
-                                          <tbody id="review-vazhipadu-table-body">
-                                              <!-- Rows will be added dynamically -->
-                                          </tbody>
-                                      </table>
-                                      </div>
-                                  </div>
-                              </div>
-                          
-                              <!-- Things Details Table -->
-                              <div class="card">
-                                  <div class="card-body">
-                                      <h6>സാധനങ്ങൾ</h6>
-                                      <div class="table-responsive">
-                                      <table class="table table-bordered">
-                                          <thead>
-                                              <tr>
-                                                  <th>സാധനം</th>
-                                                  <th>എണ്ണം</th>
-                                                  <th>വില</th>
-                                              </tr>
-                                          </thead>
-                                          <tbody id="review-things-table-body">
-                                              <!-- Rows will be added dynamically -->
-                                          </tbody>
-                                      </table>
-                                      </div>
-                                  </div>
-                              </div>
-                          
-                              <div class="text-center">
-                                <!-- Submit button triggers form submission -->
-                                <button type="button" class="btn btn-secondary" id="back-button">Back</button>
-                                <button type="button" class="btn btn-primary" id="submit-button">Submit</button>
-                              </div>
-                          </div>
                         </div><!-- End Bordered Tabs Justified -->
                     </div>
                 </div>
@@ -201,109 +144,93 @@
 
   {% block main-script %}
   <script>
+document.addEventListener('DOMContentLoaded', function () {
     // Add Vazhipadu row
-    document.getElementById('add-vazhipadu-row').addEventListener('click', function() {
-        var containerBody = document.getElementById('vazhipadu-form-container');
+    document.getElementById('add-vazhipadu-row').addEventListener('click', function () {
+        const containerBody = document.getElementById('vazhipadu-form-container');
 
-        var newRow = document.createElement('div');
+        const newRow = document.createElement('div');
+        newRow.classList.add('row', 'vazhipadu-form-row');
         newRow.innerHTML = `
-            <div class="row" id="vazhipadu-form-row">
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <select name="nakshatram[]" class="form-control" required>
-                        <option value="" disabled selected>നക്ഷത്രം</option>
-                        {% for star in star_items %}
-                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
-                        {% endfor %}
-                    </select>    
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <select name="pooja[]" class="form-control pooja-select" required>
-                        <option value="" disabled selected>വഴിപാട്</option>
-                        {% for vazhipadu in vazhipadu_items %}
-                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
-                        {% endfor %}
-                    </select>    
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly>
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                   <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button> 
-                </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <select name="nakshatram[]" class="form-control" required>
+                    <option value="" disabled selected>നക്ഷത്രം</option>
+                    {% for star in star_items %}
+                    <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                    {% endfor %}
+                </select>    
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <select name="pooja[]" class="form-control pooja-select" required>
+                    <option value="" disabled selected>വഴിപാട്</option>
+                    {% for vazhipadu in vazhipadu_items %}
+                    <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
+                    {% endfor %}
+                </select>    
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly>
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
             </div>
         `;
-
         containerBody.appendChild(newRow);
 
-        // Add event listener to the newly created select box for 'pooja' field
-        newRow.querySelector('.pooja-select').addEventListener('change', function() {
-            var selectedOption = this.options[this.selectedIndex];
-            var price = selectedOption.getAttribute('data-price');
-            if (price) {
-                newRow.querySelector('.pooja-price').value = price;
-            }
+        // Add event listener for updating price based on selected pooja
+        newRow.querySelector('.pooja-select').addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const price = selectedOption.getAttribute('data-price');
+            newRow.querySelector('.pooja-price').value = price || '';
         });
     });
 
     // Add Things row
-    document.getElementById('add-things-row').addEventListener('click', function() {
-        var containerBody = document.getElementById('things-form-container');
+    document.getElementById('add-things-row').addEventListener('click', function () {
+        const containerBody = document.getElementById('things-form-container');
 
-        var newRow = document.createElement('div');
+        const newRow = document.createElement('div');
+        newRow.classList.add('row', 'things-form-row');
         newRow.innerHTML = `
-            <div class="row" id="vazhipadu-form-row">
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <select name="thing[]" class="form-control thing-select" required>
-                        <option value="" disabled selected>സാധനം</option>
-                        {% for inventory in inventory_items %}
-                        <option value="{{ inventory.name }}" data-price="{{ inventory.price }}">{{ inventory.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <input type="number" name="quantity[]" class="form-control quantity-input" placeholder="എണ്ണം" required>  
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <input type="number" name="thing_price[]" class="form-control thing-price" placeholder="വില" readonly>   
-                </div>
-                <div class="col-12 col-sm-2 text-center p-3">
-                    <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
-                </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <input type="text" name="other_name[]" class="form-control" placeholder="പേര്" required>
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <select name="other_nakshatram[]" class="form-control" required>
+                    <option value="" disabled selected>നക്ഷത്രം</option>
+                    {% for star in star_items %}
+                    <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                    {% endfor %}
+                </select>  
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <input type="text" name="other_vazhipadu[]" class="form-control" placeholder="വഴിപാട്" required>
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <input type="number" name="other_price[]" class="form-control thing-price" placeholder="വില">
+            </div>
+            <div class="col-12 col-sm-2 text-center p-3">
+                <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
             </div>
         `;
         containerBody.appendChild(newRow);
-
-        var thingSelect = newRow.querySelector('.thing-select');
-        var quantityInput = newRow.querySelector('.quantity-input');
-        var priceInput = newRow.querySelector('.thing-price');
-
-        // Add event listener to the select box to update the quantity and price
-        thingSelect.addEventListener('change', function() {
-            var selectedOption = this.options[this.selectedIndex];
-            var price = selectedOption.getAttribute('data-price');
-
-            if (price) {
-                // Set quantity to 1 and calculate the price
-                quantityInput.value = 1;
-                priceInput.value = price;  // Initially show the price for 1 unit
-            }
-        });
-
-        // Add event listener to the quantity input to update the price when the quantity changes
-        quantityInput.addEventListener('input', function() {
-            var selectedOption = thingSelect.options[thingSelect.selectedIndex];
-            var price = selectedOption.getAttribute('data-price');
-
-            if (price) {
-                var quantity = quantityInput.value;
-                priceInput.value = (price * quantity).toFixed(2);  // Update the total price
-            }
-        });
     });
 
+    // Remove row event listener (shared for both Vazhipadu and Things)
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-row')) {
+            event.target.closest('.row').remove();
+        }
+    });
+
+    // Submit form programmatically on "Submit" button click
+    document.getElementById('submit-button').addEventListener('click', function () {
+        document.getElementById('billing-form').submit();
+    });
+});
     // Remove row event listener
     document.getElementById('vazhipadu-form-container').addEventListener('click', function(event) {
         if (event.target.classList.contains('remove-row')) {
@@ -317,72 +244,6 @@
         }
     });
 
-    // Review button logic
-    document.getElementById('review-button').addEventListener('click', function() {
-    
-        // Vazhipadu table review
-        const vazhipaduTableBody = document.getElementById('vazhipadu-form-container');
-        const reviewVazhipaduTableBody = document.getElementById('review-vazhipadu-table-body');
-        reviewVazhipaduTableBody.innerHTML = ''; 
-        let vazhipaduTotalPrice = 0;
-    
-        Array.from(vazhipaduTableBody.children).forEach(row => {
-            const inputs = row.querySelectorAll('input, select');
-            const newRow = document.createElement('tr');
-            const price = parseFloat(inputs[3].value) || 0;
-            vazhipaduTotalPrice += price;
-            newRow.innerHTML = `
-                <td>${inputs[0].value}</td>
-                <td>${inputs[1].value}</td>
-                <td>${inputs[2].value}</td>
-                <td>${price.toFixed(2)}</td>
-            `;
-            reviewVazhipaduTableBody.appendChild(newRow);
-        });
-    
-        const vazhipaduTotalRow = document.createElement('tr');
-        vazhipaduTotalRow.innerHTML = `
-            <td colspan="3" class="text-end"><strong>Total:</strong></td>
-            <td><strong>${vazhipaduTotalPrice.toFixed(2)}</strong></td>
-        `;
-        reviewVazhipaduTableBody.appendChild(vazhipaduTotalRow);
-    
-        // Things table review
-        const thingsTableBody = document.getElementById('things-form-container');
-        const reviewThingsTableBody = document.getElementById('review-things-table-body');
-        reviewThingsTableBody.innerHTML = ''; 
-        let thingsTotalPrice = 0;
-    
-        Array.from(thingsTableBody.children).forEach(row => {
-            const inputs = row.querySelectorAll('select, input');
-            const price = parseFloat(inputs[2].value) || 0;
-            thingsTotalPrice += price;
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>${inputs[0].value}</td>
-                <td>${inputs[1].value}</td>
-                <td>${price.toFixed(2)}</td>
-            `;
-            reviewThingsTableBody.appendChild(newRow);
-        });
-    
-        const thingsTotalRow = document.createElement('tr');
-        thingsTotalRow.innerHTML = `
-            <td colspan="2" class="text-end"><strong>Total:</strong></td>
-            <td><strong>${thingsTotalPrice.toFixed(2)}</strong></td>
-        `;
-        reviewThingsTableBody.appendChild(thingsTotalRow);
-    
-        // Switch to review tab
-        const reviewTab = new bootstrap.Tab(document.getElementById('review-tab'));
-        reviewTab.show();
-    });
-    
-    // Back button logic
-    document.getElementById('back-button').addEventListener('click', function() {
-        const homeTab = new bootstrap.Tab(document.getElementById('home-tab'));
-        homeTab.show();
-    });
     
     // Submit form programmatically on "Submit" button click
     document.getElementById('submit-button').addEventListener('click', function() {
