@@ -5,6 +5,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.urls import reverse
 from decimal import Decimal
+from django.utils.dateparse import parse_date
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from temple_inventory.models import InventoryItem
@@ -44,7 +45,6 @@ class BillingView(LoginRequiredMixin, TemplateView):
         
         return context
 
-
 class BillListView(LoginRequiredMixin, ListView):
     model = Bill
     template_name = 'billing_manager/bill_list.html'
@@ -52,34 +52,60 @@ class BillListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        # Specify an ordering for the Bill objects
-        return Bill.objects.order_by('-created_at')
-    
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-
+        # Base queryset filtered by temple
         temple_id = self.request.session.get('temple_id')
-        temple = get_object_or_404(Temple, id=temple_id)
-        context['temple'] = temple
+        if not temple_id:
+            return Bill.objects.none()  # If no temple_id, return an empty queryset
 
-
-        bills = Bill.objects.prefetch_related(
+        queryset = Bill.objects.prefetch_related(
             'vazhipadu_offerings',
             'bill_vazhipadu_offerings__vazhipadu_offering',
             'bill_vazhipadu_offerings__person_star',
             'user'
-        ).order_by('id') 
+        ).filter(temple_id=temple_id).order_by('id')
+
+        # Get search and date range filter parameters
+        search_query = self.request.GET.get('q', '')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        # Filter by search query
+        if search_query:
+            queryset = queryset.filter(
+                Q(id__icontains=search_query) |
+                Q(user__username__icontains=search_query) |
+                Q(bill_vazhipadu_offerings__vazhipadu_offering__name__icontains=search_query) |
+                Q(bill_vazhipadu_offerings__person_name__icontains=search_query)
+            ).distinct()
+
+        # Filter by date range
+        if start_date:
+            queryset = queryset.filter(created_at__date__gte=parse_date(start_date))
+        if end_date:
+            queryset = queryset.filter(created_at__date__lte=parse_date(end_date))
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get temple details
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['temple'] = temple
+
+        # Prepare bill dataset
+        bills = self.get_queryset()
         bill_dataset = []
 
         for bill in bills:
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             sub_receipt_counter = iter("abcdefghijklmnopqrstuvwxyz")
-            
-            # Determine if sub-receipt is required
+
+            # Construct the dataset
             for idx, vazhipadu_bill in enumerate(vazhipadu_list, start=1):
                 subreceipt = '-' if len(vazhipadu_list) == 1 else next(sub_receipt_counter)
-                
-                # Construct the dictionary for this entry
+
                 bill_entry = {
                     'receipt': bill.id,
                     'sub_receipt': subreceipt,
@@ -90,10 +116,16 @@ class BillListView(LoginRequiredMixin, ListView):
                     'star': vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
                     'amount': vazhipadu_bill.price,
                 }
-                
                 bill_dataset.append(bill_entry)
+
+        # Add dataset and filters to the context
         context['bills'] = bill_dataset
+        context['search_query'] = self.request.GET.get('q', '')
+        context['start_date'] = self.request.GET.get('start_date', '')
+        context['end_date'] = self.request.GET.get('end_date', '')
+
         return context
+
 
 @login_required
 def submit_billing(request: HttpRequest) -> HttpResponse:
