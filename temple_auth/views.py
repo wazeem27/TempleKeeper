@@ -65,9 +65,14 @@ def dashboard_view(request):
     temple_id = request.session.get('temple_id')
     if not temple_id:
         return redirect('temple_selection')
-
+    is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
     temple = get_object_or_404(Temple, id=temple_id)
-    return render(request, 'temple_auth/new_dashboard.html', {'temple': temple})
+    context = {
+        'is_billing_assistant': is_billing_assistant,
+        'temple': temple
+    }
+
+    return render(request, 'temple_auth/new_dashboard.html', context)
 
 
 @login_required

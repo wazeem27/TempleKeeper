@@ -63,8 +63,14 @@ class BillListView(LoginRequiredMixin, ListView):
         # Use paginated bills for the current page
         bills = context['object_list']
         bill_dataset = []
+        is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
+        bills = []
+        if is_billing_assistant:
+            bills = Bill.objects.filter(user=self.request.user).order_by('id')
+        else:
+            bills = Bill.objects.all().order_by('id')
 
-        bills = Bill.objects.all().order_by('id')
+        
         for bill in bills.order_by('id'):
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"

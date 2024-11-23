@@ -13,7 +13,7 @@ class Command(BaseCommand):
         # List of Vazhipadu offerings to be inserted (name, price)
         vazhipadu_offerings = [
             ("ഗണപതി ഹോമം", 50.00),
-            ("ഒരുദിവസത്തെ പൂജ", 1000.00),
+            ("ഒരുദിവസത്തെ പൂജ", 1200.00),
             ("പുഷ്‌പാഞ്ജലി", 10.00),
             ("മഞ്ഞൾപ്പൊടി", 20.00),
             ("പനിനീർ അഭിഷേകം", 30.00),

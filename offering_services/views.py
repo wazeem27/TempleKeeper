@@ -18,8 +18,12 @@ class VazhipaduOfferingView(View):
     def get(self, request, *args, **kwargs):
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
+
+        is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
+
+
         offerings = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-        context = {'offerings': offerings, 'temple': temple}
+        context = {'offerings': offerings, 'temple': temple, 'is_billing_assistant': is_billing_assistant}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
