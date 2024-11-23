@@ -69,24 +69,32 @@
                                 <thead class="text-center">
                                     <tr>
                                         <th>Receipt No:</th>
+                                        <th>Sub_Receipt No:</th>
                                         <th>Billed By</th>
-                                        <th>Amount</th>
                                         <th>Date</th>
+                                        <th>Vazhipadu</th>
+                                        <th>Name</th>
+                                        <th>Star</th>
+                                        <th>Price</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for bill in bills %}
                                     <tr>
-                                        <td>#{{ bill.id }}</td>
-                                        <td>{{ bill.user.username }}</td>
-                                        <td class="text-end">{{ bill.total_amount }}</td>
-                                        <td>{{ bill.created_at|date:"D, d M Y H:i" }}</td>
+                                        <td>{{ bill.receipt }}</td>
+                                        <td>{{ bill.sub_receipt }}</td>
+                                        <td>{{ bill.created_by }}</td>
+                                        <td>{{ bill.created_at }}</td>
+                                        <td>{{ bill.vazhipadu_name }}</td>
+                                        <td>{{ bill.name }}</td>
+                                        <td>{{ bill.star }}</td>
+                                        <td>{{ bill.amount }}</td>
                                         <td class="text-center">
-                                            <a href="{% url 'bill-detail' bill.id %}" class="btn btn-sm btn-primary">
+                                            <a href="{% url 'bill-detail' bill.receipt %}" class="btn btn-sm btn-primary">
                                                 <i class="bi bi-eye"></i> View
                                             </a>
-                                            <a href="{% url 'receipt' bill.id %}" class="btn btn-sm btn-success" target="_blank">
+                                            <a href="{% url 'receipt' bill.receipt %}" class="btn btn-sm btn-success" target="_blank">
                                                 <i class="bi bi-printer"></i> Print
                                             </a>
                                         </td>

@@ -10,10 +10,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from temple_inventory.models import InventoryItem
 from offering_services.models import VazhipaduOffering, Star
 from temple_auth.models import Temple
+from collections import defaultdict
+from django.utils.timezone import localtime
 from billing_manager.models import Bill, BillInventoryItem, BillVazhipaduOffering
 from typing import Dict, Any
 from temple_auth.models import UserProfile
 
+
+subreceipt_ids = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p']
 
 class BillingView(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/create_bill.html"
@@ -57,6 +61,38 @@ class BillListView(LoginRequiredMixin, ListView):
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         context['temple'] = temple
+
+
+        bills = Bill.objects.prefetch_related(
+            'vazhipadu_offerings',
+            'bill_vazhipadu_offerings__vazhipadu_offering',
+            'bill_vazhipadu_offerings__person_star',
+            'user'
+        ).order_by('id') 
+        bill_dataset = []
+
+        for bill in bills:
+            vazhipadu_list = bill.bill_vazhipadu_offerings.all()
+            sub_receipt_counter = iter("abcdefghijklmnopqrstuvwxyz")
+            
+            # Determine if sub-receipt is required
+            for idx, vazhipadu_bill in enumerate(vazhipadu_list, start=1):
+                subreceipt = '-' if len(vazhipadu_list) == 1 else next(sub_receipt_counter)
+                
+                # Construct the dictionary for this entry
+                bill_entry = {
+                    'receipt': bill.id,
+                    'sub_receipt': subreceipt,
+                    'created_at': localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
+                    'created_by': bill.user.username,
+                    'vazhipadu_name': vazhipadu_bill.vazhipadu_offering.name,
+                    'name': vazhipadu_bill.person_name,
+                    'star': vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
+                    'amount': vazhipadu_bill.price,
+                }
+                
+                bill_dataset.append(bill_entry)
+        context['bills'] = bill_dataset
         return context
 
 @login_required
