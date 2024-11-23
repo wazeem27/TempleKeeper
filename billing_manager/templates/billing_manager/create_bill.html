@@ -145,6 +145,30 @@
   {% block main-script %}
   <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const billingForm = document.getElementById('billing-form');
+    const submitButton = document.getElementById('submit-button');
+
+    // Disable the submit button initially
+    submitButton.disabled = true;
+
+    // Function to check if all fields are filled
+    function validateForm() {
+        let isValid = true;
+
+        // Check all inputs and selects within the form
+        billingForm.querySelectorAll('input[required], select[required]').forEach(function (field) {
+            if (!field.value.trim()) {
+                isValid = false;
+            }
+        });
+
+        // Enable or disable the submit button based on the validity
+        submitButton.disabled = !isValid;
+    }
+
+    // Add event listeners to all input and select fields
+    billingForm.addEventListener('input', validateForm);
+
     // Add Vazhipadu row
     document.getElementById('add-vazhipadu-row').addEventListener('click', function () {
         const containerBody = document.getElementById('vazhipadu-form-container');
@@ -180,15 +204,30 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
         containerBody.appendChild(newRow);
 
+        // Add event listener for validation on new inputs and selects
+        newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
+            field.addEventListener('input', validateForm);
+        });
+
         // Add event listener for updating price based on selected pooja
         newRow.querySelector('.pooja-select').addEventListener('change', function () {
             const selectedOption = this.options[this.selectedIndex];
             const price = selectedOption.getAttribute('data-price');
             newRow.querySelector('.pooja-price').value = price || '';
         });
+
+        validateForm(); // Revalidate the form after adding a row
     });
 
-    // Add Things row
+    // Remove row event listener (shared for both Vazhipadu and Things)
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-row')) {
+            event.target.closest('.row').remove();
+            validateForm(); // Revalidate the form after removing a row
+        }
+    });
+
+    // Add event listeners for the "Add Things" button and fields
     document.getElementById('add-things-row').addEventListener('click', function () {
         const containerBody = document.getElementById('things-form-container');
 
@@ -217,32 +256,18 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
         containerBody.appendChild(newRow);
+
+        // Add event listener for validation on new inputs and selects
+        newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
+            field.addEventListener('input', validateForm);
+        });
+
+        validateForm(); // Revalidate the form after adding a row
     });
 
-    // Remove row event listener (shared for both Vazhipadu and Things)
-    document.addEventListener('click', function (event) {
-        if (event.target.classList.contains('remove-row')) {
-            event.target.closest('.row').remove();
-        }
-    });
-
-    // Submit form programmatically on "Submit" button click
-    document.getElementById('submit-button').addEventListener('click', function () {
-        document.getElementById('billing-form').submit();
-    });
+    validateForm(); // Initial validation
 });
-    // Remove row event listener
-    document.getElementById('vazhipadu-form-container').addEventListener('click', function(event) {
-        if (event.target.classList.contains('remove-row')) {
-            event.target.closest('.row').remove();
-        }
-    });
 
-    document.getElementById('things-form-container').addEventListener('click', function(event) {
-        if (event.target.classList.contains('remove-row')) {
-            event.target.closest('.row').remove();
-        }
-    });
 
     
     // Submit form programmatically on "Submit" button click
