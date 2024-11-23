@@ -94,8 +94,8 @@ class BillListView(LoginRequiredMixin, ListView):
         temple = get_object_or_404(Temple, id=temple_id)
         context['temple'] = temple
 
-        # Prepare bill dataset
-        bills = self.get_queryset()
+        # Use paginated bills for the current page
+        bills = context['object_list']
         bill_dataset = []
 
         for bill in bills:
@@ -118,7 +118,7 @@ class BillListView(LoginRequiredMixin, ListView):
                 }
                 bill_dataset.append(bill_entry)
 
-        # Add dataset and filters to the context
+        # Add paginated dataset and filters to the context
         context['bills'] = bill_dataset
         context['search_query'] = self.request.GET.get('q', '')
         context['start_date'] = self.request.GET.get('start_date', '')

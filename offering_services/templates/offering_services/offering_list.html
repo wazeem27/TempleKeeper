@@ -179,7 +179,7 @@
                                         <th>Sl no:</th>
                                         <th scope="col">വഴിപ്പാട്</th>
                                         <th scope="col">വില</th>
-                                        <th scope="col">വിശദാംശം</th>
+                                        <th scope="col">Drag</th>
                                         <th scope="col">Edit</th>
                                         <th scope="col">Delete</th>
                                     </tr>
@@ -190,7 +190,7 @@
                                         <td class="sl-no">{{ forloop.counter }}</td>
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.price }}</td>
-                                        <td>{{ item.description }}</td>
+                                        <td class="draggable">{{ item.description }}</td>
                                         <td>
                                             <a href="{% url 'offerings-edit' item.id %}" class="btn btn-warning btn-sm">Edit</a>
                                         </td>
@@ -281,11 +281,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
 <script>
-
     // Enable drag-and-drop sorting
     const sortable = new Sortable(document.getElementById('sortable-table'), {
         animation: 150, // Animation speed in ms
         ghostClass: 'bg-warning', // Highlighted class for the dragged row
+        handle: '.draggable', // Allow dragging only on elements with the 'draggable' class
         onEnd: function () {
             updateRowNumbers(); // Update row numbers after sorting
             saveNewOrder(); // Send AJAX request to save new order
@@ -301,59 +301,59 @@
     }
 
     function saveNewOrder() {
-    const rows = document.querySelectorAll("#sortable-table tr");
-    const orderData = Array.from(rows).map((row, index) => ({
-        id: row.dataset.id.trim(), // Fetch the actual ID from the data-id attribute
-        order: index + 1,          // Set the order based on the row's position
-    }));
+        const rows = document.querySelectorAll("#sortable-table tr");
+        const orderData = Array.from(rows).map((row, index) => ({
+            id: row.dataset.id.trim(), // Fetch the actual ID from the data-id attribute
+            order: index + 1,          // Set the order based on the row's position
+        }));
 
-    fetch("{% url 'update_order' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}", // Ensure CSRF token is included
-        },
-        body: JSON.stringify(orderData),
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error("Failed to update order.");
-            }
-            return response.json();
+        fetch("{% url 'update_order' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}", // Ensure CSRF token is included
+            },
+            body: JSON.stringify(orderData),
         })
-        .then((data) => {
-            console.log("Order updated successfully:", data);
-        })
-        .catch((error) => {
-            console.error("Error updating order:", error);
-        });
-}
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to update order.");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Order updated successfully:", data);
+            })
+            .catch((error) => {
+                console.error("Error updating order:", error);
+            });
+    }
 
-    document.querySelectorAll('.delete-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
+    // Delete button click handling
+    document.querySelectorAll('.delete-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
             const itemId = this.getAttribute('data-id');
             const itemName = this.getAttribute('data-name');
-            
+
             // Update modal content
             document.getElementById('deleteItemName').innerText = itemName;
             document.getElementById('deleteConfirmBtn').setAttribute('data-id', itemId);
-            
+
             // Check if the modal opens properly (debugging step)
             console.log("Delete button clicked. Item ID: " + itemId + ", Item Name: " + itemName);
         });
     });
 
     // Attach click event to the "Delete" button in the modal
-    document.getElementById('deleteConfirmBtn').addEventListener('click', function() {
+    document.getElementById('deleteConfirmBtn').addEventListener('click', function () {
         const itemId = this.getAttribute('data-id');
         const form = document.getElementById('deleteForm-' + itemId);
-        
+
         // Debugging the form submission (check if the correct form is being selected)
         console.log("Form is submitting for Item ID: " + itemId);
 
         form.submit();
     });
-
 
     document.querySelectorAll('.delete-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -369,8 +369,6 @@
         var form = document.getElementById('deleteForm-' + itemId);
         form.submit();
     });
-
-
 </script>
 
 

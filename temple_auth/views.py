@@ -96,8 +96,6 @@ def update_temple_bill(request):
     if request.method == "POST":
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-        temple.temple_bill_title = request.POST.get('temple_bill_title', '')
-        temple.temple_bill_mid = request.POST.get('temple_bill_mid', '')
         temple.temple_bill_footer = request.POST.get('temple_bill_footer', '')
         temple.save()
         messages.success(request, "Bill details updated successfully!")

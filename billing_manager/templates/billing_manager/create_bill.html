@@ -90,7 +90,7 @@
                                                         <select name="pooja[]" class="form-control pooja-select" id="pooja-select" onchange="updateStaticPoojaPrice()" required>
                                                             <option value="" disabled selected>വഴിപാട്</option>
                                                             {% for vazhipadu in vazhipadu_items %}
-                                                            <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
+                                                            <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
                                                             {% endfor %}
                                                         </select>    
                                                     </div>
@@ -223,7 +223,7 @@
                     <select name="pooja[]" class="form-control pooja-select" required>
                         <option value="" disabled selected>വഴിപാട്</option>
                         {% for vazhipadu in vazhipadu_items %}
-                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} {{ vazhipadu.name }} ({{ vazhipadu.price }})</option>
+                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
                         {% endfor %}
                     </select>    
                 </div>

@@ -147,31 +147,6 @@ label.fw-bold {
                   <form method="POST" action="{% url 'update_temple_bill' %}" class="p-3 border rounded bg-light shadow-sm">
                     {% csrf_token %}
                     
-                    <div class="row mb-3 align-items-center">
-                      <label for="templeBillTitle" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Header</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input 
-                          name="temple_bill_title" 
-                          type="text" 
-                          class="form-control" 
-                          id="templeBillTitle" 
-                          placeholder="Enter Bill Header" 
-                          value="{{ temple.temple_bill_title }}">
-                      </div>
-                    </div>
-                    
-                    <div class="row mb-3 align-items-center">
-                      <label for="templeBillMid" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Mid Content</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input 
-                          name="temple_bill_mid" 
-                          type="text" 
-                          class="form-control" 
-                          id="templeBillMid" 
-                          placeholder="Enter Bill Mid Content" 
-                          value="{{ temple.temple_bill_mid }}">
-                      </div>
-                    </div>
                     
                     <div class="row mb-3 align-items-center">
                       <label for="templeBillFooter" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Footer</label>
