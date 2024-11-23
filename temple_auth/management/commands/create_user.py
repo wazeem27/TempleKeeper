@@ -6,9 +6,9 @@ class Command(BaseCommand):
     help = 'Create predefined sample users and assign them to groups, also creating UserProfile for each user.'
 
     sample_users = [
-        {"username": "temple_admin", "password": "password123", "group": "Temple Admin"},
-        {"username": "central_admin", "password": "password123", "group": "Central Admin"},
-        {"username": "billing_assistant", "password": "password123", "group": "Billing Assistant"},
+        {"username": "temple_admin", "password": "TempleAdmin1@New", "group": "Temple Admin"},
+        {"username": "central_admin", "password": "password@123", "group": "Central Admin"},
+        {"username": "billing_assistant", "password": "Biller@123", "group": "Billing Assistant"},
     ]
 
     def handle(self, *args, **kwargs):
