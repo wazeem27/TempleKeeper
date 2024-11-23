@@ -177,9 +177,10 @@
                                 <thead>
                                     <tr>
                                         <th>Sl no:</th>
+                                        <th scope="col">Order-Up/Down</th>
                                         <th scope="col">വഴിപ്പാട്</th>
+
                                         <th scope="col">വില</th>
-                                        <th scope="col">Drag</th>
                                         <th scope="col">Edit</th>
                                         <th scope="col">Delete</th>
                                     </tr>
@@ -188,9 +189,10 @@
                                     {% for item in offerings %}
                                     <tr data-id="{{ item.id }}">
                                         <td class="sl-no">{{ forloop.counter }}</td>
+                                        <td class="draggable">{{ item.description }}</td>
+
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.price }}</td>
-                                        <td class="draggable">{{ item.description }}</td>
                                         <td>
                                             <a href="{% url 'offerings-edit' item.id %}" class="btn btn-warning btn-sm">Edit</a>
                                         </td>

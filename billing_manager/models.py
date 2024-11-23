@@ -13,9 +13,13 @@ class Bill(models.Model):
     vazhipadu_offerings = models.ManyToManyField(VazhipaduOffering, through='BillVazhipaduOffering')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Total Amount")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    parent_bill = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f"Bill #{self.id} for {self.user.username} at {self.temple.temple_name}"
+    
+    def is_split(self):
+        return self.parent_bill is not None
 
     class Meta:
         ordering = ['-created_at']

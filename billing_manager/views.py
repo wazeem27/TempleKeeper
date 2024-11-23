@@ -127,89 +127,151 @@ class BillListView(LoginRequiredMixin, ListView):
         return context
 
 
+
 @login_required
 def submit_billing(request: HttpRequest) -> HttpResponse:
-    """Handle billing submission and create the associated records for the specified temple."""
+    """Handle billing submission and create associated records for the specified temple."""
     if request.method == 'POST':
-        # Extract and validate input data
-
-        # Retrieve the current temple from the session
+        # Retrieve temple from the session
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-        # Prices from the POST data
-        pooja_price = sum(map(float, request.POST.getlist('pooja_price[]')))
-        thing_price = sum(map(float, request.POST.getlist('thing_price[]')))
 
+        # Extract price lists from POST data
+        pooja_price_list = list(map(float, request.POST.getlist('pooja_price[]')))
+        thing_price_list = list(map(float, request.POST.getlist('thing_price[]')))
 
-        # Begin a transaction to ensure atomicity
+        # Retrieve user profile for split bill preference
+        user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple_id)
+
+        # Begin transaction to ensure atomicity
         try:
             with transaction.atomic():
-                # Create the bill instance
-                bill = Bill.objects.create(
-                    user=request.user,
-                    temple=temple,
-                    total_amount=Decimal(pooja_price + thing_price)
-                )
+                if user_profile.is_split_bill:
+                    # Create separate bills for each offering or item
+                    if request.POST.getlist('pooja[]'):
+                        names = request.POST.getlist('name[]')
+                        vazhipadu_list = request.POST.getlist('pooja[]')
+                        stars = request.POST.getlist('nakshatram[]')
+                        vazhipadu_prices = request.POST.getlist('pooja_price[]')
 
-                # Handle vazhipadu offerings if present
-                if request.POST.getlist('pooja[]'):
-                    names = request.POST.getlist('name[]')
-                    vazhipadu_list = request.POST.getlist('pooja[]')
-                    stars = request.POST.getlist('nakshatram[]')
-                    vazhipadu_prices = request.POST.getlist('pooja_price[]')
+                        for index, vazhipadu_name in enumerate(vazhipadu_list):
+                            if vazhipadu_name.strip():
+                                vazhipadu_offering = get_object_or_404(
+                                    VazhipaduOffering, name=vazhipadu_name, temple=temple)
+                                price = Decimal(vazhipadu_prices[index])
+                                customer_star = get_object_or_404(Star, name=stars[index])
 
-                    # Create BillVazhipaduOffering instances for each offering
-                    for index, vazhipadu_name in enumerate(vazhipadu_list):
-                        if vazhipadu_name.strip():  # Validate not empty
-                            vazhipadu_offering = get_object_or_404(VazhipaduOffering, name=vazhipadu_name, temple=temple)
-                            price = Decimal(vazhipadu_prices[index])
-                            customer_star = get_object_or_404(Star, name=stars[index])
+                                # Create a new bill for this offering
+                                bill = Bill.objects.create(
+                                    user=request.user,
+                                    temple=temple,
+                                    total_amount=price
+                                )
 
-                            BillVazhipaduOffering.objects.create(
-                                bill=bill,
-                                vazhipadu_offering=vazhipadu_offering,
-                                person_name=names[index],
-                                person_star=customer_star,
-                                quantity=1,  # Default to 1 if not specified
-                                price=price
-                            )
+                                # Create associated BillVazhipaduOffering record
+                                BillVazhipaduOffering.objects.create(
+                                    bill=bill,
+                                    vazhipadu_offering=vazhipadu_offering,
+                                    person_name=names[index],
+                                    person_star=customer_star,
+                                    quantity=1,
+                                    price=price
+                                )
 
-                # Handle inventory items if present
-                if request.POST.getlist('thing[]'):
-                    thing_names = request.POST.getlist('thing[]')
-                    thing_quantities = request.POST.getlist('quantity[]')
-                    thing_prices = request.POST.getlist('thing_price[]')
+                    if request.POST.getlist('thing[]'):
+                        thing_names = request.POST.getlist('thing[]')
+                        thing_quantities = request.POST.getlist('quantity[]')
+                        thing_prices = request.POST.getlist('thing_price[]')
 
-                    # Create BillInventoryItem instances for each inventory item
-                    for index, thing_name in enumerate(thing_names):
-                        if thing_name.strip():  # Validate not empty
-                            inventory_item = get_object_or_404(InventoryItem, name=thing_name, temple=temple)
-                            quantity = int(thing_quantities[index])
-                            price = Decimal(thing_prices[index])
+                        for index, thing_name in enumerate(thing_names):
+                            if thing_name.strip():
+                                inventory_item = get_object_or_404(
+                                    InventoryItem, name=thing_name, temple=temple)
+                                quantity = int(thing_quantities[index])
+                                price = Decimal(thing_prices[index])
 
-                            BillInventoryItem.objects.create(
-                                bill=bill,
-                                inventory_item=inventory_item,
-                                quantity=quantity,
-                                price=price
-                            )
+                                # Create a new bill for this inventory item
+                                bill = Bill.objects.create(
+                                    user=request.user,
+                                    temple=temple,
+                                    total_amount=price * quantity
+                                )
 
-                # Commit the bill instance creation after both vazhipadu and inventory items are handled
-                bill.save()
+                                # Create associated BillInventoryItem record
+                                BillInventoryItem.objects.create(
+                                    bill=bill,
+                                    inventory_item=inventory_item,
+                                    quantity=quantity,
+                                    price=price
+                                )
 
-                # Clear session data on successful submission
-                request.session.pop('billing_data', None)
+                    messages.success(request, "Separate bills have been successfully recorded.")
+                    return redirect('bill-list')
 
-                messages.success(request, "Billing details have been successfully recorded.")
-                return redirect(reverse('bill-detail', kwargs={'pk': bill.id}))  # Redirect to the bill detail page
+                else:
+                    # Create a single consolidated bill
+                    total_pooja_price = sum(pooja_price_list)
+                    total_thing_price = sum(thing_price_list)
+                    bill = Bill.objects.create(
+                        user=request.user,
+                        temple=temple,
+                        total_amount=Decimal(total_pooja_price + total_thing_price)
+                    )
+
+                    # Add offerings to the single bill
+                    if request.POST.getlist('pooja[]'):
+                        names = request.POST.getlist('name[]')
+                        vazhipadu_list = request.POST.getlist('pooja[]')
+                        stars = request.POST.getlist('nakshatram[]')
+                        vazhipadu_prices = request.POST.getlist('pooja_price[]')
+
+                        for index, vazhipadu_name in enumerate(vazhipadu_list):
+                            if vazhipadu_name.strip():
+                                vazhipadu_offering = get_object_or_404(
+                                    VazhipaduOffering, name=vazhipadu_name, temple=temple)
+                                price = Decimal(vazhipadu_prices[index])
+                                customer_star = get_object_or_404(Star, name=stars[index])
+
+                                BillVazhipaduOffering.objects.create(
+                                    bill=bill,
+                                    vazhipadu_offering=vazhipadu_offering,
+                                    person_name=names[index],
+                                    person_star=customer_star,
+                                    quantity=1,
+                                    price=price
+                                )
+
+                    # Add inventory items to the single bill
+                    if request.POST.getlist('thing[]'):
+                        thing_names = request.POST.getlist('thing[]')
+                        thing_quantities = request.POST.getlist('quantity[]')
+                        thing_prices = request.POST.getlist('thing_price[]')
+
+                        for index, thing_name in enumerate(thing_names):
+                            if thing_name.strip():
+                                inventory_item = get_object_or_404(
+                                    InventoryItem, name=thing_name, temple=temple)
+                                quantity = int(thing_quantities[index])
+                                price = Decimal(thing_prices[index])
+
+                                BillInventoryItem.objects.create(
+                                    bill=bill,
+                                    inventory_item=inventory_item,
+                                    quantity=quantity,
+                                    price=price
+                                )
+
+                    messages.success(request, "Billing details have been successfully recorded.")
+                    return redirect(reverse('bill-detail', kwargs={'pk': bill.id}))
 
         except Exception as e:
-            # If any exception occurs, rollback the transaction to prevent partial saves
+            # Rollback transaction on error
             messages.error(request, f"An error occurred while processing the billing: {e}")
-            return redirect('add-bill')  # Redirect to an error page or billing form if something goes wrong
+            return redirect('add-bill')
 
     messages.error(request, "Invalid request method.")
-    return redirect('add-bill')  # Handle non-POST request
+    return redirect('add-bill')
+
 
 
 
@@ -236,7 +298,7 @@ class ReceiptView(LoginRequiredMixin, DetailView):
         user_profile = UserProfile.objects.filter(user=self.request.user)[0]
         if user_profile.is_split_bill:
             # If the user has selected split billing, return the split receipt template
-            return ["billing_manager/split_receipt.html"]
+            return ["billing_manager/receipt.html"]
         else:
             # Otherwise, return the standard receipt template
             return ["billing_manager/receipt.html"]
