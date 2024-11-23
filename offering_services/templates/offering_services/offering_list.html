@@ -177,19 +177,19 @@
                                 <thead>
                                     <tr>
                                         <th>Sl no:</th>
-                                        <th scope="col">Order-Up/Down</th>
                                         <th scope="col">വഴിപ്പാട്</th>
 
                                         <th scope="col">വില</th>
                                         <th scope="col">Edit</th>
                                         <th scope="col">Delete</th>
+                                        <th scope="col">Order-Up/Down</th>
+
                                     </tr>
                                 </thead>
                                 <tbody id="sortable-table">
                                     {% for item in offerings %}
                                     <tr data-id="{{ item.id }}">
                                         <td class="sl-no">{{ forloop.counter }}</td>
-                                        <td class="draggable">{{ item.description }}</td>
 
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.price }}</td>
@@ -208,6 +208,8 @@
                                                 <button type="submit" class="btn btn-danger">Delete</button>
                                             </form>
                                         </td>
+                                        <td class="draggable"> </td>
+
                                     </tr>
                                     {% endfor %}
                                 </tbody>

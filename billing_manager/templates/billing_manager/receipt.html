@@ -142,12 +142,15 @@
         <p class="text-center mb-1 mt-1">{{ temple.temple_bill_mid }}</p>
 
         <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
+
+        <p class="float-end">തിയതി: {{ bill.created_at|date:"d/m/Y" }}</p>
+        <br>
+
         <div class="line"></div>
 
         <!-- Receipt Number and Date -->
         <p class="mb-1">
             <span>രസീത് നം: {{ bill.id }}</span> 
-            <span class="float-end">തിയതി: {{ bill.created_at|date:"d/m/Y" }}</span>
         </p>
 
 
