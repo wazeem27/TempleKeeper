@@ -5,14 +5,10 @@ from .models import VazhipaduOffering
 class VazhipaduOfferingForm(forms.ModelForm):
     class Meta:
         model = VazhipaduOffering
-        fields = ['name', 'price', 'description']  # Specify fields to include in the form
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter description here...'}),
-        }
+        fields = ['name', 'price']  # Specify fields to include in the form
         labels = {
             'name': 'Offering Name',
             'price': 'Price',
-            'description': 'Description',
         }
 
     def clean_name(self):
