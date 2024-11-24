@@ -129,8 +129,7 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
         temple = get_object_or_404(Temple, id=temple_id)
 
         # Extract price lists from POST data
-        pooja_price_list = request.POST.getlist('pooja_price[]')
-        pooja_price_list = 0 if not bool(pooja_price_list[0]) else list(map(float,pooja_price_list)) 
+        pooja_price_list = list(map(float, request.POST.getlist('pooja_price[]')))
         other_price_list = list(map(float, request.POST.getlist('other_price[]')))
 
 
