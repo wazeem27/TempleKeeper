@@ -5,6 +5,8 @@ from django.db import transaction
 from django.contrib import messages
 from django.urls import reverse
 from decimal import Decimal
+from datetime import datetime, time
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -59,16 +61,39 @@ class BillListView(LoginRequiredMixin, ListView):
         """
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
+
+        # Get the filter parameters from the GET request
+        start_date_str = self.request.GET.get('start_date', '')
+        end_date_str = self.request.GET.get('end_date', '')
+
+        start_date = parse_date(start_date_str) if start_date_str else None
+        end_date = parse_date(end_date_str) if end_date_str else None
         
         is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
         
+        # Convert to timezone-aware datetime if needed
+        if start_date:
+            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))  # 00:00:00
+        if end_date:
+            # Set end_date to the last moment of the day (23:59:59)
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
+
         if is_billing_assistant:
             # Only bills related to the current user (Billing Assistant)
             bills = Bill.objects.filter(user=self.request.user).order_by('id')
+            if start_date:
+                bills = bills.filter(created_at__gte=start_date)
+            if end_date:
+                bills = bills.filter(created_at__lte=end_date)
         else:
             # All bills if not a Billing Assistant
             bills = Bill.objects.all().order_by('id')
-        
+
+            if start_date:
+                bills = bills.filter(created_at__gte=start_date)
+            if end_date:
+                bills = bills.filter(created_at__lte=end_date)
+
         return bills
 
 
