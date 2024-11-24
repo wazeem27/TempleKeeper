@@ -109,6 +109,8 @@ class BillListView(LoginRequiredMixin, ListView):
         # Use paginated bills for the current page
         bill_dataset = []
         bills = []
+        is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
+        context['is_billing_assistant'] = is_billing_assistant
 
         
         for bill in context['bills']:
@@ -488,6 +490,9 @@ def cancel_bill(request, bill_id):
     if request.method == "POST":
         bill_id = int(request.POST.get('bill_id'))
         reason = request.POST.get("reason")
+        if not request.user.groups.filter(name='Temple Admin').exists() and not request.user.groups.filter(name='Central Admin').exists() :
+            messages.error(request, "You dont have privilege to cancel the bill.")
+            return redirect("bill-list")
 
         try:
             bill = Bill.objects.get(id=bill_id)

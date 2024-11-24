@@ -196,6 +196,7 @@
                                                        <i class="bi bi-printer"></i>
                                                     </a>
                                                 </div>
+                                                {% if not is_billing_assistant %}
                                                 <div class="btn-group">
                                                     <a href="#" 
                                                         class="btn btn-sm btn-danger {% if bill.is_cancelled %}disabled{% endif %}" 
@@ -206,11 +207,12 @@
                                                         <i class="bi bi-x-circle"></i>
                                                         </a>
                                                 </div>
+                                                {% endif %}
                                             
 
 
                                 <!--Modal View for Cancel Bill-->
-
+                                {% if not is_billing_assistant %}
                                 <!-- Responsive Modal HTML -->
                                 <div class="modal fade" id="cancelBillModal" tabindex="-1" aria-labelledby="cancelBillModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -248,6 +250,7 @@
                                     </div>
                                 </div>
                                 <!--End Modal View-->
+                                {% endif %}
 
 
 
