@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpRequest
-from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic import TemplateView, ListView, DetailView, View
 from django.db import transaction
 from django.contrib import messages
 from django.urls import reverse
 from decimal import Decimal
+import csv
 from datetime import datetime, time
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -398,3 +399,81 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
         context['bills'] = bill_list
 
         return context
+
+
+
+class BillExportView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        # Get filter parameters from the request
+        start_date_str = request.GET.get('start_date', '')
+        end_date_str = request.GET.get('end_date', '')
+        search_query = request.GET.get('q', '')
+
+        start_date = parse_date(start_date_str) if start_date_str else None
+        end_date = parse_date(end_date_str) if end_date_str else None
+
+        # Filter bills based on the same logic as the get_queryset method
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+
+        is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
+        
+        bills = Bill.objects.all()
+
+        if is_billing_assistant:
+            bills = bills.filter(user=request.user)
+        
+        if start_date:
+            bills = bills.filter(created_at__gte=start_date)
+        if end_date:
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
+            bills = bills.filter(created_at__lte=end_date)
+
+        # Prepare the CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="bills_export.csv"'
+
+        writer = csv.writer(response)
+        
+        # Write the header row
+        writer.writerow([
+            'Receipt ID', 'Sub Receipt', 'Created At', 'Created By', 
+            'Vazhipadu Name', 'Name', 'Star', 'Amount'
+        ])
+
+        # Write the data rows
+        sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
+        for bill in bills:
+            counter = 0
+            vazhipadu_list = bill.bill_vazhipadu_offerings.all()
+            
+            for vazhipadu_bill in vazhipadu_list:
+                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
+                writer.writerow([
+                    bill.id,
+                    subreceipt,
+                    localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
+                    bill.user.username,
+                    vazhipadu_bill.vazhipadu_offering.name,
+                    vazhipadu_bill.person_name,
+                    vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
+                    vazhipadu_bill.price,
+                ])
+                counter += 1
+
+            other_list = bill.bill_other_items.all()
+            for other_bill in other_list:
+                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
+                writer.writerow([
+                    bill.id,
+                    subreceipt,
+                    localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
+                    bill.user.username,
+                    other_bill.vazhipadu,
+                    other_bill.person_name,
+                    other_bill.person_star.name if other_bill.person_star else "",
+                    other_bill.price,
+                ])
+                counter += 1
+
+        return response
