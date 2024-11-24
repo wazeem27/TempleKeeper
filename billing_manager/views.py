@@ -52,6 +52,26 @@ class BillListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
 
+    def get_queryset(self):
+        """
+        Returns a filtered queryset for the bills. This method is used to provide the base
+        queryset for filtering but we will manually construct and paginate the dataset.
+        """
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        
+        is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
+        
+        if is_billing_assistant:
+            # Only bills related to the current user (Billing Assistant)
+            bills = Bill.objects.filter(user=self.request.user).order_by('id')
+        else:
+            # All bills if not a Billing Assistant
+            bills = Bill.objects.all().order_by('id')
+        
+        return bills
+
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -61,17 +81,11 @@ class BillListView(LoginRequiredMixin, ListView):
         context['temple'] = temple
 
         # Use paginated bills for the current page
-        bills = context['object_list']
         bill_dataset = []
-        is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
         bills = []
-        if is_billing_assistant:
-            bills = Bill.objects.filter(user=self.request.user).order_by('id')
-        else:
-            bills = Bill.objects.all().order_by('id')
 
         
-        for bill in bills.order_by('id'):
+        for bill in context['bills']:
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
             counter = 0
@@ -104,7 +118,7 @@ class BillListView(LoginRequiredMixin, ListView):
                     'created_by': bill.user.username,
                     'vazhipadu_name': other_bill.vazhipadu,
                     'name': other_bill.person_name,
-                    'star': other_bill.person_star.name if vazhipadu_bill.person_star else "",
+                    'star': other_bill.person_star.name if other_bill.person_star.name else "",
                     'amount': other_bill.price,
                 }
                 bill_dataset.append(bill_entry)       
@@ -129,7 +143,8 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
         temple = get_object_or_404(Temple, id=temple_id)
 
         # Extract price lists from POST data
-        pooja_price_list = list(map(float, request.POST.getlist('pooja_price[]')))
+        pooja_price_list = request.POST.getlist('pooja_price[]')
+        pooja_price_list = 0 if not bool(pooja_price_list[0]) else list(map(float,pooja_price_list)) 
         other_price_list = list(map(float, request.POST.getlist('other_price[]')))
 
 
