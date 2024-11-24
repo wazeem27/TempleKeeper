@@ -60,6 +60,8 @@ class Bill(models.Model):
         default=False, 
         verbose_name="Is Printed"
     )
+    is_cancelled = models.BooleanField(default=False)
+    cancel_reason = models.CharField(max_length=250, default="", blank=True)
 
     def __str__(self):
         return f"Bill #{self.id} for {self.user.username} at {self.temple.temple_name}"

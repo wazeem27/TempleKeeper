@@ -63,8 +63,29 @@
     }
 }
 
+.cancelled {
+    text-decoration: line-through;
+}
+
+.cancelled-row {
+    background-color: #f5f5f5; /* Light grey */
+    color: #6c757d; /* Muted text color */
+}
 
 {% endblock %}
+
+
+{% block custom-style %}
+
+.cancelled-row {
+    background-color: red; /* Light grey */
+    color: red; /* Muted text color */
+}
+{% endblock %}
+
+
+
+
 
 
 {% block main-content %}
@@ -78,6 +99,13 @@
                 <li class="breadcrumb-item active">Billing Report</li>
             </ol>
         </nav>
+        {% if messages %}
+        <div class="alert alert-success" role="alert">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
     </div><!-- End Page Title -->
 
     <section class="section dashboard">
@@ -142,28 +170,88 @@
                                         <th>Customer Name</th>
                                         <th>Star</th>
                                         <th>Price</th>
+                                        <th>Comment</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% if bills %}
                                         {% for bill in bills %}
-                                        <tr class="table-light">
-                                            <td><strong>{{ bill.receipt }}</strong></td>
-                                            <td>{{ bill.sub_receipt }}</td>
-                                            <td><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
-                                            <td>{{ bill.created_at }}</td>
-                                            <td>{{ bill.vazhipadu_name }}</td>
-                                            <td>{{ bill.name }}</td>
-                                            <td>{{ bill.star }}</td>
-                                            <td><strong class="text-success">₹{{ bill.amount }}</strong></td>
-                                            <td>
+                                        <tr class="table-light" {% if bill.is_cancelled %}style="text-decoration: line-through;"{% endif %}>
+                                            <td  {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}><strong>{{ bill.receipt }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.sub_receipt }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.created_at }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.vazhipadu_name }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.name }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.star }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>
                                                 <div class="btn-group">
                                                     <a href="{% url 'receipt' bill.receipt %}" 
-                                                       class="btn btn-sm btn-success" target="_blank">
+                                                       class="btn btn-sm btn-success {% if bill.is_cancelled %}disabled{% endif %}" 
+                                                       target="_blank"
+                                                       {% if bill.is_cancelled %}aria-disabled="true"{% endif %}>
                                                        <i class="bi bi-printer"></i>
                                                     </a>
                                                 </div>
+                                                <div class="btn-group">
+                                                    <a href="#" 
+                                                        class="btn btn-sm btn-danger {% if bill.is_cancelled %}disabled{% endif %}" 
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#cancelBillModal"
+                                                        title="Cancel Bill"
+                                                        data-id="{{ bill.receipt }}">
+                                                        <i class="bi bi-x-circle"></i>
+                                                        </a>
+                                                </div>
+                                            
+
+
+                                <!--Modal View for Cancel Bill-->
+
+                                <!-- Responsive Modal HTML -->
+                                <div class="modal fade" id="cancelBillModal" tabindex="-1" aria-labelledby="cancelBillModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content shadow-lg">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title" id="cancelBillModalLabel"><i class="bi bi-exclamation-circle"></i> Confirm Bill Cancellation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="fs-5 text-center">Are you sure you want to cancel this bill? This action cannot be undone.</p>
+                                                <form id="cancelBillForm" method="POST" action="{% url 'cancel-bill' bill.receipt %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="bill_id" id="bill_id">
+                                                    <div class="mb-3">
+                                                        <label for="reason" class="form-label fw-bold">Reason for Cancellation</label>
+                                                        <textarea 
+                                                            class="form-control" 
+                                                            id="reason" 
+                                                            name="reason" 
+                                                            rows="4" 
+                                                            placeholder="Please provide a reason..." 
+                                                            required></textarea>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            <i class="bi bi-arrow-left-circle"></i> Go Back
+                                                        </button>
+                                                        <button type="submit" class="btn btn-danger">
+                                                            <i class="bi bi-x-circle"></i> Confirm Cancellation
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--End Modal View-->
+
+
+
+
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -225,7 +313,14 @@
 <script src="{% static 'assets/js/simple-datatables.js' %}"></script>
 
 <script>
-
+    $('#cancelBillModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);  // The button that triggered the modal
+        var billId = button.data('id');       // Get the bill's receipt ID from the button's data-id
+        var modal = $(this);
+        
+        // Set the value of the hidden input field with id "bill_id" to the selected bill's receipt ID
+        modal.find('#bill_id').val(billId);
+    });
 
 function filterTable() {
     const input = document.getElementById("tableSearch");

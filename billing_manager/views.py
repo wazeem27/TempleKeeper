@@ -129,6 +129,8 @@ class BillListView(LoginRequiredMixin, ListView):
                     'name': vazhipadu_bill.person_name,
                     'star': vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
                     'amount': vazhipadu_bill.price,
+                    'is_cancelled': bill.is_cancelled,
+                    'cancel_reason': bill.cancel_reason
                 }
                 bill_dataset.append(bill_entry)
                 counter +=1
@@ -146,6 +148,9 @@ class BillListView(LoginRequiredMixin, ListView):
                     'name': other_bill.person_name,
                     'star': other_bill.person_star.name if other_bill.person_star.name else "",
                     'amount': other_bill.price,
+                    'is_cancelled': bill.is_cancelled,
+                    'cancel_reason': bill.cancel_reason
+
                 }
                 bill_dataset.append(bill_entry)       
                 counter += 1     
@@ -476,3 +481,25 @@ class BillExportView(LoginRequiredMixin, View):
                 counter += 1
 
         return response
+
+
+@login_required
+def cancel_bill(request, bill_id):
+    if request.method == "POST":
+        bill_id = int(request.POST.get('bill_id'))
+        reason = request.POST.get("reason")
+
+        try:
+            bill = Bill.objects.get(id=bill_id)
+
+            # Update the cancellation status and reason
+            bill.is_cancelled = True
+            bill.cancel_reason = reason if reason else ""
+            bill.save()
+
+            messages.success(request, f"Bill with Rceipt No: {bill.id} was successfully cancelled.")
+
+        except Bill.DoesNotExist:
+            messages.error(request, "The bill does not exist.")
+
+    return redirect("bill-list")  # Replace with the desired redirect URL
