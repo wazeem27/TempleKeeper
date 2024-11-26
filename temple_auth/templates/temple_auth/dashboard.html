@@ -29,7 +29,7 @@
 
       <!-- Sales Card -->
       <div class="col-xxl-4 col-md-6 mb-4">
-        <a href="{% url 'ofering_main' %}" class="text-decoration-none">
+        <a href="{% url 'offerings-list' %}" class="text-decoration-none">
           <div class="card info-card sales-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
             <div class="card-body text-center">
               <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Vazhipadu List</h5> <!-- Larger font size -->
@@ -60,7 +60,7 @@
         </a>
       </div>
 
-      {% if is_billing_assistant %}
+      {% if not is_billing_assistant %}
       <!-- New Card 2 -->
       <div class="col-xxl-4 col-md-6 mb-4">
         <a href="#" class="text-decoration-none">
