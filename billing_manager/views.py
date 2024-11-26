@@ -66,7 +66,7 @@ class BillListView(LoginRequiredMixin, ListView):
         # Get the filter parameters from the GET request
         start_date_str = self.request.GET.get('start_date', '')
         end_date_str = self.request.GET.get('end_date', '')
-        requested_biller = self.request.GET.getlist('req_biller[]')
+        requested_biller = self.request.GET.getlist('req_biller')
 
 
         start_date = parse_date(start_date_str) if start_date_str else None
@@ -93,7 +93,7 @@ class BillListView(LoginRequiredMixin, ListView):
             # All bills if not a Billing Assistant
             bills = Bill.objects.filter(temple=temple).order_by('id')
             if requested_biller:
-                bills.filter(user__username=requested_biller[0])
+                blls = bills.filter(user__username=requested_biller[0])
 
             if start_date:
                 bills = bills.filter(created_at__gte=start_date)
