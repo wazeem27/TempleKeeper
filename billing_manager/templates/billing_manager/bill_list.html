@@ -123,6 +123,24 @@
                                 <input type="text" id="tableSearch" class="form-control form-control-sm" 
                                        placeholder="Search in table..." onkeyup="filterTable()">
                             </div>
+                            <div class="col-12 col-sm-2 text-center p-3">
+                                <select name="req_vazhipadu" class="form-control pooja-select" >
+                                    <option value="" disabled selected>filter by vazhipadu</option>
+                                    {% for vazhipadu in vazhipadu_items %}
+                                    <option value="{{ vazhipadu }}">{{ vazhipadu }}</option>
+                                    {% endfor %}
+                                </select>    
+                            </div>
+                            {% if not is_billing_assistant %}
+                            <div class="col-12 col-sm-2 text-center p-3">
+                                <select name="req_biller" class="form-control pooja-select" required>
+                                    <option value="" disabled selected>Filter by biller</option>
+                                    {% for biller in user_list %}
+                                    <option value="{{ biller }}">{{ biller }}</option>
+                                    {% endfor %}
+                                </select>    
+                            </div>
+                            {% endif %}
                             <!-- Date Range Fields -->
                             <div class="col-12 col-md-auto">
                                 <input type="date" name="start_date" class="form-control form-control-sm" 
@@ -178,16 +196,16 @@
                                     {% if bills %}
                                         {% for bill in bills %}
                                         <tr class="table-light" {% if bill.is_cancelled %}style="text-decoration: line-through;"{% endif %}>
-                                            <td  {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}><strong>{{ bill.receipt }}</strong></td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.sub_receipt }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.created_at }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.vazhipadu_name }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.name }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>{{ bill.star }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #efe8e8;"{% endif %}>
+                                            <td  {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><strong>{{ bill.receipt }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.sub_receipt }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.created_at }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.vazhipadu_name }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.name }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.star }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>
                                                 <div class="btn-group">
                                                     <a href="{% url 'receipt' bill.receipt %}" 
                                                        class="btn btn-sm btn-success {% if bill.is_cancelled %}disabled{% endif %}" 

@@ -52,7 +52,7 @@ class BillListView(LoginRequiredMixin, ListView):
     model = Bill
     template_name = 'billing_manager/bill_list.html'
     context_object_name = 'bills'
-    paginate_by = 10
+    paginate_by = 100
 
 
     def get_queryset(self):
@@ -66,6 +66,8 @@ class BillListView(LoginRequiredMixin, ListView):
         # Get the filter parameters from the GET request
         start_date_str = self.request.GET.get('start_date', '')
         end_date_str = self.request.GET.get('end_date', '')
+        requested_biller = self.request.GET.getlist('req_biller[]')
+
 
         start_date = parse_date(start_date_str) if start_date_str else None
         end_date = parse_date(end_date_str) if end_date_str else None
@@ -81,14 +83,17 @@ class BillListView(LoginRequiredMixin, ListView):
 
         if is_billing_assistant:
             # Only bills related to the current user (Billing Assistant)
-            bills = Bill.objects.filter(user=self.request.user).order_by('id')
+            bills = Bill.objects.filter(temple=temple, user=self.request.user).order_by('id')
             if start_date:
                 bills = bills.filter(created_at__gte=start_date)
             if end_date:
                 bills = bills.filter(created_at__lte=end_date)
+
         else:
             # All bills if not a Billing Assistant
-            bills = Bill.objects.all().order_by('id')
+            bills = Bill.objects.filter(temple=temple).order_by('id')
+            if requested_biller:
+                bills.filter(user__username=requested_biller[0])
 
             if start_date:
                 bills = bills.filter(created_at__gte=start_date)
@@ -158,7 +163,17 @@ class BillListView(LoginRequiredMixin, ListView):
                 counter += 1     
 
         # Add paginated dataset and filters to the context
+        req_vazhipadu = self.request.GET.getlist('req_vazhipadu[]')
+        if req_vazhipadu:
+            bill_dataset = [bill for bill in bill_dataset if bill[vazhipadu_name] == req_vazhipadu[0]]
+
+        vazhipadu_items = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
+        context["vazhipadu_items"] = [i.name for i in vazhipadu_items]
+
+
         context['bills'] = bill_dataset
+        user_profiles = UserProfile.objects.filter(temples__id=temple_id)
+        context['user_list'] = [usr_prof.user.username for usr_prof in user_profiles]
         context['search_query'] = self.request.GET.get('q', '')
         context['start_date'] = self.request.GET.get('start_date', '')
         context['end_date'] = self.request.GET.get('end_date', '')
@@ -424,7 +439,7 @@ class BillExportView(LoginRequiredMixin, View):
 
         is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
         
-        bills = Bill.objects.all()
+        bills = Bill.objects.all().order_by('id')
 
         if is_billing_assistant:
             bills = bills.filter(user=request.user)
