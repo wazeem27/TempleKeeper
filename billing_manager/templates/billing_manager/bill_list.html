@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block custom-styles %}
+
 .card {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -81,6 +82,9 @@
     background-color: red; /* Light grey */
     color: red; /* Muted text color */
 }
+
+
+
 {% endblock %}
 
 
@@ -135,7 +139,7 @@
                             {% endif %}
                             <div class="col-12 col-sm-2 text-center p-3">
                                 <select name="req_vazhipadu" class="form-control pooja-select" >
-                                    <option value="" disabled selected>filter by vazhipadu</option>
+                                    <option value="" disabled selected>Filter by vazhipadu</option>
                                     {% for vazhipadu in vazhipadu_items %}
                                     <option value="{{ vazhipadu }}">{{ vazhipadu }}</option>
                                     {% endfor %}

@@ -108,25 +108,15 @@
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
-
-
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-layout-text-window-reverse"></i><span>Inventory</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" href="{% url 'offerings-list' %}">
+          <i class="bi bi-layout-text-window-reverse"></i>
+          <span>Pooja List</span>
         </a>
-        <ul id="tables-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{% url 'offerings-list' %}">
-              <i class="bi bi-circle"></i><span>Pooja List</span>
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'inventory-list' %}">
-              <i class="bi bi-circle"></i><span>Other</span>
-            </a>
-          </li>
-        </ul>
-      </li><!-- End Tables Nav -->
+      </li><!-- End Dashboard Nav -->
+
+
+
 
       <li class="nav-heading">Pages</li>
 
