@@ -163,9 +163,9 @@ class BillListView(LoginRequiredMixin, ListView):
                 counter += 1     
 
         # Add paginated dataset and filters to the context
-        req_vazhipadu = self.request.GET.getlist('req_vazhipadu[]')
+        req_vazhipadu = self.request.GET.getlist('req_vazhipadu')
         if req_vazhipadu:
-            bill_dataset = [bill for bill in bill_dataset if bill[vazhipadu_name] == req_vazhipadu[0]]
+            bill_dataset = [bill for bill in bill_dataset if bill["vazhipadu_name"] == req_vazhipadu[0]]
 
         vazhipadu_items = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
         context["vazhipadu_items"] = [i.name for i in vazhipadu_items]
@@ -176,6 +176,7 @@ class BillListView(LoginRequiredMixin, ListView):
         context['user_list'] = [usr_prof.user.username for usr_prof in user_profiles]
         context['search_query'] = self.request.GET.get('q', '')
         context['start_date'] = self.request.GET.get('start_date', '')
+        context['req_vazhipadu'] = req_vazhipadu[0] if req_vazhipadu else ""
         context['end_date'] = self.request.GET.get('end_date', '')
 
         return context

@@ -133,7 +133,7 @@
                             </div>
                             {% if not is_billing_assistant %}
                             <div class="col-12 col-sm-2 text-center p-3">
-                                <select name="req_biller" class="form-control pooja-select" required>
+                                <select name="req_biller" class="form-control pooja-select" >
                                     <option value="" disabled selected>Filter by biller</option>
                                     {% for biller in user_list %}
                                     <option value="{{ biller }}">{{ biller }}</option>
