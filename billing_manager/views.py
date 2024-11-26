@@ -93,7 +93,7 @@ class BillListView(LoginRequiredMixin, ListView):
             # All bills if not a Billing Assistant
             bills = Bill.objects.filter(temple=temple).order_by('id')
             if requested_biller:
-                blls = bills.filter(user__username=requested_biller[0])
+                bills = bills.filter(user__username=requested_biller[0])
 
             if start_date:
                 bills = bills.filter(created_at__gte=start_date)
