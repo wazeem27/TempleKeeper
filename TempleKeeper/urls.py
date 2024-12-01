@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from temple_auth.views import CustomLoginView, logout_view, temple_selection_view, dashboard_view, whats_new_page, settings_view, update_temple_bill, update_split_receipt
+from temple_auth.views import (CustomLoginView, logout_view, temple_selection_view, dashboard_view,
+                               whats_new_page, settings_view, update_temple_bill, update_split_receipt,
+                               temple_creation_view)
 
 urlpatterns = [
     path('', CustomLoginView.as_view(), name='login'),
@@ -25,10 +27,11 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),
     path('offering/',include('offering_services.urls')),
     path('inventory/',include('temple_inventory.urls')),
+    path('setting/', include('temple_auth.urls')),
     path('billing/',include('billing_manager.urls')),
-    path('admin/', admin.site.urls),
     path('updates/', whats_new_page, name='updates'),
     path('settings/', settings_view, name='settings'),
+    path('create_temple/', temple_creation_view, name='create-temple'),
     path('update_bill_detail/', update_temple_bill, name="update_temple_bill"),
     path('update_split_receipt/', update_split_receipt, name="update_split_receipt"),
     

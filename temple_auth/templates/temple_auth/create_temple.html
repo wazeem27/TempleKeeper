@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Temple</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                        url("{% static 'img/temple_selection.avif' %}") no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .navbar {
+            background: #FFD700; /* Gold color background */
+            padding: 15px;
+        }
+
+        .navbar-brand {
+            color: #4B4B4B; /* Darker color for brand name */
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .navbar .nav-link {
+            color: #4B4B4B; /* Darker color for links */
+            font-weight: 500;
+        }
+
+        .navbar .nav-link:hover {
+            color: #2C2C2C; /* Slightly darker on hover */
+        }
+
+        .card-container {
+            max-width: 800px;
+            margin: 70px auto 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #0a58ca;
+        }
+
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Temple Management</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert 
+            {% if message.tags == 'success' %}alert-success{% endif %}
+            {% if message.tags == 'error' %}alert-danger{% endif %}
+            {% if message.tags == 'warning' %}alert-warning{% endif %}
+            {% if message.tags == 'info' %}alert-info{% endif %}" 
+            role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card-container">
+        <!-- Back Button -->
+        <a href="#" class="btn btn-back mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Temple Selection
+        </a>
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2 class="text-dark">Create a New Temple</h2>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="temple_name" class="form-label">Temple Name <span class="text-danger">*</span></label>
+                <input type="text" id="temple_name" name="temple_name" class="form-control" required placeholder="Enter the full name of the temple">
+            </div>
+
+            <div class="mb-3">
+                <label for="temple_place" class="form-label">Temple Place</label>
+                <input type="text" id="temple_place" name="temple_place" class="form-control" placeholder="Enter the temple's location">
+            </div>
+
+            <div class="mb-3">
+                <label for="temple_short_name" class="form-label">Short Name</label>
+                <input type="text" id="temple_short_name" name="temple_short_name" class="form-control" placeholder="Enter a short name for the temple">
+            </div>
+
+            <div class="mb-3">
+                <label for="temple_bill_title" class="form-label">Bill Title</label>
+                <input type="text" id="temple_bill_title" name="temple_bill_title" class="form-control" placeholder="Enter the title for billing receipts">
+            </div>
+
+            <div class="mb-3">
+                <label for="temple_bill_mid" class="form-label">Bill MID</label>
+                <input type="text" id="temple_bill_mid" name="temple_bill_mid" class="form-control" placeholder="Enter the MID (Merchant ID)">
+            </div>
+
+            <div class="mb-3">
+                <label for="temple_bill_footer" class="form-label">Bill Footer</label>
+                <textarea id="temple_bill_footer" name="temple_bill_footer" class="form-control" rows="3" placeholder="Enter footer text for billing receipts"></textarea>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary w-100">Create Temple</button>
+            </div>
+        </form>
+
+        <div class="form-footer">
+            Fields marked with <span class="text-danger">*</span> are mandatory.
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

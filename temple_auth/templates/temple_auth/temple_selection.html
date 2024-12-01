@@ -8,57 +8,218 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Full-screen background with a temple image */
+        /* Full-screen background with a gradient overlay on the image */
         body {
-            background: url("{% static 'img/temple_selection.avif' %}") no-repeat center center fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                        url("{% static 'img/temple_selection.avif' %}") no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
         }
-        
-        /* Centered box with a semi-transparent background */
-        .selection-box {
-            background-color: rgba(0, 0, 0, 0.6);
+
+        /* Centered card with elevated design */
+        .selection-card {
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
             text-align: center;
         }
-        
-        /* Custom styling for the dropdown and button */
-        .form-select, .btn-primary {
-            border-radius: 50px;
-            font-size: 1.1em;
+
+        /* Styling for dropdown */
+        .form-select {
+            border-radius: 8px;
+            font-size: 1rem;
+            padding: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ced4da;
         }
+
+        /* Buttons styling */
         .btn-primary {
             padding: 10px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 15px;
+            background: #007bff;
+            border: none;
+            transition: background 0.3s ease-in-out;
         }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            padding: 10px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-left: 10px;
+            background: #6c757d;
+            border: none;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
         h2 {
-            font-weight: bold;
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal-body input, .modal-body select, .modal-body textarea {
+            border-radius: 8px;
+            font-size: 1rem;
+            padding: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ced4da;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        /* Add subtle shadows and spacing for the card */
+        .selection-card .form-select, .selection-card .btn {
+            margin-bottom: 10px;
+        }
+
+        /* Align messages centrally */
+        .alert-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0;
+        }
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 15px;
+            font-size: 1rem;
+        }
+
+        /* Media Query for responsive design */
+        @media (max-width: 768px) {
+            body {
+                background-position: center;
+            }
+            .selection-card {
+                padding: 30px;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .alert-container {
+                width: 100%;
+                padding: 10px;
+            }
+            .alert {
+                font-size: 0.9rem;
+                padding: 12px;
+            }
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                margin-top: 10px;
+                padding: 12px 0;
+            }
+            .btn-secondary {
+                margin-top: 5px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="selection-card">
+        {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'success' %}alert-success{% endif %}
+                {% if message.tags == 'error' %}alert-danger{% endif %}
+                {% if message.tags == 'warning' %}alert-warning{% endif %}
+                {% if message.tags == 'info' %}alert-info{% endif %}
+                " role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-    <div class="selection-box">
-        <h2>Select a Temple</h2>
+        <h2>Select or Create a Temple</h2>
         <form method="post">
             {% csrf_token %}
-            <div class="mb-3">
-                <select name="temple_id" class="form-select" required>
+            <div class="mb-4">
+                <label for="temple_id" class="form-label" style="color: #343434;">Choose a Temple</label>
+                <select name="temple_id" id="temple_id" class="form-select" required>
                     <option selected disabled>Choose a Temple</option>
                     {% for temple in temples %}
-                        <option value="{{ temple.id }}">{{ temple.temple_name }}</option>
+                        <option value="{{ temple.id }}">{{ temple.temple_name }} - {{ temple.temple_place }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Select Temple</button>
+            <div>
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary">Select Temple</button>
+                
+                <!-- Button to open modal for creating temple -->
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#createTempleModal">
+                    Create Temple
+                </button>
+            </div>
         </form>
+    </div>
+
+    <!-- Modal for creating Temple -->
+    <div class="modal fade" id="createTempleModal" tabindex="-1" aria-labelledby="createTempleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTempleModalLabel" style="color: black;">Create New Temple</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Form inside Modal for Temple Creation -->
+                    <form method="POST" action="{% url 'create-temple' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="temple_name" class="form-label">Temple Name</label>
+                            <input type="text" class="form-control" id="temple_name" name="temple_name" required placeholder="Enter Temple Name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="temple_place" class="form-label">Temple Place</label>
+                            <input type="text" class="form-control" id="temple_place" name="temple_place" placeholder="Enter Temple Place (Optional)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="temple_short_name" class="form-label">Temple Short Name</label>
+                            <input type="text" class="form-control" id="temple_short_name" name="temple_short_name" placeholder="Enter Temple Short Name (Optional)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="temple_bill_title" class="form-label">Temple Bill Title</label>
+                            <input type="text" class="form-control" id="temple_bill_title" name="temple_bill_title" placeholder="Enter Temple Bill Title (Optional)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="temple_bill_mid" class="form-label">Temple Bill MID</label>
+                            <input type="text" class="form-control" id="temple_bill_mid" name="temple_bill_mid" placeholder="Enter Temple Bill MID (Optional)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="temple_bill_footer" class="form-label">Temple Bill Footer</label>
+                            <input type="text" class="form-control" id="temple_bill_footer" name="temple_bill_footer" placeholder="Enter Temple Bill Footer (Optional)">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Temple</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS and dependencies -->
