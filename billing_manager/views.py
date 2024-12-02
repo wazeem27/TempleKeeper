@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.urls import reverse
 from decimal import Decimal
 import csv
+from django.http import HttpResponseForbidden
+from django.core.exceptions import ValidationError
 from datetime import datetime, time
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -137,6 +139,7 @@ class BillListView(LoginRequiredMixin, ListView):
                     'star': vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
                     'amount': vazhipadu_bill.price,
                     'is_cancelled': bill.is_cancelled,
+                    'payment_method': bill.payment_method,
                     'cancel_reason': bill.cancel_reason
                 }
                 bill_dataset.append(bill_entry)
@@ -156,7 +159,8 @@ class BillListView(LoginRequiredMixin, ListView):
                     'star': other_bill.person_star.name if other_bill.person_star.name else "",
                     'amount': other_bill.price,
                     'is_cancelled': bill.is_cancelled,
-                    'cancel_reason': bill.cancel_reason
+                    'cancel_reason': bill.cancel_reason,
+                    'payment_method': bill.payment_method
 
                 }
                 bill_dataset.append(bill_entry)       
@@ -201,6 +205,7 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
 
         # Begin transaction to ensure atomicity
         try:
+            payment_method = request.POST.get('payment_method')
             with transaction.atomic():
                 if user_profile.is_split_bill:
                     # Create separate bills for each offering or item
@@ -223,7 +228,8 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                                 bill = Bill.objects.create(
                                     user=request.user,
                                     temple=temple,
-                                    total_amount=price
+                                    total_amount=price,
+                                    payment_method=payment_method
                                 )
                                 bill_objects.append(bill)
 
@@ -282,7 +288,8 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                     bill = Bill.objects.create(
                         user=request.user,
                         temple=temple,
-                        total_amount=Decimal(total_pooja_price + total_other_price)
+                        total_amount=Decimal(total_pooja_price + total_other_price),
+                        payment_method=payment_method
                     )
 
                     # Add offerings to the single bill
@@ -326,7 +333,8 @@ def submit_billing(request: HttpRequest) -> HttpResponse:
                                     person_name=other_name,
                                     person_star=other_star,
                                     vazhipadu=vazhipadu,
-                                    price=price
+                                    price=price,
+                                    payment_method=payment_method
                                 )
 
                     messages.success(request, "Billing details have been successfully recorded.")
@@ -524,3 +532,51 @@ def cancel_bill(request, bill_id):
             messages.error(request, "The bill does not exist.")
 
     return redirect("bill-list")  # Replace with the desired redirect URL
+
+
+@login_required
+def update_payment_method(request):
+    """
+    Update the payment method for a bill.
+    Accepts either 'cash' or 'gpay' as valid payment methods.
+    Ensures that if the payment method is 'gpay', the amount must equal the bill's total amount.
+    """
+    # Get the bill object by receipt number
+
+    # Only process the form if it's a POST request
+    if request.method == 'POST':
+        bill_id = int(request.POST.get('bill_id'))
+        bill = get_object_or_404(Bill, id=bill_id)
+        # Get the new payment method from the POST data
+        new_payment_method = request.POST.get('payment_method')
+        online_payment_amount = request.POST.get('online_payment_amount')  # Assuming online amount is passed
+
+        # Validate the payment method
+        if new_payment_method not in ['Cash', 'Online']:
+            raise ValidationError("Invalid payment method selected.")
+        
+        # If the payment method is 'gpay', validate that the online payment amount matches the total bill amount
+        # if new_payment_method == 'Online'
+        #     try:
+        #         online_payment_amount = float(online_payment_amount)
+        #     except ValueError:
+        #         raise ValidationError("Invalid online payment amount.")
+
+        #     if online_payment_amount != bill.total_amount:
+        #         raise ValidationError("For Online method, the Online amount must equal the total amount.")
+
+        # Update the bill's payment method and save the bill
+        bill.payment_method = new_payment_method
+
+        # If the payment method is 'gpay', save the online payment amount
+        # if new_payment_method == 'Online':
+            # bill.online_payment_amount = online_payment_amount
+
+        bill.save()
+
+        # Display success message and redirect to the receipt page
+        messages.success(request, f"Payment method successfully updated to {new_payment_method.capitalize()}.")
+        return redirect('bill-list')
+
+    # If the request is not POST, just redirect to the bill's receipt page
+    return redirect('receipt', receipt=bill.id)

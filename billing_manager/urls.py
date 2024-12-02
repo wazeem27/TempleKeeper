@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from billing_manager.views import BillingView, submit_billing, BillListView, BillDetailView, ReceiptView, ViewMultiReceipt, BillExportView, cancel_bill
+from billing_manager.views import BillingView, submit_billing, BillListView, BillDetailView, ReceiptView, ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method
 
 
 urlpatterns = [
@@ -26,7 +26,8 @@ urlpatterns = [
     path("receipt/<int:pk>/", ReceiptView.as_view(), name="receipt"),
     path('view-multi-receipt/', ViewMultiReceipt.as_view(), name='view_multi_receipt'),
     path('export_csv/', BillExportView.as_view(), name='export-csv'),
-    path('cancel_bill/<int:bill_id>/', cancel_bill, name='cancel-bill')
+    path('cancel_bill/<int:bill_id>/', cancel_bill, name='cancel-bill'),
+    path('update-payment-method/', update_payment_method, name='update-payment-method'),
 
     # path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
 

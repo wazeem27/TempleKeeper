@@ -1,7 +1,7 @@
 {% extends "temple_auth/new_base.html" %}
 {% load static %}
 
-{% block custom-styles %}
+{% block custom-style %}
 @media (max-width: 767.98px) {
     .table thead {
         display: none;
@@ -34,6 +34,76 @@
 }
 
 
+
+
+
+
+/* General Card Styling */
+.card {
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Title */
+.card-title {
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Form Controls */
+.form-select, .form-control {
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    background-color: #fafafa;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Focus Effects */
+.form-select:focus, .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    background-color: #fff;
+}
+
+/* Gap Amount Container */
+#gap-amount-container input {
+    font-size: 1rem;
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #ddd;
+    background-color: #fafafa;
+}
+
+#gap-amount-container input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 576px) {
+    .form-select, .form-control {
+        font-size: 0.9rem;
+        padding: 0.65rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Adjust Card Padding and Shadow */
+.card-body {
+    padding: 2rem;
+}
+
+.card {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
 {% endblock %}
 
 {% block main-content %}
@@ -122,6 +192,39 @@
                                             </div>
                                         </div>
                                     </div>
+
+
+
+
+
+<!-- Payment Method Section -->
+<div class="card shadow-lg rounded-lg border-0 mb-4">
+    <div class="card-body">
+        <h5 class="card-title text-center mb-4" style="font-size: 1.5rem; font-weight: 600;">Payment Method</h5>
+        <div class="row">
+            <!-- Payment Method Dropdown -->
+            <div class="col-12 col-sm-6 col-md-4 mb-3">
+                <label for="payment-method" class="form-label fw-bold">Select Payment Method</label>
+                <select name="payment_method" id="payment-method" class="form-select" required>
+                    <option value="" disabled selected>Select Payment Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Online">Online</option>
+                    <!-- <option value="Both">Both</option> -->
+                </select>
+            </div>
+            <!-- Gap Amount Field -->
+            <div class="col-12 col-sm-6 col-md-4 mb-3 d-none" id="gap-amount-container">
+                <label for="gap-amount" class="form-label fw-bold">Enter Gap Amount</label>
+                <input type="number" name="gap_amount" id="gap-amount" class="form-control" placeholder="Enter Gap Amount">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
                                     <div class="text-center">
                                         <button type="button" class="btn btn-primary" id="submit-button">Submit & Print</button>
                                     </div>
@@ -145,8 +248,43 @@
   {% block main-script %}
   <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+
     const billingForm = document.getElementById('billing-form');
     const submitButton = document.getElementById('submit-button');
+
+
+
+    const paymentMethodSelect = document.getElementById('payment-method');
+    // const gapAmountContainer = document.getElementById('gap-amount-container');
+    const gapAmountInput = document.getElementById('gap-amount');
+
+    // Show/Hide Gap Amount based on Payment Method
+    paymentMethodSelect.addEventListener('change', function () {
+        if (this.value === 'Both') {
+            gapAmountContainer.classList.remove('d-none');
+            gapAmountInput.setAttribute('required', 'required');
+        } else {
+            gapAmountContainer.classList.add('d-none');
+            gapAmountInput.removeAttribute('required');
+            gapAmountInput.value = '';  // Reset gap amount when not required
+        }
+    });
+
+    // Optional: Enable/Disable Submit Button based on form validity
+    billingForm.addEventListener('input', function () {
+        // Check if the form is valid (all required fields are filled)
+        if (billingForm.checkValidity()) {
+            submitButton.disabled = false;  // Enable submit button
+        } else {
+            submitButton.disabled = true;   // Disable submit button if form is invalid
+        }
+    });
+        
+
+
+
+
 
     // Disable the submit button initially
     submitButton.disabled = true;

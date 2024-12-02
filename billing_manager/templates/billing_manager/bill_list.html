@@ -201,6 +201,7 @@
                                         <th>Customer Name</th>
                                         <th>Star</th>
                                         <th>Price</th>
+                                        <th>Payment Method</th>
                                         <th>Comment</th>
                                         <th>Actions</th>
                                     </tr>
@@ -217,8 +218,23 @@
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.name }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.star }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.payment_method }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>
+
+
+                                                <div class="btn-group">
+                                                    <a href="#" 
+                                                       class="btn btn-sm btn-warning {% if bill.is_cancelled %}disabled{% endif %}" 
+                                                       data-bs-toggle="modal"
+                                                       data-bs-target="#paymentMethodModal"
+                                                       title="Update Payment Method"
+                                                       data-id="{{ bill.receipt }}"
+                                                       data-payment-method="{{ bill.payment_method }}">
+                                                       <i class="bi bi-credit-card"></i>
+                                                    </a>
+                                                </div>
+
                                                 <div class="btn-group">
                                                     <a href="{% url 'receipt' bill.receipt %}" 
                                                        class="btn btn-sm btn-success {% if bill.is_cancelled %}disabled{% endif %}" 
@@ -239,6 +255,40 @@
                                                         </a>
                                                 </div>
                                                 {% endif %}
+
+
+
+                                                <!-- Modal View for Update Payment Method -->
+                                                <div class="modal fade" id="paymentMethodModal" tabindex="-1" aria-labelledby="paymentMethodModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                        <div class="modal-content shadow-lg">
+                                                            <div class="modal-header bg-primary text-white">
+                                                                <h5 class="modal-title" id="paymentMethodModalLabel"><i class="bi bi-credit-card"></i> Update Payment Method</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p class="fs-5 text-center">Select the new payment method for this bill.</p>
+                                                                <form id="updatePaymentForm" method="POST" action="{% url 'update-payment-method' %}">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="bill_id" id="bill_id">
+                                                                    <div class="mb-3">
+                                                                        <label for="payment_method" class="form-label fw-bold">Payment Method</label>
+                                                                        <select class="form-select" id="payment_method" name="payment_method" required>
+                                                                            <option value="Cash">Cash</option>
+                                                                            <option value="Online">Online</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="d-flex justify-content-between">
+                                                                        <button type="submit" class="btn btn-primary">
+                                                                            <i class="bi bi-check-circle"></i> Update Payment Method
+                                                                        </button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- End Modal View for Update Payment Method -->
                                             
 
 
@@ -355,6 +405,22 @@
         // Set the value of the hidden input field with id "bill_id" to the selected bill's receipt ID
         modal.find('#bill_id').val(billId);
     });
+
+    $('#paymentMethodModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);  // The button that triggered the modal
+    var billId = button.data('id');       // Get the bill's receipt ID from the button's data-id
+    var modal = $(this);
+    
+    // Set the value of the hidden input field with id "bill_id" to the selected bill's receipt ID
+    modal.find('#bill_id').val(billId);
+});
+$('#updatePaymentForm').on('submit', function (event) {
+    var billId = $('#bill_id').val();
+    if (!billId) {
+        event.preventDefault(); // Stop submission if bill_id is missing
+        alert('Bill ID is missing.');
+    }
+});
 
 function filterTable() {
     const input = document.getElementById("tableSearch");
