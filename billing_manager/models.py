@@ -154,3 +154,47 @@ class BillVazhipaduOffering(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.vazhipadu_offering.name} in Bill #{self.bill.id}"
+
+
+
+
+
+
+class WalletCollection(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        verbose_name="User"
+    )
+    temple = models.ForeignKey(
+        Temple, 
+        on_delete=models.CASCADE, 
+        verbose_name="Temple"
+    )
+    date = models.DateField()
+    
+    # Cash and coin counts fields
+    counter_cash = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Counter Cash")
+    
+    # Fields for coins (1, 2, 5, 10 rupees)
+    coin_1_rupee = models.IntegerField(default=0)
+    coin_2_rupees = models.IntegerField(default=0)
+    coin_5_rupees = models.IntegerField(default=0)
+    coin_10_rupees = models.IntegerField(default=0)
+    coin_20_rupees = models.IntegerField(default=0)
+    
+    # Fields for notes (5, 10, 20 rupees)
+    note_1_rupees = models.IntegerField(default=0)
+    note_5_rupees = models.IntegerField(default=0)
+    note_10_rupees = models.IntegerField(default=0)
+    note_20_rupees = models.IntegerField(default=0)
+    note_50_rupees = models.IntegerField(default=0)
+    note_100_rupees = models.IntegerField(default=0)
+    note_200_rupees = models.IntegerField(default=0)
+    note_500_rupees = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Wallet Collection for {self.date}"

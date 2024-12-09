@@ -4,8 +4,14 @@ from django.views.generic import TemplateView, ListView, DetailView, View
 from django.db import transaction
 from django.contrib import messages
 from django.urls import reverse
+from .models import WalletCollection
 from decimal import Decimal
 import csv
+from django.urls import reverse_lazy
+from django.views.generic.edit import FormView
+from django.http import JsonResponse, Http404
+from .forms import WalletCollectionForm
+from .services import WalletService
 from django.http import HttpResponseForbidden
 from django.core.exceptions import ValidationError
 from datetime import datetime, time
@@ -580,3 +586,83 @@ def update_payment_method(request):
 
     # If the request is not POST, just redirect to the bill's receipt page
     return redirect('receipt', receipt=bill.id)
+
+
+class WalletCalendar(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/wallet_calendar.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        temple_id = self.request.session.get('temple_id')
+        collections = WalletCollection.objects.filter(user_id=self.request.user.id, temple_id=temple_id)
+        wallet_dataset = []
+        for collec in collections:
+            data = {}
+            data['start'] = collec.date.strftime("%Y-%m-%d")
+            data['title'] = str(collec.counter_cash)
+            wallet_dataset.append(data)
+        
+        context['events'] = wallet_dataset
+        return context
+
+
+class WalletCollectionCreateView(View):
+    def get(self, request, *args, **kwargs):
+        # Get the 'date' query parameter
+        date = request.GET.get('date')
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            raise Http404("Invalid date format")
+        if not date:
+            raise Http404("Date parameter is required")
+
+        # Try to retrieve the existing WalletCollection for the provided date
+        wallet_collection = WalletCollection.objects.filter(date=date).first()
+
+        # If a WalletCollection exists for that date, populate the form with its data
+        if wallet_collection:
+            form = WalletCollectionForm(instance=wallet_collection)
+        else:
+            # Otherwise, create an empty form with default values
+            form = WalletCollectionForm(initial={
+                'counter_cash': 0,
+                'coin_counts': {'1': 0, '2': 0, '5': 0, '10': 0, '20': 0},
+                'note_counts': {'10': 0, '5': 0, '20': 0}
+            })
+        
+        return render(request, 'billing_manager/interim.html', {'form': form, 'date': date})
+
+    def post(self, request, *args, **kwargs):
+        # Get the 'date' query parameter
+        date = request.GET.get('date')
+        temple_id = request.session.get('temple_id')
+        if not date:
+            raise Http404("Date parameter is required")
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            raise Http404("Invalid date format")
+
+        # Check if the WalletCollection for this date already exists
+        wallet_collection = WalletCollection.objects.filter(date=date).first()
+
+        # If a WalletCollection exists for that date, update it; otherwise, create a new one
+        if wallet_collection:
+            form = WalletCollectionForm(request.POST or None, instance=wallet_collection)
+        else:
+            form = WalletCollectionForm(request.POST or None)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                # Set the date explicitly on the form instance (whether it's a new or updated form)
+                wallet_collection = form.save(commit=False)
+                wallet_collection.date = date  # Ensure date is saved as well
+                wallet_collection.temple_id = temple_id
+                wallet_collection.user_id = request.user.id
+                wallet_collection.save()
+                return redirect('wallet-info')  # Redirect to the same page after saving, or you can redirect to another view
+
+        return render(request, 'billing_manager/wallet_calendar.html', {'form': form, 'date': date})

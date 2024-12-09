@@ -15,7 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from billing_manager.views import BillingView, submit_billing, BillListView, BillDetailView, ReceiptView, ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method
+from billing_manager.views import (
+    BillingView, submit_billing, BillListView, BillDetailView, ReceiptView,
+    ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method,
+    WalletCalendar, WalletCollectionCreateView)
 
 
 urlpatterns = [
@@ -28,6 +31,8 @@ urlpatterns = [
     path('export_csv/', BillExportView.as_view(), name='export-csv'),
     path('cancel_bill/<int:bill_id>/', cancel_bill, name='cancel-bill'),
     path('update-payment-method/', update_payment_method, name='update-payment-method'),
+    path('wallet_calendar/', WalletCalendar.as_view(), name='wallet-info'),
+    path('wallet/add/', WalletCollectionCreateView.as_view(), name='wallet_add'),
 
     # path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
 
