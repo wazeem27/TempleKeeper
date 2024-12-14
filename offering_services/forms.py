@@ -5,10 +5,11 @@ from .models import VazhipaduOffering
 class VazhipaduOfferingForm(forms.ModelForm):
     class Meta:
         model = VazhipaduOffering
-        fields = ['name', 'price']  # Specify fields to include in the form
+        fields = ['name', 'price', 'allow_multiple']  # Include the new field
         labels = {
             'name': 'Offering Name',
             'price': 'Price',
+            'allow_multiple': 'Allow Multiple',
         }
 
     def clean_name(self):
@@ -22,3 +23,9 @@ class VazhipaduOfferingForm(forms.ModelForm):
         if price <= 0:
             raise forms.ValidationError("Price must be a positive number.")
         return price
+
+    def clean_allow_multiple(self):
+        allow_multiple = self.cleaned_data.get('allow_multiple')
+        if not isinstance(allow_multiple, bool):
+            raise forms.ValidationError("Invalid value for Allow Multiple.")
+        return allow_multiple

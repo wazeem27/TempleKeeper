@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.urls import path
 from billing_manager.views import (
-    BillingView, submit_billing, BillListView, BillDetailView, ReceiptView,
+    BillingView, BillListView, BillDetailView, ReceiptView, SubmitBill,
     ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method,
     WalletCalendar, WalletCollectionCreateView)
 
 
 urlpatterns = [
     path('add_bill/', BillingView.as_view(), name='add-bill'),
-    path('submit_billing/', submit_billing, name='submit-billing'),
+    path('submit_billing/', SubmitBill.as_view(), name='submit-billing'),
     path('bill_list/', BillListView.as_view(), name='bill-list'),
     path("bill/<int:pk>/", BillDetailView.as_view(), name="bill-detail"),
     path("receipt/<int:pk>/", ReceiptView.as_view(), name="receipt"),

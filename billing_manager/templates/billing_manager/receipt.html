@@ -195,15 +195,33 @@
                 </tr>
             </thead>
             <tbody>
-                {% for vazhipadu in bill.bill_vazhipadu_offerings.all %}
+                {% for detail in bill_detail.vazhipadu_list %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ vazhipadu.person_name }}</td>
-                    <td>{{ vazhipadu.person_star }}</td>
-                    <td>{{ vazhipadu.vazhipadu_offering.name }}</td>
-                    <td class="text-end">{{ vazhipadu.price }}</td>
+                    <td>
+                        {% if detail.primary_person %}
+                            {{ detail.primary_person.name }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if detail.primary_person %}
+                            {{ detail.primary_person.star }}
+                        {% endif %}
+                    </td>
+                    <td>{{ detail.vazhipadu }}</td>
+                    <td class="text-end">{{ detail.price }}</td>
+                </tr>
+                {% for person in detail.other_persons %}
+                <tr>
+                    <td></td>
+                    <td>{{ person.name }}</td>
+                    <td>{{ person.star }}</td>
+                    <td></td>
+                    <td></td>
                 </tr>
                 {% endfor %}
+                {% endfor %}
+
             </tbody>
         </table>
         {% endif %}

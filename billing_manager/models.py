@@ -122,41 +122,50 @@ class Bill(models.Model):
 class BillVazhipaduOffering(models.Model):
     bill = models.ForeignKey(
         'Bill',  # Referencing Bill as a string
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
         related_name='bill_vazhipadu_offerings',
         verbose_name="Bill"
     )
     vazhipadu_offering = models.ForeignKey(
-        VazhipaduOffering, 
-        on_delete=models.CASCADE, 
+        VazhipaduOffering,
+        on_delete=models.CASCADE,
         verbose_name="Vazhipadu Offering"
     )
-    person_name = models.CharField(
-        max_length=255, 
-        verbose_name="Person Name"
-    )
-    person_star = models.ForeignKey(
-        Star, 
-        on_delete=models.SET_NULL, 
-        blank=True, 
-        null=True, 
-        verbose_name="Person Star"
-    )
     quantity = models.PositiveIntegerField(
-        default=1, 
+        default=1,
         verbose_name="Quantity"
     )  # Default quantity is 1
     price = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
+        max_digits=10,
+        decimal_places=2,
         verbose_name="Price"
-    )
+    )  # Can be calculated dynamically based on quantity
 
     def __str__(self):
         return f"{self.quantity} x {self.vazhipadu_offering.name} in Bill #{self.bill.id}"
 
 
+class PersonDetail(models.Model):
+    bill_vazhipadu_offering = models.ForeignKey(
+        BillVazhipaduOffering,
+        on_delete=models.CASCADE,
+        related_name='person_details',
+        verbose_name="Bill Vazhipadu Offering"
+    )
+    person_name = models.CharField(
+        max_length=255,
+        verbose_name="Person Name"
+    )
+    person_star = models.ForeignKey(
+        Star,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Person Star"
+    )
 
+    def __str__(self):
+        return f"{self.person_name} ({self.person_star})"
 
 
 

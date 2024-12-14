@@ -7,11 +7,13 @@ from django.urls import reverse
 from .models import WalletCollection
 from decimal import Decimal
 import csv
+import re
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 from django.http import JsonResponse, Http404
 from .forms import WalletCollectionForm
 from .services import WalletService
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http import HttpResponseForbidden
 from django.core.exceptions import ValidationError
 from datetime import datetime, time
@@ -24,7 +26,7 @@ from offering_services.models import VazhipaduOffering, Star
 from temple_auth.models import Temple
 from collections import defaultdict
 from django.utils.timezone import localtime
-from billing_manager.models import Bill, BillOther, BillVazhipaduOffering
+from billing_manager.models import Bill, BillOther, BillVazhipaduOffering, PersonDetail
 from typing import Dict, Any
 from temple_auth.models import UserProfile
 
@@ -53,7 +55,12 @@ class BillingView(LoginRequiredMixin, TemplateView):
         context['inventory_items'] = self.get_inventory_queryset(temple)
         context['star_items'] = self.get_star_queryset()
         context['temple'] = temple
-        
+
+        multi_support_vazhipadu = [
+            vazhipadu.name for vazhipadu in
+            VazhipaduOffering.objects.filter(temple=temple, allow_multiple=True)
+        ]
+        context['multi_support_vazhipadu'] = multi_support_vazhipadu
         return context
 
 class BillListView(LoginRequiredMixin, ListView):
@@ -141,8 +148,8 @@ class BillListView(LoginRequiredMixin, ListView):
                     'created_at': localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
                     'created_by': bill.user.username,
                     'vazhipadu_name': vazhipadu_bill.vazhipadu_offering.name,
-                    'name': vazhipadu_bill.person_name,
-                    'star': vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
+                    'name': ",".join([vazhipadu.person_name for vazhipadu in vazhipadu_bill.person_details.all()]),
+                    'star': ",".join([vazhipadu.person_star.name for vazhipadu in vazhipadu_bill.person_details.all()]),
                     'amount': vazhipadu_bill.price,
                     'is_cancelled': bill.is_cancelled,
                     'payment_method': bill.payment_method,
@@ -192,167 +199,389 @@ class BillListView(LoginRequiredMixin, ListView):
         return context
 
 
+def parse_nested_querydict(querydict):
+    data = querydict.dict()  # Converts QueryDict to a dictionary
+    result = {
+        "parents": [],
+        "payment_method": querydict.get("payment_method", ""),
+        "gap_amount": querydict.get("gap_amount", ""),
+    }
 
-@login_required
-def submit_billing(request: HttpRequest) -> HttpResponse:
-    """Handle billing submission and create associated records for the specified temple."""
-    if request.method == 'POST':
-        # Retrieve temple from the session
-        temple_id = request.session.get('temple_id')
-        temple = get_object_or_404(Temple, id=temple_id)
+    # Regex to identify parent keys and child keys
+    parent_regex = re.compile(r"parent\[(\d+)\]\[([^\]]+)\]")  # e.g., parent[1][name]
+    child_regex = re.compile(r"parent\[(\d+)\]\[children\]\[(\d+)\]\[([^\]]+)\]")  # e.g., parent[1][children][2][name]
 
-        # Extract price lists from POST data
-        pooja_price_list = list(map(float, request.POST.getlist('pooja_price[]')))
-        other_price_list = list(map(float, request.POST.getlist('other_price[]')))
+    # Containers for parent and child data
+    parents = defaultdict(dict)
+    children = defaultdict(lambda: defaultdict(dict))  # {parent_id: {child_id: {child_data}}}
+
+    for key, value in data.items():
+        # Match parent fields
+        parent_match = parent_regex.match(key)
+        if parent_match:
+            parent_id, field = parent_match.groups()
+            parents[parent_id][field] = value
+
+        # Match child fields
+        child_match = child_regex.match(key)
+        if child_match:
+            parent_id, child_id, field = child_match.groups()
+            children[parent_id][child_id][field] = value
+
+    # Combine parents and their respective children
+    for parent_id, parent_data in parents.items():
+        parent_data["children"] = list(children[parent_id].values())
+        result["parents"].append(parent_data)
+
+    return result
 
 
-        # Retrieve user profile for split bill preference
-        user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple_id)
 
-        # Begin transaction to ensure atomicity
+
+
+class SubmitBill(LoginRequiredMixin, View):
+    template_name = "bill/create_bill.html"
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
         try:
-            payment_method = request.POST.get('payment_method')
-            with transaction.atomic():
-                if user_profile.is_split_bill:
-                    # Create separate bills for each offering or item
-                    bill_objects = []
+            # Parse and validate input data
+            data = parse_nested_querydict(request.POST)
+            temple = self._get_temple(request.session)
+            parents = self._validate_parents_data(data)
 
-                    if request.POST.getlist('pooja[]'):
-                        names = request.POST.getlist('name[]')
-                        vazhipadu_list = request.POST.getlist('pooja[]')
-                        stars = request.POST.getlist('nakshatram[]')
-                        vazhipadu_prices = request.POST.getlist('pooja_price[]')
-                        
-                        for index, vazhipadu_name in enumerate(vazhipadu_list):
-                            if vazhipadu_name.strip():
-                                vazhipadu_offering = get_object_or_404(
-                                    VazhipaduOffering, name=vazhipadu_name, temple=temple)
-                                price = Decimal(vazhipadu_prices[index])
-                                customer_star = get_object_or_404(Star, name=stars[index])
+            # Calculate total price
+            total_price = sum(float(parent["price"]) for parent in parents)
 
-                                # Create a new bill for this offering
-                                bill = Bill.objects.create(
-                                    user=request.user,
-                                    temple=temple,
-                                    total_amount=price,
-                                    payment_method=payment_method
-                                )
-                                bill_objects.append(bill)
+            user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple.id)
 
-                                # Create associated BillVazhipaduOffering record
-                                BillVazhipaduOffering.objects.create(
-                                    bill=bill,
-                                    vazhipadu_offering=vazhipadu_offering,
-                                    person_name=names[index],
-                                    person_star=customer_star,
-                                    quantity=1,
-                                    price=price
-                                )
+            if user_profile.is_split_bill:
+                person_details = []  # Collect all PersonDetail objects for bulk creation
+                # Create separate bills for each offering or item
+                bill_objects = []
 
-                    if request.POST.getlist('other_name[]'):
-                        other_names = request.POST.getlist('other_name[]')
-                        other_stars = request.POST.getlist('other_nakshatram[]')
-                        other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
-                        other_prices = request.POST.getlist('other_price[]')
-
-                        for index, other_name in enumerate(other_names):
-                            if other_name.strip():
-                                other_star = get_object_or_404(Star, name=other_stars[index])
-                                vazhipadu = other_vazhipadugal[index]
-                                price = Decimal(other_prices[index])
-
-                                # Create a new bill for this inventory item
-                                bill = Bill.objects.create(
-                                    user=request.user,
-                                    temple=temple,
-                                    total_amount=price
-                                )
-                                bill_objects.append(bill)
-
-                                # Create associated BillInventoryItem record
-                                BillOther.objects.create(
-                                    bill=bill,
-                                    person_name=other_name,
-                                    person_star=other_star,
-                                    vazhipadu=vazhipadu,
-                                    price=price
-                                )
-                    bill_ids = ",".join([str(bill.id) for bill in bill_objects])
-                    for bill in bill_objects:
-                        bill.related_bills = bill_ids
-                        bill.save()
-
-                    messages.success(request, "Separate bills have been successfully recorded.")
-                    query_string = f"ids={'&'.join(map(str, [bill.id for bill in bill_objects]))}"
-                    url = f"{reverse('view_multi_receipt')}?{query_string}"
-                    return redirect(url)
-
-                else:
-                    # Create a single consolidated bill
-                    total_pooja_price = sum(pooja_price_list)
-                    total_other_price = sum(other_price_list)
-                    bill = Bill.objects.create(
-                        user=request.user,
-                        temple=temple,
-                        total_amount=Decimal(total_pooja_price + total_other_price),
-                        payment_method=payment_method
+                for parent in parents:
+                    bill = self._create_bill(request, temple, float(parent.get('price')), data.get("payment_method", "cash"))
+                    bill.save()
+                    bill_objects.append(bill)
+                    # Save BillVazhipaduOffering (cannot use bulk_create due to unsaved related object)
+                    vazhipadu_offering = get_object_or_404(
+                        VazhipaduOffering, name=parent["pooja"], temple=temple
+                    )
+                    # Save vazhipadu offering
+                    vazhipadu_bill = BillVazhipaduOffering.objects.create(
+                        bill=bill,
+                        vazhipadu_offering=vazhipadu_offering,
+                        quantity=1,
+                        price=parent["price"]
+                    )
+                    # Add parent person detail
+                    person_details.append(
+                        PersonDetail(
+                            bill_vazhipadu_offering=vazhipadu_bill,
+                            person_name=parent["name"],
+                            person_star=get_object_or_404(Star, name=parent["nakshatram"])
+                        )
                     )
 
-                    # Add offerings to the single bill
-                    if request.POST.getlist('pooja[]'):
-                        names = request.POST.getlist('name[]')
-                        vazhipadu_list = request.POST.getlist('pooja[]')
-                        stars = request.POST.getlist('nakshatram[]')
-                        vazhipadu_prices = request.POST.getlist('pooja_price[]')
+                    # Add child person details
+                    for child in parent.get("children", []):
+                        person_details.append(
+                            PersonDetail(
+                                bill_vazhipadu_offering=vazhipadu_bill,
+                                person_name=child["name"],
+                                person_star=get_object_or_404(Star, name=child["nakshatram"])
+                            )
+                        )  
+                    # Bulk create PersonDetail objects
+                    PersonDetail.objects.bulk_create(person_details)
 
-                        for index, vazhipadu_name in enumerate(vazhipadu_list):
-                            if vazhipadu_name.strip():
-                                vazhipadu_offering = get_object_or_404(
-                                    VazhipaduOffering, name=vazhipadu_name, temple=temple)
-                                price = Decimal(vazhipadu_prices[index])
-                                customer_star = get_object_or_404(Star, name=stars[index])
+                bill_ids = ",".join([str(bill.id) for bill in bill_objects])
+                for bill in bill_objects:
+                    bill.related_bills = bill_ids
+                    bill.save()
 
-                                BillVazhipaduOffering.objects.create(
-                                    bill=bill,
-                                    vazhipadu_offering=vazhipadu_offering,
-                                    person_name=names[index],
-                                    person_star=customer_star,
-                                    quantity=1,
-                                    price=price
-                                )
+                query_string = f"ids={'&'.join(map(str, [bill.id for bill in bill_objects]))}"
+                url = f"{reverse('view_multi_receipt')}?{query_string}"
+                return redirect(url)
+                
+            else:
+                # Step 1: Create the main bill
+                bill = self._create_bill(request, temple, total_price, data.get("payment_method", "cash"))
+                bill.save()
 
-                    # Add inventory items to the single bill
-                    if request.POST.getlist('other_name[]'):
-                        other_names = request.POST.getlist('other_name[]')
-                        other_stars = request.POST.getlist('other_nakshatram[]')
-                        other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
-                        other_prices = request.POST.getlist('other_price[]')
+                # Step 2: Process VazhipaduOfferings and PersonDetails
+                person_details = []  # Collect all PersonDetail objects for bulk creation
+                for parent in parents:
+                    vazhipadu_offering = get_object_or_404(
+                        VazhipaduOffering, name=parent["pooja"], temple=temple
+                    )
 
-                        for index, other_name in enumerate(other_names):
-                            if other_name.strip():
-                                other_star = get_object_or_404(Star, name=other_stars[index])
-                                vazhipadu = other_vazhipadugal[index]
-                                price = Decimal(other_prices[index])
+                    # Save BillVazhipaduOffering (cannot use bulk_create due to unsaved related object)
+                    vazhipadu_bill = BillVazhipaduOffering.objects.create(
+                        bill=bill,
+                        vazhipadu_offering=vazhipadu_offering,
+                        quantity=1,
+                        price=parent["price"]
+                    )
 
-                                BillOther.objects.create(
-                                    bill=bill,
-                                    person_name=other_name,
-                                    person_star=other_star,
-                                    vazhipadu=vazhipadu,
-                                    price=price,
-                                    payment_method=payment_method
-                                )
+                    # Add parent person detail
+                    person_details.append(
+                        PersonDetail(
+                            bill_vazhipadu_offering=vazhipadu_bill,
+                            person_name=parent["name"],
+                            person_star=get_object_or_404(Star, name=parent["nakshatram"])
+                        )
+                    )
 
-                    messages.success(request, "Billing details have been successfully recorded.")
-                    return redirect(reverse('receipt', kwargs={'pk': bill.id}))
+                    # Add child person details
+                    for child in parent.get("children", []):
+                        person_details.append(
+                            PersonDetail(
+                                bill_vazhipadu_offering=vazhipadu_bill,
+                                person_name=child["name"],
+                                person_star=get_object_or_404(Star, name=child["nakshatram"])
+                            )
+                        )
 
+                # Bulk create PersonDetail objects
+                PersonDetail.objects.bulk_create(person_details)
+
+                # Return success response
+                return redirect(reverse('receipt', kwargs={'pk': bill.id}))
+
+        except ValidationError as e:
+            return JsonResponse({"status": "failure", "error": str(e)}, status=400)
+        except ObjectDoesNotExist as e:
+            return JsonResponse({"status": "failure", "error": f"Data not found: {str(e)}"}, status=404)
         except Exception as e:
-            # Rollback transaction on error
-            messages.error(request, f"An error occurred while processing the billing: {e}")
-            return redirect('add-bill')
+            # Log error for internal debugging
+            return JsonResponse({"status": "failure", "error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
-    messages.error(request, "Invalid request method.")
-    return redirect('add-bill')
+    def _get_temple(self, session):
+        temple_id = session.get("temple_id")
+        if not temple_id:
+            raise ValidationError("Temple ID is missing from the session.")
+        return get_object_or_404(Temple, id=temple_id)
+
+    def _validate_parents_data(self, data):
+        parents = data.get("parents", [])
+        if not parents:
+            raise ValidationError("Parents data is required to create a bill.")
+        for parent in parents:
+            if "pooja" not in parent or "price" not in parent or "name" not in parent or "nakshatram" not in parent:
+                raise ValidationError("Each parent must include 'pooja', 'price', 'name', and 'nakshatram' fields.")
+            if "children" in parent:
+                for child in parent["children"]:
+                    if "name" not in child or "nakshatram" not in child:
+                        raise ValidationError("Each child must include 'name' and 'nakshatram' fields.")
+        return parents
+
+    def _create_bill(self, request, temple, total_price, payment_method):
+        if total_price <= 0:
+            raise ValidationError("Total price must be greater than zero.")
+        return Bill(
+            user=request.user,
+            temple=temple,
+            total_amount=Decimal(total_price),
+            payment_method=payment_method
+        )
+
+# @login_required
+# def submit_billing(request: HttpRequest) -> HttpResponse:
+#     """Handle billing submission and create associated records for the specified temple."""
+#     if request.method == 'POST':
+#         # Retrieve temple from the session
+        
+#         temple_id = request.session.get('temple_id')
+#         temple = get_object_or_404(Temple, id=temple_id)
+#         data = parse_nested_querydict(request.POST)
+
+#         # Calculate total price
+#         total_price = sum(float(parent['price']) for parent in data['parents'])
+#         payment_method = data.get("payment_method", "cash")
+
+#         import ipdb;ipdb.set_trace()
+
+
+#         # Retrieve user profile for split bill preference
+#         user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple_id)
+
+#         # Begin transaction to ensure atomicity
+#         try:
+#             with transaction.atomic():
+#                 if user_profile.is_split_bill:
+#                     # Create separate bills for each offering or item
+#                     bill_objects = []
+
+#                     if request.POST.getlist('pooja[]'):
+#                         names = request.POST.getlist('name[]')
+#                         vazhipadu_list = request.POST.getlist('pooja[]')
+#                         stars = request.POST.getlist('nakshatram[]')
+#                         vazhipadu_prices = request.POST.getlist('pooja_price[]')
+                        
+#                         for index, vazhipadu_name in enumerate(vazhipadu_list):
+#                             if vazhipadu_name.strip():
+#                                 vazhipadu_offering = get_object_or_404(
+#                                     VazhipaduOffering, name=vazhipadu_name, temple=temple)
+#                                 price = Decimal(vazhipadu_prices[index])
+#                                 customer_star = get_object_or_404(Star, name=stars[index])
+
+#                                 # Create a new bill for this offering
+#                                 bill = Bill.objects.create(
+#                                     user=request.user,
+#                                     temple=temple,
+#                                     total_amount=price,
+#                                     payment_method=payment_method
+#                                 )
+#                                 bill_objects.append(bill)
+
+#                                 # Create associated BillVazhipaduOffering record
+#                                 BillVazhipaduOffering.objects.create(
+#                                     bill=bill,
+#                                     vazhipadu_offering=vazhipadu_offering,
+#                                     person_name=names[index],
+#                                     person_star=customer_star,
+#                                     quantity=1,
+#                                     price=price
+#                                 )
+
+#                     if request.POST.getlist('other_name[]'):
+#                         other_names = request.POST.getlist('other_name[]')
+#                         other_stars = request.POST.getlist('other_nakshatram[]')
+#                         other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
+#                         other_prices = request.POST.getlist('other_price[]')
+
+#                         for index, other_name in enumerate(other_names):
+#                             if other_name.strip():
+#                                 other_star = get_object_or_404(Star, name=other_stars[index])
+#                                 vazhipadu = other_vazhipadugal[index]
+#                                 price = Decimal(other_prices[index])
+
+#                                 # Create a new bill for this inventory item
+#                                 bill = Bill.objects.create(
+#                                     user=request.user,
+#                                     temple=temple,
+#                                     total_amount=price
+#                                 )
+#                                 bill_objects.append(bill)
+
+#                                 # Create associated BillInventoryItem record
+#                                 BillOther.objects.create(
+#                                     bill=bill,
+#                                     person_name=other_name,
+#                                     person_star=other_star,
+#                                     vazhipadu=vazhipadu,
+#                                     price=price
+#                                 )
+#                     bill_ids = ",".join([str(bill.id) for bill in bill_objects])
+#                     for bill in bill_objects:
+#                         bill.related_bills = bill_ids
+#                         bill.save()
+
+#                     messages.success(request, "Separate bills have been successfully recorded.")
+#                     query_string = f"ids={'&'.join(map(str, [bill.id for bill in bill_objects]))}"
+#                     url = f"{reverse('view_multi_receipt')}?{query_string}"
+#                     return redirect(url)
+
+#                 else:
+#                     # Create a single consolidated bill
+#                     total_pooja_price = total_price
+#                     bill = Bill.objects.create(
+#                         user=request.user,
+#                         temple=temple,
+#                         total_amount=Decimal(total_pooja_price),
+#                         payment_method=payment_method
+#                     )
+
+
+#                     # New way of Implementation here...............................
+
+#                     for vazhipadu_detail in data.get("parents", []):
+#                         vazhipadu_offering = get_object_or_404(
+#                             VazhipaduOffering, name=vazhipadu_detail.get('pooja'), temple=temple
+#                         )
+#                         vazhipadu_bill = BillVazhipaduOffering.objects.create(
+#                             bill=bill,
+#                             vazhipadu_offering=vazhipadu_offering,
+#                             quantity=1,
+#                             price=vazhipadu_detail.get('price')
+#                         )
+
+#                         # Vazhipadu Bill created now add person details to vazhipadu
+#                         person_detail = PersonDetail.objects.create(
+#                             bill_vazhipadu_offering=vazhipadu_bill,
+#                             person_name=vazhipadu_detail.get('name'),
+#                             star=get_object_or_404(Star, name=vazhipadu_detail.get('nakshatram')),
+#                         )
+#                         for other_person in vazhipadu_detail.get('children'):
+#                             person_detail = PersonDetail.objects.create(
+#                                 bill_vazhipadu_offering=vazhipadu_bill,
+#                                 person_name=other_person.get('name'),
+#                                 star=get_object_or_404(Star, name=other_person.get('nakshatram')),
+#                             )
+
+                        
+
+                    # End #########################################################
+
+
+
+                    # # Add offerings to the single bill
+                    # if request.POST.getlist('pooja[]'):
+                    #     names = request.POST.getlist('name[]')
+                    #     vazhipadu_list = request.POST.getlist('pooja[]')
+                    #     stars = request.POST.getlist('nakshatram[]')
+                    #     vazhipadu_prices = request.POST.getlist('pooja_price[]')
+
+                    #     for index, vazhipadu_name in enumerate(vazhipadu_list):
+                    #         if vazhipadu_name.strip():
+                    #             vazhipadu_offering = get_object_or_404(
+                    #                 VazhipaduOffering, name=vazhipadu_name, temple=temple)
+                    #             price = Decimal(vazhipadu_prices[index])
+                    #             customer_star = get_object_or_404(Star, name=stars[index])
+
+                    #             BillVazhipaduOffering.objects.create(
+                    #                 bill=bill,
+                    #                 vazhipadu_offering=vazhipadu_offering,
+                    #                 person_name=names[index],
+                    #                 person_star=customer_star,
+                    #                 quantity=1,
+                    #                 price=price
+                    #             )
+
+                    # # Add inventory items to the single bill
+                    # if request.POST.getlist('other_name[]'):
+                    #     other_names = request.POST.getlist('other_name[]')
+                    #     other_stars = request.POST.getlist('other_nakshatram[]')
+                    #     other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
+                    #     other_prices = request.POST.getlist('other_price[]')
+
+                    #     for index, other_name in enumerate(other_names):
+                    #         if other_name.strip():
+                    #             other_star = get_object_or_404(Star, name=other_stars[index])
+                    #             vazhipadu = other_vazhipadugal[index]
+                    #             price = Decimal(other_prices[index])
+
+                    #             BillOther.objects.create(
+                    #                 bill=bill,
+                    #                 person_name=other_name,
+                    #                 person_star=other_star,
+                    #                 vazhipadu=vazhipadu,
+                    #                 price=price,
+                    #                 payment_method=payment_method
+                    #             )
+
+    #                 messages.success(request, "Billing details have been successfully recorded.")
+    #                 return redirect(reverse('receipt', kwargs={'pk': bill.id}))
+
+    #     except Exception as e:
+    #         # Rollback transaction on error
+    #         messages.error(request, f"An error occurred while processing the billing: {e}")
+    #         return redirect('add-bill')
+
+    # messages.error(request, "Invalid request method.")
+    # return redirect('add-bill')
 
 
 
@@ -387,11 +616,43 @@ class ReceiptView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
         # Retrieve the current temple from the session
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-        # Add any additional data if necessary
         context["temple"] = temple
+
+        bill_detail = {"total_amount": self.get_object().total_amount, "vazhipadu_list": []}
+        
+        for vazhipadu in self.get_object().bill_vazhipadu_offerings.all():
+            vazhipadu_detail = {
+                "vazhipadu": vazhipadu.vazhipadu_offering.name,
+                "price": vazhipadu.vazhipadu_offering.price,
+                "primary_person": None,
+                "other_persons": []
+            }
+            
+            # Retrieve all person details for the current vazhipadu
+            persons = vazhipadu.person_details.all()
+            
+            # Separate the first person from the rest
+            if persons.exists():
+                first_person = persons[0]
+                vazhipadu_detail["primary_person"] = {
+                    "name": first_person.person_name,
+                    "star": first_person.person_star.name
+                }
+                
+                # Handle the remaining persons
+                for person in persons[1:]:
+                    vazhipadu_detail["other_persons"].append({
+                        "name": person.person_name,
+                        "star": person.person_star.name
+                    })
+            
+            bill_detail["vazhipadu_list"].append(vazhipadu_detail)
+        
+        context["bill_detail"] = bill_detail
         return context
 
 
@@ -399,43 +660,74 @@ class ReceiptView(LoginRequiredMixin, DetailView):
 class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/new_bill_receipt.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
 
-        # Fetch the temple based on session data
-        temple_id = self.request.session.get('temple_id')
-        temple = get_object_or_404(Temple, id=temple_id)
-        context['temple'] = temple
+    # Fetch the temple based on session data
+    temple_id = self.request.session.get('temple_id')
+    temple = get_object_or_404(Temple, id=temple_id)
+    context['temple'] = temple
 
-        # Get the list of bill IDs from query parameters
-        query_string = self.request.META.get('QUERY_STRING', '')
-        bill_ids = query_string.split('=')[1].split('&') if '=' in query_string else []
-        # Fetch bills belonging to the temple
-        bills = Bill.objects.filter(id__in=bill_ids, temple_id=temple_id)
-        bill_list = []
-        for bill in bills:
-            bill_dict = {}
-            bill_dict['id'] = bill.id
-            bill_dict['date'] = bill.created_at
-            vazhipadu = bill.bill_vazhipadu_offerings.first()
-            if vazhipadu:
-                bill_dict['name'] = vazhipadu.person_name
-                bill_dict['star'] = vazhipadu.person_star
-                bill_dict['vazhipadu'] = vazhipadu.vazhipadu_offering.name
-                bill_dict['price'] = vazhipadu.price
-                bill_list.append(bill_dict)
-            else:
-                other = bill.bill_other_items.first()
-                bill_dict['name'] = other.person_name
-                bill_dict['star'] = other.person_star.name
-                bill_dict['vazhipadu'] = other.vazhipadu
-                bill_dict['price'] = other.price
-                bill_list.append(bill_dict)  
-                
-        context['bills'] = bill_list
+    # Get the list of bill IDs from query parameters
+    query_string = self.request.META.get('QUERY_STRING', '')
+    bill_ids = query_string.split('=')[1].split(',') if '=' in query_string else []
 
-        return context
+    # Fetch bills belonging to the temple
+    bills = Bill.objects.filter(id__in=bill_ids, temple_id=temple_id)
+    bill_list = []
 
+    for bill in bills:
+        bill_dict = {
+            "id": bill.id,
+            "date": bill.created_at,
+            "vazhipadu_list": []
+        }
+
+        # Add vazhipadu offerings for the bill
+        for vazhipadu in bill.bill_vazhipadu_offerings.all():
+            vazhipadu_detail = {
+                "vazhipadu": vazhipadu.vazhipadu_offering.name,
+                "price": vazhipadu.vazhipadu_offering.price,
+                "primary_person": None,
+                "other_persons": []
+            }
+
+            # Fetch person details
+            persons = vazhipadu.person_details.all()
+            if persons.exists():
+                # Separate the first person
+                first_person = persons[0]
+                vazhipadu_detail["primary_person"] = {
+                    "name": first_person.person_name,
+                    "star": first_person.person_star.name
+                }
+                # Add remaining persons
+                for person in persons[1:]:
+                    vazhipadu_detail["other_persons"].append({
+                        "name": person.person_name,
+                        "star": person.person_star.name
+                    })
+
+            bill_dict["vazhipadu_list"].append(vazhipadu_detail)
+
+        # If no vazhipadu offerings, handle other items
+        if not bill.bill_vazhipadu_offerings.exists():
+            for other_item in bill.bill_other_items.all():
+                other_detail = {
+                    "vazhipadu": other_item.vazhipadu,
+                    "price": other_item.price,
+                    "primary_person": {
+                        "name": other_item.person_name,
+                        "star": other_item.person_star.name
+                    },
+                    "other_persons": []
+                }
+                bill_dict["vazhipadu_list"].append(other_detail)
+
+        bill_list.append(bill_dict)
+
+    context['bills'] = bill_list
+    return context
 
 
 class BillExportView(LoginRequiredMixin, View):

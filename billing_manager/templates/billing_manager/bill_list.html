@@ -85,6 +85,24 @@
 
 
 
+[title] {
+    position: relative;
+}
+
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 10;
+    top: 100%;
+    left: 0;
+}
+
+
 {% endblock %}
 
 
@@ -215,8 +233,14 @@
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.created_at }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.vazhipadu_name }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.name }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.star }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}
+                                                title="{{ bill.name }}">
+                                                {{ bill.name|truncatechars:15 }}
+                                            </td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}
+                                                title="{{ bill.star }}">
+                                                {{ bill.star|truncatechars:15 }}
+                                            </td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.payment_method }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>

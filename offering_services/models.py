@@ -12,6 +12,7 @@ class VazhipaduOffering(models.Model):
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated At')
+    allow_multiple = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} - ₹{self.price:.2f}"

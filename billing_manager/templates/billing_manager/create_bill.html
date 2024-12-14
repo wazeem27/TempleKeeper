@@ -2,107 +2,92 @@
 {% load static %}
 
 {% block custom-style %}
-@media (max-width: 767.98px) {
-    .table thead {
-        display: none;
-    }
-    .table tbody, .table tr, .table td {
-        display: block;
-        width: 100%;
-    }
-    .table tr {
-        margin-bottom: 10px;
-    }
-    .table td {
-        text-align: right;
-        position: relative;
-        padding-left: 50%;
-    }
-    .table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        width: 50%;
-        padding-left: 15px;
-        font-weight: bold;
-        text-align: left;
-    }
-    .table td input,
-    .table td select {
-        width: 100%;
-    }
+/* General adjustments for form field layout */
+/*************************************/
+/* General Styling for the Form Rows */
+/*************************************/
+.vazhipadu-form-container {
+    margin-bottom: 20px;
 }
 
-
-
-
-
-
-/* General Card Styling */
-.card {
-    border-radius: 12px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.vazhipadu-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
 }
 
-/* Card Title */
-.card-title {
-    color: #333;
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-}
-
-/* Form Controls */
-.form-select, .form-control {
-    border-radius: 10px;
+.vazhipadu-form-row input,
+.vazhipadu-form-row select {
+    width: 100%;
     padding: 0.75rem 1.25rem;
     font-size: 1rem;
-    border: 1px solid #ddd;
-    background-color: #fafafa;
-    transition: all 0.3s ease-in-out;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Focus Effects */
-.form-select:focus, .form-control:focus {
+.vazhipadu-form-row input:focus,
+.vazhipadu-form-row select:focus {
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
     background-color: #fff;
 }
 
-/* Gap Amount Container */
-#gap-amount-container input {
+/*********************/
+/* Button Styling */
+/*********************/
+.vazhipadu-form-row .btn {
     font-size: 1rem;
-    border-radius: 10px;
-    padding: 0.75rem 1.25rem;
-    border: 1px solid #ddd;
-    background-color: #fafafa;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
 }
 
-#gap-amount-container input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+.vazhipadu-form-row .add-dynamic {
+    background-color: #28a745;
+    color: #fff;
 }
 
-/* Responsive Design for Smaller Screens */
+.vazhipadu-form-row .add-dynamic:hover {
+    background-color: #218838;
+}
+
+.vazhipadu-form-row .remove-row {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.vazhipadu-form-row .remove-row:hover {
+    background-color: #c82333;
+}
+
+/***************************/
+/* Responsive Adjustments */
+/***************************/
+@media (max-width: 768px) {
+    .vazhipadu-form-row {
+        display: block;
+    }
+
+    .vazhipadu-form-row input,
+    .vazhipadu-form-row select {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
 @media (max-width: 576px) {
-    .form-select, .form-control {
-        font-size: 0.9rem;
-        padding: 0.65rem 1rem;
+    .vazhipadu-form-row {
+        gap: 5px;
     }
-    
-    .card-body {
-        padding: 1.5rem;
+
+    .vazhipadu-form-row .btn {
+        width: 100%;
     }
-}
-
-/* Adjust Card Padding and Shadow */
-.card-body {
-    padding: 2rem;
-}
-
-.card {
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 {% endblock %}
 
@@ -142,12 +127,12 @@
                                             
                                             <div class="container" id="vazhipadu-form-container">
 
-                                                <div class="row" id="vazhipadu-form-row">
+                                                <div class="row vazhipadu-form-row" data-parent-id="1">
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                        <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
+                                                        <input type="text" name="parent[1][name]" class="form-control" placeholder="പേര്" required>
                                                     </div>
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                        <select name="nakshatram[]" class="form-control" required>
+                                                        <select name="parent[1][nakshatram]" class="form-control" required>
                                                             <option value="" disabled selected>നക്ഷത്രം</option>
                                                             {% for star in star_items %}
                                                             <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
@@ -155,18 +140,21 @@
                                                         </select>    
                                                     </div>
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                        <select name="pooja[]" class="form-control pooja-select" id="pooja-select" onchange="updateStaticPoojaPrice()" required>
+                                                        <select name="parent[1][pooja]" class="form-control pooja-select" id="pooja-select" onchange="updateStaticPoojaPrice()" required>
                                                             <option value="" disabled selected>വഴിപാട്</option>
                                                             {% for vazhipadu in vazhipadu_items %}
                                                             <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
                                                             {% endfor %}
                                                         </select>    
                                                     </div>
+
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                        <input type="number" name="pooja_price[]" class="form-control pooja-price" id="pooja-price" placeholder="വില" readonly>
+                                                        <input type="number" name="parent[1][price]" class="form-control pooja-price" id="pooja-price" placeholder="വില" readonly>
                                                     </div>
                                                     <div class="col-12 col-sm-2 text-center p-3">
-                                                       <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button> 
+                                                        <button type="button" class="btn btn-success add-dynamic" style="display:none;background-color: #28a745;">+</button> <!-- Initially hidden -->
+                                                       <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; justify-content: center; align-items: center;">X</button>
+                                                       
                                                     </div>
                                                 </div>
 
@@ -244,186 +232,273 @@
 
   {% block main-script %}
   <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-
-    const billingForm = document.getElementById('billing-form');
-    const submitButton = document.getElementById('submit-button');
-
-
-
-    const paymentMethodSelect = document.getElementById('payment-method');
-    // const gapAmountContainer = document.getElementById('gap-amount-container');
-    const gapAmountInput = document.getElementById('gap-amount');
-
-    // Show/Hide Gap Amount based on Payment Method
-    paymentMethodSelect.addEventListener('change', function () {
-        if (this.value === 'Both') {
-            gapAmountContainer.classList.remove('d-none');
-            gapAmountInput.setAttribute('required', 'required');
-        } else {
-            gapAmountContainer.classList.add('d-none');
-            gapAmountInput.removeAttribute('required');
-            gapAmountInput.value = '';  // Reset gap amount when not required
+    document.addEventListener('DOMContentLoaded', function () {
+    
+    
+        const billingForm = document.getElementById('billing-form');
+        const submitButton = document.getElementById('submit-button');
+    
+     // Function to toggle the display of "+" icon
+     function toggleDynamicButton(selectElement) {
+            const addButton = selectElement.closest('.row').querySelector('.add-dynamic');
+            console.log(selectElement.value);
+            const vazhipaduList = {{ multi_support_vazhipadu|safe }};
+            console.log(vazhipaduList)
+            if (vazhipaduList.includes(selectElement.value)) {
+                addButton.style.display = 'inline-block';  // Show the "+" button
+            } else {
+                addButton.style.display = 'none';  // Hide the "+" button
+            }
         }
-    });
-
-    // Optional: Enable/Disable Submit Button based on form validity
-    billingForm.addEventListener('input', function () {
-        // Check if the form is valid (all required fields are filled)
-        if (billingForm.checkValidity()) {
-            submitButton.disabled = false;  // Enable submit button
-        } else {
-            submitButton.disabled = true;   // Disable submit button if form is invalid
-        }
-    });
         
-
-
-
-
-
-    // Disable the submit button initially
-    submitButton.disabled = true;
-
-    // Function to check if all fields are filled
-    function validateForm() {
-        let isValid = true;
-
-        // Check all inputs and selects within the form
-        billingForm.querySelectorAll('input[required], select[required]').forEach(function (field) {
-            if (!field.value.trim()) {
-                isValid = false;
+        
+    
+    
+    
+        const paymentMethodSelect = document.getElementById('payment-method');
+        // const gapAmountContainer = document.getElementById('gap-amount-container');
+        const gapAmountInput = document.getElementById('gap-amount');
+    
+        // Show/Hide Gap Amount based on Payment Method
+        paymentMethodSelect.addEventListener('change', function () {
+            if (this.value === 'Both') {
+                gapAmountContainer.classList.remove('d-none');
+                gapAmountInput.setAttribute('required', 'required');
+            } else {
+                gapAmountContainer.classList.add('d-none');
+                gapAmountInput.removeAttribute('required');
+                gapAmountInput.value = '';  // Reset gap amount when not required
             }
         });
-
-        // Enable or disable the submit button based on the validity
-        submitButton.disabled = !isValid;
+    
+        // Optional: Enable/Disable Submit Button based on form validity
+        billingForm.addEventListener('input', function () {
+            // Check if the form is valid (all required fields are filled)
+            if (billingForm.checkValidity()) {
+                submitButton.disabled = false;  // Enable submit button
+            } else {
+                submitButton.disabled = true;   // Disable submit button if form is invalid
+            }
+        });
+            
+    
+    
+    
+    
+    
+        // Disable the submit button initially
+        submitButton.disabled = true;
+    
+        // Function to check if all fields are filled
+        function validateForm() {
+            let isValid = true;
+    
+            // Check all inputs and selects within the form
+            billingForm.querySelectorAll('input[required], select[required]').forEach(function (field) {
+                if (!field.value.trim()) {
+                    isValid = false;
+                }
+            });
+    
+            // Enable or disable the submit button based on the validity
+            submitButton.disabled = !isValid;
+        }
+    
+        // Add event listeners to all input and select fields
+        billingForm.addEventListener('input', validateForm);
+    
+        // Add Vazhipadu row
+        let parentIdCounter = 2; // To track parent rows
+        document.getElementById('add-vazhipadu-row').addEventListener('click', function () {
+            const containerBody = document.getElementById('vazhipadu-form-container');
+    
+            const newRow = document.createElement('div');
+            newRow.setAttribute('data-parent-id', parentIdCounter);
+            newRow.classList.add('row', 'vazhipadu-form-row');
+            newRow.innerHTML = `
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="text" name="parent[${parentIdCounter}][name]" class="form-control" placeholder="പേര്" required>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="parent[${parentIdCounter}][nakshatram]" class="form-control" required>
+                        <option value="" disabled selected>നക്ഷത്രം</option>
+                        {% for star in star_items %}
+                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                        {% endfor %}
+                    </select>    
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="parent[${parentIdCounter}][pooja]" class="form-control pooja-select" required>
+                        <option value="" disabled selected>വഴിപാട്</option>
+                        {% for vazhipadu in vazhipadu_items %}
+                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
+                        {% endfor %}
+                    </select>    
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="number" name="parent[${parentIdCounter}][price]" class="form-control pooja-price" placeholder="വില" readonly>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <button type="button" class="btn btn-success add-dynamic" style="display:none;background-color: #28a745;">+</button> <!-- Initially hidden -->
+                    <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; justify-content: center; align-items: center;">X</button>
+                </div>
+            `;
+            containerBody.appendChild(newRow);
+             // Increment parent ID counter
+             parentIdCounter++;
+    
+            // Add event listener for validation on new inputs and selects
+            newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
+                field.addEventListener('input', validateForm);
+            });
+    
+            // Add event listener for updating price based on selected pooja
+            newRow.querySelector('.pooja-select').addEventListener('change', function () {
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.getAttribute('data-price');
+                newRow.querySelector('.pooja-price').value = price || '';
+            });
+    
+            validateForm(); // Revalidate the form after adding a row
+        });
+    
+        // Remove row event listener (shared for both Vazhipadu and Things)
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('remove-row')) {
+                event.target.closest('.row').remove();
+                validateForm(); // Revalidate the form after removing a row
+            }
+        });
+    
+    
+    
+        // Handle Pooja selection change to show the "+" icon
+    // Function to toggle the display of "+" icon
+    function toggleDynamicButton(selectElement) {
+        const addButton = selectElement.closest('.row').querySelector('.add-dynamic');
+            console.log(selectElement.value);
+            const vazhipaduList = {{ multi_support_vazhipadu|safe }};
+            console.log(vazhipaduList)
+        if (vazhipaduList.includes(selectElement.value)) {
+            addButton.style.display = 'inline-block'; // Show the "+" button
+        } else {
+            addButton.style.display = 'none'; // Hide the "+" button
+        }
     }
-
-    // Add event listeners to all input and select fields
-    billingForm.addEventListener('input', validateForm);
-
-    // Add Vazhipadu row
-    document.getElementById('add-vazhipadu-row').addEventListener('click', function () {
-        const containerBody = document.getElementById('vazhipadu-form-container');
-
-        const newRow = document.createElement('div');
-        newRow.classList.add('row', 'vazhipadu-form-row');
-        newRow.innerHTML = `
-            <div class="col-12 col-sm-2 text-center p-3">
-                <input type="text" name="name[]" class="form-control" placeholder="പേര്" required>
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <select name="nakshatram[]" class="form-control" required>
-                    <option value="" disabled selected>നക്ഷത്രം</option>
-                    {% for star in star_items %}
-                    <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
-                    {% endfor %}
-                </select>    
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <select name="pooja[]" class="form-control pooja-select" required>
-                    <option value="" disabled selected>വഴിപാട്</option>
-                    {% for vazhipadu in vazhipadu_items %}
-                    <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
-                    {% endfor %}
-                </select>    
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <input type="number" name="pooja_price[]" class="form-control pooja-price" placeholder="വില" readonly>
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
-            </div>
-        `;
-        containerBody.appendChild(newRow);
-
-        // Add event listener for validation on new inputs and selects
-        newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
-            field.addEventListener('input', validateForm);
-        });
-
-        // Add event listener for updating price based on selected pooja
-        newRow.querySelector('.pooja-select').addEventListener('change', function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const price = selectedOption.getAttribute('data-price');
-            newRow.querySelector('.pooja-price').value = price || '';
-        });
-
-        validateForm(); // Revalidate the form after adding a row
-    });
-
-    // Remove row event listener (shared for both Vazhipadu and Things)
-    document.addEventListener('click', function (event) {
-        if (event.target.classList.contains('remove-row')) {
-            event.target.closest('.row').remove();
-            validateForm(); // Revalidate the form after removing a row
+    
+    // Use event delegation for dynamically added pooja-select elements
+    document.getElementById('vazhipadu-form-container').addEventListener('change', function (e) {
+        if (e.target && e.target.classList.contains('pooja-select')) {
+            toggleDynamicButton(e.target);
         }
     });
-
-    // Add event listeners for the "Add Things" button and fields
-    document.getElementById('add-things-row').addEventListener('click', function () {
-        const containerBody = document.getElementById('things-form-container');
-
-        const newRow = document.createElement('div');
-        newRow.classList.add('row', 'things-form-row');
-        newRow.innerHTML = `
-            <div class="col-12 col-sm-2 text-center p-3">
-                <input type="text" name="other_name[]" class="form-control" placeholder="പേര്" required>
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <select name="other_nakshatram[]" class="form-control" required>
-                    <option value="" disabled selected>നക്ഷത്രം</option>
-                    {% for star in star_items %}
-                    <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
-                    {% endfor %}
-                </select>  
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <input type="text" name="other_vazhipadu[]" class="form-control" placeholder="വഴിപാട്" required>
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <input type="number" name="other_price[]" class="form-control thing-price" placeholder="വില" required>
-            </div>
-            <div class="col-12 col-sm-2 text-center p-3">
-                <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
-            </div>
-        `;
-        containerBody.appendChild(newRow);
-
-        // Add event listener for validation on new inputs and selects
-        newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
-            field.addEventListener('input', validateForm);
-        });
-
-        validateForm(); // Revalidate the form after adding a row
-    });
-
-    validateForm(); // Initial validation
-});
-
-
     
-    // Submit form programmatically on "Submit" button click
-    document.getElementById('submit-button').addEventListener('click', function() {
-        document.getElementById('billing-form').submit();
+    
+    // Add event listener for dynamically adding rows
+    let childIdCounter = 1; // To track child rows
+    document.getElementById('vazhipadu-form-container').addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('add-dynamic')) {
+            const currentRow = e.target.closest('.row'); // Locate the current row
+            const parentId = currentRow.getAttribute('data-parent-id');
+    
+            // Create the new row
+            const newRow = document.createElement('div');
+            newRow.classList.add('row', 'vazhipadu-form-row');
+            newRow.setAttribute('data-child-id', childIdCounter);
+            newRow.innerHTML = `
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="text" name="parent[${parentId}][children][${childIdCounter}][name]" class="form-control" placeholder="പേര്" required>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="parent[${parentId}][children][${childIdCounter}][nakshatram]" class="form-control" required>
+                        <option value="" disabled selected>നക്ഷത്രം</option>
+                        {% for star in star_items %}
+                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px;">X</button>
+                </div>
+            `;
+    
+            // Insert the new row immediately after the current row
+            currentRow.parentNode.insertBefore(newRow, currentRow.nextSibling);
+            // Increment child ID counter
+            childIdCounter ++;
+    
+            // Add event listener for the remove button of the new row
+            newRow.querySelector('.remove-row').addEventListener('click', function () {
+                newRow.remove();
+            });
+        }
     });
-
-    function updateStaticPoojaPrice() {
-    const poojaSelect = document.getElementById('pooja-select');
-    const priceInput = document.getElementById('pooja-price');
-
-    // Get the selected option
-    const selectedOption = poojaSelect.options[poojaSelect.selectedIndex];
-    const price = selectedOption.getAttribute('data-price');
-
-    // Update the price input field
-    if (price) {
-        priceInput.value = price;
+    
+    
+    
+    
+        // Add event listeners for the "Add Things" button and fields
+        document.getElementById('add-things-row').addEventListener('click', function () {
+            const containerBody = document.getElementById('things-form-container');
+    
+            const newRow = document.createElement('div');
+            newRow.classList.add('row', 'things-form-row');
+            newRow.innerHTML = `
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="text" name="other_name[]" class="form-control" placeholder="പേര്" required>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <select name="other_nakshatram[]" class="form-control" required>
+                        <option value="" disabled selected>നക്ഷത്രം</option>
+                        {% for star in star_items %}
+                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                        {% endfor %}
+                    </select>  
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="text" name="other_vazhipadu[]" class="form-control" placeholder="വഴിപാട്" required>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <input type="number" name="other_price[]" class="form-control thing-price" placeholder="വില" required>
+                </div>
+                <div class="col-12 col-sm-2 text-center p-3">
+                    <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; border-radius: 50%; justify-content: center; align-items: center;">X</button>
+                </div>
+            `;
+            containerBody.appendChild(newRow);
+    
+            // Add event listener for validation on new inputs and selects
+            newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
+                field.addEventListener('input', validateForm);
+            });
+    
+            validateForm(); // Revalidate the form after adding a row
+        });
+    
+        validateForm(); // Initial validation
+    });
+    
+    
+        
+        // Submit form programmatically on "Submit" button click
+        document.getElementById('submit-button').addEventListener('click', function() {
+            document.getElementById('billing-form').submit();
+        });
+    
+        function updateStaticPoojaPrice() {
+        const poojaSelect = document.getElementById('pooja-select');
+        const priceInput = document.getElementById('pooja-price');
+    
+        // Get the selected option
+        const selectedOption = poojaSelect.options[poojaSelect.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+    
+        // Update the price input field
+        if (price) {
+            priceInput.value = price;
+        }
     }
-}
-
-</script>
+    
+    </script>
 
 {% endblock %}

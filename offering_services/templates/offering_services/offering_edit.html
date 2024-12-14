@@ -44,6 +44,10 @@
             <label for="offeringPrice" class="form-label">വില</label>
             <input type="number" class="form-control" id="offeringPrice" name="price" value="{{ offering.price }}" required>
         </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="allowMultiple" name="allow_multiple" {% if offering.allow_multiple %}checked{% endif %}>
+            <label class="form-check-label" for="allowMultiple">Allow Multiple Person Detail</label>
+        </div>
         <div class="mb-3">
             <button type="submit" class="btn btn-primary">Update</button>
             <a href="{% url 'offerings-list' %}" class="btn btn-secondary">Cancel</a>
