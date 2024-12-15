@@ -292,9 +292,9 @@ class SubmitBill(LoginRequiredMixin, View):
                                 person_name=child["name"],
                                 person_star=get_object_or_404(Star, name=child["nakshatram"])
                             )
-                        )  
-                    # Bulk create PersonDetail objects
-                    PersonDetail.objects.bulk_create(person_details)
+                        )
+                # Bulk create PersonDetail objects
+                PersonDetail.objects.bulk_create(person_details)
 
                 bill_ids = ",".join([str(bill.id) for bill in bill_objects])
                 for bill in bill_objects:
@@ -660,74 +660,77 @@ class ReceiptView(LoginRequiredMixin, DetailView):
 class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/new_bill_receipt.html"
 
-def get_context_data(self, **kwargs):
-    context = super().get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    # Fetch the temple based on session data
-    temple_id = self.request.session.get('temple_id')
-    temple = get_object_or_404(Temple, id=temple_id)
-    context['temple'] = temple
+        # Fetch the temple based on session data
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['temple'] = temple
 
-    # Get the list of bill IDs from query parameters
-    query_string = self.request.META.get('QUERY_STRING', '')
-    bill_ids = query_string.split('=')[1].split(',') if '=' in query_string else []
+        # Get the list of bill IDs from query parameters
+        query_string = self.request.META.get('QUERY_STRING', '')
+        bill_ids = query_string.split('=')[1].split(',') if '=' in query_string else []
+        bill_ids = bill_ids[0].split('&')
 
-    # Fetch bills belonging to the temple
-    bills = Bill.objects.filter(id__in=bill_ids, temple_id=temple_id)
-    bill_list = []
+        # Fetch bills belonging to the temple
+        bills = Bill.objects.filter(id__in=bill_ids, temple_id=temple_id)
+        bill_list = []
 
-    for bill in bills:
-        bill_dict = {
-            "id": bill.id,
-            "date": bill.created_at,
-            "vazhipadu_list": []
-        }
-
-        # Add vazhipadu offerings for the bill
-        for vazhipadu in bill.bill_vazhipadu_offerings.all():
-            vazhipadu_detail = {
-                "vazhipadu": vazhipadu.vazhipadu_offering.name,
-                "price": vazhipadu.vazhipadu_offering.price,
-                "primary_person": None,
-                "other_persons": []
+        for bill in bills:
+            bill_dict = {
+                "id": bill.id,
+                "date": bill.created_at,
+                "vazhipadu_list": []
             }
 
-            # Fetch person details
-            persons = vazhipadu.person_details.all()
-            if persons.exists():
-                # Separate the first person
-                first_person = persons[0]
-                vazhipadu_detail["primary_person"] = {
-                    "name": first_person.person_name,
-                    "star": first_person.person_star.name
-                }
-                # Add remaining persons
-                for person in persons[1:]:
-                    vazhipadu_detail["other_persons"].append({
-                        "name": person.person_name,
-                        "star": person.person_star.name
-                    })
-
-            bill_dict["vazhipadu_list"].append(vazhipadu_detail)
-
-        # If no vazhipadu offerings, handle other items
-        if not bill.bill_vazhipadu_offerings.exists():
-            for other_item in bill.bill_other_items.all():
-                other_detail = {
-                    "vazhipadu": other_item.vazhipadu,
-                    "price": other_item.price,
-                    "primary_person": {
-                        "name": other_item.person_name,
-                        "star": other_item.person_star.name
-                    },
+            # Add vazhipadu offerings for the bill
+            for vazhipadu in bill.bill_vazhipadu_offerings.all():
+                vazhipadu_detail = {
+                    "vazhipadu": vazhipadu.vazhipadu_offering.name,
+                    "price": vazhipadu.vazhipadu_offering.price,
+                    "primary_person": None,
                     "other_persons": []
                 }
-                bill_dict["vazhipadu_list"].append(other_detail)
 
-        bill_list.append(bill_dict)
+                bill_dict['total_amount'] = vazhipadu.vazhipadu_offering.price
 
-    context['bills'] = bill_list
-    return context
+                # Fetch person details
+                persons = vazhipadu.person_details.all()
+                if persons.exists():
+                    # Separate the first person
+                    first_person = persons[0]
+                    vazhipadu_detail["primary_person"] = {
+                        "name": first_person.person_name,
+                        "star": first_person.person_star.name
+                    }
+                    # Add remaining persons
+                    for person in persons[1:]:
+                        vazhipadu_detail["other_persons"].append({
+                            "name": person.person_name,
+                            "star": person.person_star.name
+                        })
+
+                bill_dict["vazhipadu_list"].append(vazhipadu_detail)
+
+            # If no vazhipadu offerings, handle other items
+            if not bill.bill_vazhipadu_offerings.exists():
+                for other_item in bill.bill_other_items.all():
+                    other_detail = {
+                        "vazhipadu": other_item.vazhipadu,
+                        "price": other_item.price,
+                        "primary_person": {
+                            "name": other_item.person_name,
+                            "star": other_item.person_star.name
+                        },
+                        "other_persons": []
+                    }
+                    bill_dict["vazhipadu_list"].append(other_detail)
+
+            bill_list.append(bill_dict)
+
+        context['bills'] = bill_list
+        return context
 
 
 class BillExportView(LoginRequiredMixin, View):

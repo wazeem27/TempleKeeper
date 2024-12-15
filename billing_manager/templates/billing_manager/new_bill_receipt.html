@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Split Receipt</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -14,36 +15,39 @@
         }
 
         .receipt-card {
-            width: 100%; /* Use full printable width */
-            max-width: 80mm; /* Ensure compatibility with 80mm paper */
-            margin: 0 auto; /* Center the receipt */
-            padding: 2mm; /* Minimal padding */
-            border: none; /* Remove border to save space */
+            width: 80mm;
+            padding: 5mm;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             background-color: #fff;
-            page-break-inside: avoid;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10mm; /* Space between receipts */
+            position: relative;
+            overflow: hidden;
+            page-break-inside: avoid; /* Prevent breaking receipts */
         }
 
         .header p {
             margin: 0;
             font-weight: bold;
             text-align: center;
-            line-height: 1.2;
+            line-height: 1;
         }
 
         .line {
             border-top: 1px dashed #000;
-            margin: 2px 0;
+            margin: 4px 0;
         }
 
         p {
-            margin: 2px 0; /* Reduce spacing between paragraphs */
+            margin: 2px 0;
             font-size: 0.8rem;
         }
 
         .footer {
             text-align: center;
             font-size: 0.7rem;
-            margin-top: 2px;
+            margin-top: 4px;
         }
 
         .footer p {
@@ -54,7 +58,22 @@
             font-weight: bold;
         }
 
-        /* Optimize for printing */
+        .table td, .table th {
+            font-size: 0.8rem;
+            padding: 2px;
+            text-align: left;
+        }
+
+        .table th {
+            font-weight: bold;
+        }
+
+        .total {
+            font-weight: bold;
+            text-align: right;
+            margin-top: 4px;
+        }
+
         @media print {
             body {
                 margin: 0;
@@ -62,9 +81,11 @@
                 background-color: #fff;
             }
             .receipt-card {
-                padding: 0;
                 margin: 0 auto;
-                width: 100%;
+                width: 80mm;
+                max-width: none;
+                border: none;
+                box-shadow: none;
             }
         }
     </style>
@@ -81,51 +102,87 @@
         </nav>
     </div><!-- End Page Title -->
 
-    <section class="row justify-content-center align-items-center">
-        <!-- Loop through each vazhipadu offering -->
-        {% for bill in bills %}
-        <div class="col-12 mb-4">
-            <div class="receipt-card">
-                <!-- Header -->
-                <div class="header">
-                    <p>{{ temple.temple_bill_title }}</p>
-                </div>
-                <p class="text-center mb-1 mt-1">{{ temple.temple_bill_mid }}</p>
-
-                <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
-                <p class="text-end mb-1">തിയതി: {{ bill.date|date:"d/m/Y" }}</p>
-                <div class="line"></div>
-
-                <!-- Receipt Number and Date -->
-                <p class="mb-1">
-                    <span>രസീത് നം: {{ bill.id }}</span> 
-                </p>
-
-                <div class="line"></div>
-
-                <!-- Billing Name -->
-                <p class="mb-1"><strong>പേര്:</strong> {{ bill.name }}</p>
-                <p class="mb-1"><strong>നക്ഷത്രം:</strong> {{ bill.star }}</p>
-                <p class="mb-1"><strong>വഴിപാട്:</strong> {{ bill.vazhipadu }}</p>
-                <p class="mb-1"><strong>രൂപ:</strong> ₹{{ bill.price }}</p>
-
-                <div class="line"></div>
-
-                <!-- Footer -->
-                <div class="footer">
-                    <p>{{ temple.temple_bill_footer }}</p>
-                </div>
-            </div>
+    {% for bill in bills %}
+    <div class="receipt-card">
+        <!-- Header -->
+        <div class="header">
+            <p>{{ temple.temple_bill_title }}</p>
         </div>
-        {% endfor %}
-    </section>
+        <p class="text-center mb-1 mt-1">{{ temple.temple_bill_mid }}</p>
+
+        <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
+
+        <p class="text-center mb-1 mt-1">Date: {{ bill.date|date:"d/m/Y" }}</p>
+        <br>
+
+        <div class="line"></div>
+
+        <!-- Receipt Number -->
+        <p class="mb-1">
+            <span>രസീത് നം: {{ bill.id }}</span> 
+        </p>
+
+        <!-- Items -->
+        <div class="line"></div>
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>പേര്</th>
+                    <th>നക്ഷത്രം</th>
+                    <th>വഴിപാട്</th>
+                    <th class="text-end">രൂപ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in bill.vazhipadu_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {% if detail.primary_person %}
+                            {{ detail.primary_person.name }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if detail.primary_person %}
+                            {{ detail.primary_person.star }}
+                        {% endif %}
+                    </td>
+                    <td>{{ detail.vazhipadu }}</td>
+                    <td class="text-end">{{ detail.price }}</td>
+                </tr>
+                {% for person in detail.other_persons %}
+                <tr>
+                    <td></td>
+                    <td>{{ person.name }}</td>
+                    <td>{{ person.star }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="line"></div>
+
+        <!-- Total -->
+        <p class="total mb-1">Total: ₹{{ bill.total_amount }}</p>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="thanks">{{ temple.temple_bill_footer }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-window.addEventListener('load', function () {
-            window.print();
-        });
-</script>
+    window.addEventListener('load', function () {
+                window.print();
+            });
+        </script>
 </body>
 </html>
