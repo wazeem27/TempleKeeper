@@ -207,3 +207,29 @@ class WalletCollection(models.Model):
 
     def __str__(self):
         return f"Wallet Collection for {self.date}"
+
+
+
+class Expense(models.Model):
+    item_name = models.CharField(max_length=255, verbose_name="Item Name")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Price")
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        verbose_name="User"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+
+    @property
+    def total_cost(self):
+        """Calculate the total cost for the item."""
+        return self.price * self.quantity
+
+    def __str__(self):
+        return f"{self.item_name} - {self.quantity} x {self.price}"
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Expense"
+        verbose_name_plural = "Expenses"

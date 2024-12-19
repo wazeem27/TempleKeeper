@@ -251,7 +251,7 @@ class SubmitBill(LoginRequiredMixin, View):
             parents = self._validate_parents_data(data)
 
             # Calculate total price
-            total_price = sum(float(parent["price"]) for parent in parents)
+            total_price = sum(float(parent["price"]) * int(parent["quantity"]) for parent in parents)
 
             user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple.id)
 
@@ -272,7 +272,7 @@ class SubmitBill(LoginRequiredMixin, View):
                     vazhipadu_bill = BillVazhipaduOffering.objects.create(
                         bill=bill,
                         vazhipadu_offering=vazhipadu_offering,
-                        quantity=1,
+                        quantity=int(parent["quantity"]),
                         price=parent["price"]
                     )
                     # Add parent person detail
@@ -321,7 +321,7 @@ class SubmitBill(LoginRequiredMixin, View):
                     vazhipadu_bill = BillVazhipaduOffering.objects.create(
                         bill=bill,
                         vazhipadu_offering=vazhipadu_offering,
-                        quantity=1,
+                        quantity=int(parent["quantity"]),
                         price=parent["price"]
                     )
 
@@ -628,6 +628,7 @@ class ReceiptView(LoginRequiredMixin, DetailView):
             vazhipadu_detail = {
                 "vazhipadu": vazhipadu.vazhipadu_offering.name,
                 "price": vazhipadu.vazhipadu_offering.price,
+                "quantity": vazhipadu.quantity,
                 "primary_person": None,
                 "other_persons": []
             }
@@ -688,12 +689,14 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
             for vazhipadu in bill.bill_vazhipadu_offerings.all():
                 vazhipadu_detail = {
                     "vazhipadu": vazhipadu.vazhipadu_offering.name,
-                    "price": vazhipadu.vazhipadu_offering.price,
+                    "price": float(vazhipadu.vazhipadu_offering.price),
+                    "quantity": int(vazhipadu.quantity),
+                    "total_price": float(vazhipadu.vazhipadu_offering.price) * int(vazhipadu.quantity),
                     "primary_person": None,
                     "other_persons": []
                 }
 
-                bill_dict['total_amount'] = vazhipadu.vazhipadu_offering.price
+                bill_dict['total_amount'] = vazhipadu.vazhipadu_offering.price * vazhipadu.quantity
 
                 # Fetch person details
                 persons = vazhipadu.person_details.all()
@@ -719,6 +722,7 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
                     other_detail = {
                         "vazhipadu": other_item.vazhipadu,
                         "price": other_item.price,
+                        "quantity": other_item.quantity,
                         "primary_person": {
                             "name": other_item.person_name,
                             "star": other_item.person_star.name

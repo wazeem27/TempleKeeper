@@ -191,6 +191,7 @@
                     <th>പേര്</th>
                     <th>നക്ഷത്രം</th>
                     <th>വഴിപാട്</th>
+                    <th>എണ്ണം</th>
                     <th class="text-end">രൂപ</th>
                 </tr>
             </thead>
@@ -209,6 +210,7 @@
                         {% endif %}
                     </td>
                     <td>{{ detail.vazhipadu }}</td>
+                    <td>{{ detail.quantity }} x </td>
                     <td class="text-end">{{ detail.price }}</td>
                 </tr>
                 {% for person in detail.other_persons %}
@@ -238,6 +240,7 @@
                     <th>പേര്</th>
                     <th>നക്ഷത്രം</th>
                     <th>വഴിപാട്</th>
+                    <th>എണ്ണം</th>
                     <th class="text-end">രൂപ</th>
                 </tr>
             </thead>

@@ -192,6 +192,7 @@
                     <th>പേര്</th>
                     <th>നക്ഷത്രം</th>
                     <th>വഴിപാട്</th>
+                    <th>എണ്ണം</th>
                     <th class="text-end">രൂപ</th>
                 </tr>
             </thead>
@@ -202,6 +203,7 @@
                     <td>{{ vazhipadu.person_name }}</td>
                     <td>{{ vazhipadu.person_star }}</td>
                     <td>{{ vazhipadu.vazhipadu_offering.name }}</td>
+                    <td>{{ vazhipadu.quantity }} x</td>
                     <td class="text-end">{{ vazhipadu.price }}</td>
                 </tr>
                 {% endfor %}
