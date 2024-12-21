@@ -139,7 +139,7 @@
                                         <div class="input-group">
                                             <span class="input-group-text">{{ coin }} X </span>
                                             <input type="number" class="form-control" id="coin{{ coin }}" placeholder="Enter Count" disabled oninput="calculateTotal()">
-                                            <span class="input-group-text" id="coinTotal{{ coin }}" data-coin="{{ coin }}">0 Rs</span>
+                                            <span class="input-group-text" id="coinTotal{{ coin }}" data-coin="{{ coin }}">= 0 Rs</span>
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -159,7 +159,7 @@
                                         <div class="input-group">
                                             <span class="input-group-text">{{ note }} X</span>
                                             <input type="number" class="form-control" id="note{{ note }}" placeholder="Enter Count" disabled oninput="calculateTotal()">
-                                            <span class="input-group-text" id="noteTotal{{ note }}" data-note="{{ note }}">0 Rs</span>
+                                            <span class="input-group-text" id="noteTotal{{ note }}" data-note="{{ note }}">= 0 Rs</span>
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -199,7 +199,7 @@
         coinDenominations.forEach(value => {
             const count = document.getElementById(`coin${value}`).value || 0;
             coinTotal += value * parseInt(count);
-            document.getElementById(`coinTotal${value}`).textContent = `${value * count} Rs`;
+            document.getElementById(`coinTotal${value}`).textContent = `= ${value * count} Rs`;
         });
         document.getElementById('coinTotal').textContent = coinTotal;
 
@@ -208,7 +208,7 @@
         noteDenominations.forEach(value => {
             const count = document.getElementById(`note${value}`).value || 0;
             noteTotal += value * parseInt(count);
-            document.getElementById(`noteTotal${value}`).textContent = `${value * count} Rs`;
+            document.getElementById(`noteTotal${value}`).textContent = `= ${value * count} Rs`;
         });
         document.getElementById('noteTotal').textContent = noteTotal;
 
