@@ -116,10 +116,24 @@
 {% endblock %}
 
 {% block main-content %}
+
 <main id="main" class="main">
     <div class="pagetitle">
-        <h1>Wallet Collection</h1>
-    </div>
+        <h1>Wallet Collection ({{date}})</h1> <!-- Added h4 for mobile view -->
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active">Wallet</li>
+            </ol>
+        </nav>
+        {% if messages %}
+        <div class="alert alert-success" role="alert">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+        {% endif %}
+    </div><!-- End Page Title -->
 
     <section class="section dashboard">
         <div class="row">

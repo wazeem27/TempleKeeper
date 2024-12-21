@@ -946,6 +946,7 @@ class WalletCollectionCreateView(LoginRequiredMixin, View):
             'coin_list': coin_list,
             'note_list': note_list,
             'initial_data': initial_data,
+            'date': date
         }
         return render(request, 'billing_manager/interim.html', context)
 
@@ -1087,7 +1088,7 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
         context['wallet_details'] = wallet_details
         context['total_coin_sum'] = total_coin_sum
         context['total_note_sum'] = total_note_sum
-
+        context['date'] = date
         return context
 
 
