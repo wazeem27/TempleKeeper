@@ -18,7 +18,8 @@ from django.urls import path
 from billing_manager.views import (
     BillingView, BillListView, BillDetailView, ReceiptView, SubmitBill,
     ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method,
-    WalletCalendar, WalletCollectionCreateView)
+    WalletCalendar, WalletCollectionCreateView, WalletOveralCollectionCalendar,
+    WalletOveralCollectionView)
 
 
 urlpatterns = [
@@ -33,7 +34,8 @@ urlpatterns = [
     path('update-payment-method/', update_payment_method, name='update-payment-method'),
     path('wallet_calendar/', WalletCalendar.as_view(), name='wallet-info'),
     path('wallet/add/', WalletCollectionCreateView.as_view(), name='wallet_add'),
-
+    path('overall_wallet_calendar/', WalletOveralCollectionCalendar.as_view(), name='overall-wallet-calendar'),
+    path('wallet/overall/', WalletOveralCollectionView.as_view(), name='wallet-overall'),
     # path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
 
 ]

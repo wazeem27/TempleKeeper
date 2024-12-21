@@ -905,10 +905,12 @@ class WalletCalendar(LoginRequiredMixin, TemplateView):
         return context
 
 
-class WalletCollectionCreateView(View):
+class WalletCollectionCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # Get the 'date' query parameter
         date = request.GET.get('date')
+        temple_id = self.request.session.get('temple_id')
+
 
         try:
             date = datetime.strptime(date, "%Y-%m-%d").date()
@@ -918,7 +920,7 @@ class WalletCollectionCreateView(View):
             raise Http404("Date parameter is required")
 
         # Try to retrieve the existing WalletCollection for the provided date
-        wallet_collection = WalletCollection.objects.filter(date=date).first()
+        wallet_collection = WalletCollection.objects.filter(date=date, temple=temple_id, user=self.request.user).first()
         coin_list = [1, 2, 5, 10, 20]
         note_list = [1, 5, 10, 20, 50, 100, 200, 500]
 
@@ -960,7 +962,7 @@ class WalletCollectionCreateView(View):
             raise Http404("Invalid date format")
 
         # Check if the WalletCollection for this date already exists
-        wallet_collection = WalletCollection.objects.filter(date=date).first()
+        wallet_collection = WalletCollection.objects.filter(date=date, user=self.request.user, temple=temple_id).first()
 
         # If a WalletCollection exists for that date, update it; otherwise, create a new one
         if wallet_collection:
@@ -979,3 +981,116 @@ class WalletCollectionCreateView(View):
                 return redirect('wallet-info')  # Redirect to the same page after saving, or you can redirect to another view
 
         return render(request, 'billing_manager/wallet_calendar.html', {'form': form, 'date': date})
+
+
+class WalletOveralCollectionCalendar(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/wallet_overall_calendar.html"
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        temple_id = self.request.session.get('temple_id')
+        date = self.request.GET.get('date')
+        collections = WalletCollection.objects.filter(temple_id=temple_id)
+
+        # Group by date and sum the amounts for each date
+        date_grouped_data = defaultdict(int)
+        for collec in collections:
+            date_str = collec.date.strftime("%Y-%m-%d")
+            # Sum the values for each date
+            date_grouped_data[date_str] += collec.__sum__()
+
+        # Prepare the dataset for the calendar
+        wallet_dataset = []
+        for date, total in date_grouped_data.items():
+            data = {
+                'start': date,
+                'title': str(total)  # Total amount for that date
+            }
+            wallet_dataset.append(data)
+
+        context['events'] = wallet_dataset
+        return context
+
+
+class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/overall_wallet.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get the date parameter from the URL query string
+        date = self.request.GET.get('date')
+        temple_id = self.request.session.get('temple_id')
+
+        try:
+            # Try to parse the date parameter
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            raise Http404("Invalid date format")
+        
+        if not date:
+            raise Http404("Date parameter is required")
+
+        # Fetch all WalletCollections for the given date and temple
+        collections = WalletCollection.objects.filter(date=date, temple_id=temple_id)
+        
+        # Fetch user profiles associated with the temple
+        user_profiles = UserProfile.objects.filter(temples__id=temple_id)
+
+        # Denominations for coins and notes
+        coin_list = [1, 2, 5, 10, 20]
+        note_list = [1, 5, 10, 20, 50, 100, 200, 500]
+
+        wallet_details = []
+
+        # Initialize accumulators for total sums
+        total_coin_sum = 0
+        total_note_sum = 0
+
+        # Iterate over all user profiles for the temple
+        for profile in user_profiles:
+            total = 0
+            # Initialize wallet data with default 0 for each coin and note
+            wallet_coin = {f"{denomination}": {"count": 0, "value": 0} for denomination in coin_list}
+            wallet_note = {f"{denomination}": {"count": 0, "value": 0} for denomination in note_list}
+            
+            # Get all collections for this user on the specific date
+            user_collection = collections.filter(user=profile.user).first()
+
+            if user_collection:
+                for coin in coin_list:
+                    field_name = f"coin_{coin}"
+                    count = getattr(user_collection, field_name, 0)
+                    wallet_coin[f"{coin}"]["count"] = count
+                    wallet_coin[f"{coin}"]["value"] = int(count) * int(coin)
+                    total_coin_sum += wallet_coin[f"{coin}"]["value"]
+
+                for note in note_list:
+                    field_name = f"note_{note}"
+                    count = getattr(user_collection, field_name, 0)
+                    wallet_note[f"{note}"]["count"] = count
+                    wallet_note[f"{note}"]["value"] = int(count) * int(note)
+                    total_note_sum += wallet_note[f"{note}"]["value"]
+
+                total = user_collection.__sum__()
+
+            # Add the total sum to the wallet data for the user
+            wallet_details.append({
+                'username': profile.user.username,
+                'wallet_coin': wallet_coin,
+                'wallet_note': wallet_note,
+                'sum': total
+            })
+        
+        # Add the wallet details and total sums to the context
+        context['wallet_details'] = wallet_details
+        context['total_coin_sum'] = total_coin_sum
+        context['total_note_sum'] = total_note_sum
+
+        return context
+
+
+
+
+
