@@ -919,6 +919,8 @@ class WalletCollectionCreateView(View):
 
         # Try to retrieve the existing WalletCollection for the provided date
         wallet_collection = WalletCollection.objects.filter(date=date).first()
+        coin_list = [1, 2, 5, 10, 20]
+        note_list = [1, 5, 10, 20, 50, 100, 200, 500]
 
         # If a WalletCollection exists for that date, populate the form with its data
         if wallet_collection:
@@ -931,12 +933,13 @@ class WalletCollectionCreateView(View):
                 'note_counts': {'10': 0, '5': 0, '20': 0}
             })
         
-        return render(request, 'billing_manager/interim.html', {'form': form, 'date': date})
+        return render(request, 'billing_manager/interim.html', {'form': form, 'date': date, 'coin_list': coin_list, 'note_list': note_list})
 
     def post(self, request, *args, **kwargs):
         # Get the 'date' query parameter
         date = request.GET.get('date')
         temple_id = request.session.get('temple_id')
+        import ipdb;ipdb.set_trace()
         if not date:
             raise Http404("Date parameter is required")
 
