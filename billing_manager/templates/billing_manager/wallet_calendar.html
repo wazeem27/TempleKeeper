@@ -176,7 +176,7 @@
             initialView: 'dayGridMonth',  // Default view
             selectable: true,  // Allow selecting dates
             validRange: {
-                end: new Date().toISOString().split('T')[0] // Disable future dates
+                end: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] // Allow one more da
             },
             dateClick: function (info) {
                 // Set selected date and show the modal

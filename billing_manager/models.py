@@ -181,32 +181,40 @@ class WalletCollection(models.Model):
         verbose_name="Temple"
     )
     date = models.DateField()
-    
-    # Cash and coin counts fields
-    counter_cash = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Counter Cash")
-    
+        
     # Fields for coins (1, 2, 5, 10 rupees)
-    coin_1_rupee = models.IntegerField(default=0)
-    coin_2_rupees = models.IntegerField(default=0)
-    coin_5_rupees = models.IntegerField(default=0)
-    coin_10_rupees = models.IntegerField(default=0)
-    coin_20_rupees = models.IntegerField(default=0)
+    coin_1 = models.IntegerField(default=0)
+    coin_2 = models.IntegerField(default=0)
+    coin_5 = models.IntegerField(default=0)
+    coin_10 = models.IntegerField(default=0)
+    coin_20 = models.IntegerField(default=0)
     
     # Fields for notes (5, 10, 20 rupees)
-    note_1_rupees = models.IntegerField(default=0)
-    note_5_rupees = models.IntegerField(default=0)
-    note_10_rupees = models.IntegerField(default=0)
-    note_20_rupees = models.IntegerField(default=0)
-    note_50_rupees = models.IntegerField(default=0)
-    note_100_rupees = models.IntegerField(default=0)
-    note_200_rupees = models.IntegerField(default=0)
-    note_500_rupees = models.IntegerField(default=0)
+    note_1 = models.IntegerField(default=0)
+    note_5 = models.IntegerField(default=0)
+    note_10 = models.IntegerField(default=0)
+    note_20 = models.IntegerField(default=0)
+    note_50 = models.IntegerField(default=0)
+    note_100 = models.IntegerField(default=0)
+    note_200 = models.IntegerField(default=0)
+    note_500 = models.IntegerField(default=0)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Wallet Collection for {self.date}"
+
+    def __sum__(self):
+        # Calculate the sum for coins (multiplying denomination by count)
+        coin_total = (self.coin_1 * 1) + (self.coin_2 * 2) + (self.coin_5 * 5) + (self.coin_10 * 10) + (self.coin_20 * 20)
+        
+        # Calculate the sum for notes (multiplying denomination by count)
+        note_total = (self.note_1 * 1) + (self.note_5 * 5) + (self.note_10 * 10) + (self.note_20 * 20) + (self.note_50 * 50) + \
+                     (self.note_100 * 100) + (self.note_200 * 200) + (self.note_500 * 500)
+        
+        # Return the total sum of coins and notes
+        return coin_total + note_total
 
 
 

@@ -898,7 +898,7 @@ class WalletCalendar(LoginRequiredMixin, TemplateView):
         for collec in collections:
             data = {}
             data['start'] = collec.date.strftime("%Y-%m-%d")
-            data['title'] = str(collec.counter_cash)
+            data['title'] = str(collec.__sum__())
             wallet_dataset.append(data)
         
         context['events'] = wallet_dataset
@@ -912,7 +912,7 @@ class WalletCollectionCreateView(View):
 
         try:
             date = datetime.strptime(date, "%Y-%m-%d").date()
-        except ValueError:
+        except (ValueError, TypeError):
             raise Http404("Invalid date format")
         if not date:
             raise Http404("Date parameter is required")
@@ -922,24 +922,35 @@ class WalletCollectionCreateView(View):
         coin_list = [1, 2, 5, 10, 20]
         note_list = [1, 5, 10, 20, 50, 100, 200, 500]
 
+        # Initialize default data with 0
+        initial_coin_data = {f"coin_{denomination}": 0 for denomination in coin_list}
+        initial_note_data = {f"note_{denomination}": 0 for denomination in note_list}
+
         # If a WalletCollection exists for that date, populate the form with its data
         if wallet_collection:
-            form = WalletCollectionForm(instance=wallet_collection)
-        else:
-            # Otherwise, create an empty form with default values
-            form = WalletCollectionForm(initial={
-                'counter_cash': 0,
-                'coin_counts': {'1': 0, '2': 0, '5': 0, '10': 0, '20': 0},
-                'note_counts': {'10': 0, '5': 0, '20': 0}
-            })
-        
-        return render(request, 'billing_manager/interim.html', {'form': form, 'date': date, 'coin_list': coin_list, 'note_list': note_list})
+            for coin in coin_list:
+                field_name = f"coin_{coin}"
+                initial_coin_data[field_name] = getattr(wallet_collection, field_name, 0)
+
+            for note in note_list:
+                field_name = f"note_{note}"
+                initial_note_data[field_name] = getattr(wallet_collection, field_name, 0)
+
+        # Combine the initial coin and note data
+        initial_data = {**initial_coin_data, **initial_note_data}
+
+        # Pass data to the context
+        context = {
+            'coin_list': coin_list,
+            'note_list': note_list,
+            'initial_data': initial_data,
+        }
+        return render(request, 'billing_manager/interim.html', context)
 
     def post(self, request, *args, **kwargs):
         # Get the 'date' query parameter
         date = request.GET.get('date')
         temple_id = request.session.get('temple_id')
-        import ipdb;ipdb.set_trace()
         if not date:
             raise Http404("Date parameter is required")
 

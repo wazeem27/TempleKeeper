@@ -8,65 +8,60 @@ class WalletCollectionForm(forms.ModelForm):
     class Meta:
         model = WalletCollection
         fields = [
-            'counter_cash', 'coin_1_rupee', 'coin_2_rupees', 'coin_5_rupees', 
-            'coin_10_rupees', 'coin_20_rupees', 'note_1_rupees', 'note_5_rupees', 
-            'note_10_rupees', 'note_20_rupees', 'note_50_rupees', 'note_100_rupees',
-            'note_200_rupees', 'note_500_rupees'
+            'coin_1', 'coin_2', 'coin_5', 
+            'coin_10', 'coin_20', 'note_1', 'note_5', 
+            'note_10', 'note_20', 'note_50', 'note_100',
+            'note_200', 'note_500'
         ]
-
-    counter_cash = forms.DecimalField(
+    coin_1 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter Counter Cash'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 1 Rupee Coins', 'oninput': 'calculateTotal()'})
     )
-    coin_1_rupee = forms.IntegerField(
+    coin_2 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 1 Rupee Coins'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 2 Rupee Coins', 'oninput': 'calculateTotal()'})
     )
-    coin_2_rupees = forms.IntegerField(
+    coin_5 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 2 Rupee Coins'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 5 Rupee Coins', 'oninput': 'calculateTotal()'})
     )
-    coin_5_rupees = forms.IntegerField(
+    coin_10 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 5 Rupee Coins'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 10 Rupee Coins', 'oninput': 'calculateTotal()'})
     )
-    coin_10_rupees = forms.IntegerField(
+    coin_20 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 10 Rupee Coins'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 20 Rupee Coins', 'oninput': 'calculateTotal()'})
     )
-    coin_20_rupees = forms.IntegerField(
+    note_1 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 20 Rupee Coins'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 1 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_1_rupees = forms.IntegerField(
+    note_5 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 1 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 5 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_5_rupees = forms.IntegerField(
+    note_10 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 5 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 10 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_10_rupees = forms.IntegerField(
+    note_20 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 10 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 20 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_20_rupees = forms.IntegerField(
+    note_50 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 20 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 50 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_50_rupees = forms.IntegerField(
+    note_100 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 50 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 100 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_100_rupees = forms.IntegerField(
+    note_200 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 100 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 200 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
-    note_200_rupees = forms.IntegerField(
+    note_500 = forms.IntegerField(
         initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 200 Rupee Notes'})
-    )
-    note_500_rupees = forms.IntegerField(
-        initial=0, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 500 Rupee Notes'})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 500 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
