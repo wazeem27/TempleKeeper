@@ -992,7 +992,7 @@ class WalletOveralCollectionCalendar(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         temple_id = self.request.session.get('temple_id')
         date = self.request.GET.get('date')
-        collections = WalletCollection.objects.filter(temple_id=temple_id)
+        collections = WalletCollection.objects.filter(temple_id=temple_id).exclude(user__username="central_admin")
 
         # Group by date and sum the amounts for each date
         date_grouped_data = defaultdict(int)
@@ -1051,6 +1051,8 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
 
         # Iterate over all user profiles for the temple
         for profile in user_profiles:
+            if profile.user.username == 'central_admin':
+                continue
             total = 0
             # Initialize wallet data with default 0 for each coin and note
             wallet_coin = {f"{denomination}": {"count": 0, "value": 0} for denomination in coin_list}

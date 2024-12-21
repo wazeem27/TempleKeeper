@@ -4,22 +4,43 @@
 {% block custom-style %}
 <!-- FullCalendar CSS -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-<!-- Bootstrap CSS -->
-<style>
+
+
+
+    /* Calendar adjustments for mobile */
+    @media (max-width: 767px) {
+        #calendar-container {
+            padding: 5px; /* Reduce padding for smaller screens */
+        }
+
+        #calendar {
+            min-width: 600px; /* Slightly smaller width for better fit on mobile */
+            margin: 10px auto;
+        }
+    }
+
+
+
+
+    /* Calendar container */
+    #calendar-container {
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Prevent content wrapping */
+        padding: 10px; /* Add padding for better spacing */
+    }
+
     #calendar {
-        max-width: 100%;
+        min-width: 800px; /* Ensure the calendar has a fixed width larger than small screens */
+        max-width: 100%; /* Allow it to adjust on larger screens */
         margin: 20px auto;
         border: 1px solid #dee2e6;
         border-radius: 8px;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
         background-color: #ffffff;
     }
-
-    .modal-content {
-        border-radius: 12px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    .card-header {
+        background: linear-gradient(135deg, #dee2e6, rgb(57, 113, 177));
     }
-
     .fc-toolbar-title {
         font-size: 0.8rem;
         font-weight: 700;
@@ -43,12 +64,6 @@
         border-radius: 4px;
     }
 
-    .fc-day-future {
-        pointer-events: none;
-        background-color: #f8f9fa;
-        opacity: 0.6;
-    }
-
     .fc-daygrid-event {
         font-size: 0.85rem;
         background-color: #0d6efd;
@@ -58,56 +73,13 @@
         padding: 2px 4px;
     }
 
-    .card-header {
-        background: linear-gradient(135deg, #dee2e6, rgb(57, 113, 177));
-    }
 
-    .breadcrumb {
-        background-color: transparent;
-        padding: 0;
-    }
-
-    .breadcrumb-item a {
-        color: #495057;
-        text-decoration: none;
-    }
-
-    .breadcrumb-item.active {
-        color: #007bff;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 767px) {
-        .pagetitle h1 {
-            font-size: 0.7rem;
-        }
-        .card-header h5 {
-            font-size: 0.75rem;
-        }
-        #calendar {
-            margin: 10px;
-            border-radius: 4px;
-        }
-        .fc-toolbar-title {
-            font-size: 0.75em !important;/* Adjust the font size for mobile view */
-        }
-        .pagetitle h2 {
-            display: none; /* Hide the h2 element */
-        }
-        .pagetitle h4 {
-            display: block; /* Show the h4 element in mobile view */
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #495057;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block main-content %}
 <main id="main" class="main">
     <div class="pagetitle">
-        <h4 class="d-none d-sm-block">Wallet</h4> <!-- Added h4 for mobile view -->
+        <h4 class="d-none d-sm-block">Wallet</h4>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
@@ -123,18 +95,17 @@
         {% endif %}
     </div><!-- End Page Title -->
 
-
     <section class="section dashboard">
         <div class="row">
             <div class="col-12">
                 <div class="card shadow-lg border-0 rounded-5 overflow-hidden">
                     <div class="card-header bg-gradient-primary text-white rounded-top-5 p-4 d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">My Wallet</h5>
-                        <a href="{% url 'overall-wallet-calendar' %}" class="btn btn-light">Overview</a>  <!-- The button placed on the right -->
+                        <a href="{% url 'overall-wallet-calendar' %}" class="btn btn-light">Overview</a>
                     </div>
-                    <!-- Card Body -->
                     <div class="card-body p-4 bg-light">
-                        <div class="container mt-5">
+                        <!-- Scrollable Calendar Container -->
+                        <div id="calendar-container">
                             <div id="calendar" class="rounded-3 overflow-hidden shadow-lg"></div>
                         </div>
                         <!-- Confirmation Modal -->
@@ -160,7 +131,7 @@
             </div><!-- End Column -->
         </div><!-- End Row -->
     </section><!-- End Section -->
-</main><!-- End #main -->
+</main>
 
 <!-- FullCalendar JavaScript -->
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
@@ -172,18 +143,19 @@
         const confirmButton = document.getElementById('confirmButton');
         let selectedDate = null;
 
-        // Initialize FullCalendar
         const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',  // Default view
-            selectable: true,  // Allow selecting dates
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            contentHeight: 'auto',
+            handleWindowResize: true,
+            selectable: true,
             validRange: {
-                end: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] // Allow one more da
+                end: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0],
             },
             dateClick: function (info) {
-                // Set selected date and show the modal
                 selectedDate = info.dateStr;
-                selectedDateSpan.textContent = selectedDate;  // Update the span with the selected date
-                modal.show();  // Show the confirmation modal
+                selectedDateSpan.textContent = selectedDate;
+                modal.show();
             },
             events: [
                 {% for event in events %}
@@ -195,12 +167,12 @@
             ]
         });
 
-        calendar.render();  // Render the calendar
+        calendar.render();
 
         // Confirm button handler
         confirmButton.addEventListener('click', function () {
-            modal.hide();  // Hide the modal after confirmation
-            window.location.href = `/billing/wallet/add?date=${selectedDate}`;  // Redirect to the wallet add page with the selected date
+            modal.hide();
+            window.location.href = `/billing/wallet/add?date=${selectedDate}`;
         });
     });
 </script>
