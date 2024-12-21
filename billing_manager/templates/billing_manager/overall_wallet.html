@@ -1,0 +1,251 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom-style %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<!-- Bootstrap CSS -->
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 40px;
+    font-weight: 600;
+}
+
+.card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    border-radius: 16px 16px 0 0;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group-text {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.form-control {
+    border-radius: 8px;
+    font-size: 1.1rem;
+    box-shadow: none;
+    border: 1px solid #ddd;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.6);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 10px 20px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.total-section {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 60px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.total-section h4 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.total-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.row {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.col-md-6 {
+    flex: 1;
+    min-width: 320px;
+}
+
+.progress {
+    border-radius: 12px;
+    height: 20px;
+}
+
+.progress-bar {
+    background-color: #007bff;
+}
+
+.progress-bar-container {
+    background-color: #f4f6f9;
+    border-radius: 12px;
+    padding: 10px;
+    margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+    .total-section {
+        padding: 30px;
+    }
+
+    .col-md-6 {
+        flex: 1;
+        min-width: 100%;
+    }
+}
+{% endblock %}
+
+{% block main-content %}
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h4 class="d-none d-sm-block">Wallet</h4> <!-- Added h4 for mobile view -->
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active">Wallet</li>
+            </ol>
+        </nav>
+        {% if messages %}
+        <div class="alert alert-success" role="alert">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+        {% endif %}
+    </div><!-- End Page Title -->
+
+
+    <section class="section dashboard">
+
+
+        <!-- Individuals Section -->
+        <div class="row">
+            <!-- Individual 1 -->
+             {% for wallet in wallet_details %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" data-bs-toggle="collapse" href="#{{ wallet.username }}" role="button" aria-expanded="false" aria-controls="individual1">
+                        {{ wallet.username }} 
+                        <i class="bi bi-plus-circle float-end" id="toggle-icon1"></i> <!-- Plus Icon -->
+                    </div>
+                    <div class="collapse" id="{{ wallet.username }}">
+                        <div class="card-body">
+                            {% for coin, value in wallet.wallet_coin.items %}
+                            <div class="input-group">
+                                <span class="input-group-text">Coin - {{ coin }} X</span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       value="{{ value.count }}"  
+                                       disabled>
+                                <span class="input-group-text" >= {{ value.value }} Rs</span>
+                            </div>
+                            {% endfor %}
+                            {% for note, value in wallet.wallet_note.items %}
+                            <div class="input-group">
+                                <span class="input-group-text">Note - {{ note }} X</span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       value="{{ value.count }}"  
+                                       disabled>
+                                <span class="input-group-text" >= {{ value.value }} Rs</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- Combined Total Section -->
+        <div class="total-section">
+            <h4>Combined Total</h4>
+            <p id="combined_coins" class="total-value">Total Coin Value: {{total_coin_sum}}</p>
+            <p id="combined_notes" class="total-value">Total Note Value: {{total_note_sum}}</p>
+
+        </div>
+
+
+
+    </section><!-- End Section -->
+</main><!-- End #main -->
+
+<!-- FullCalendar JavaScript -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+
+<!-- JavaScript for Toggling Icons -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select all collapsible elements
+        const collapsibles = document.querySelectorAll('.card-header');
+
+        collapsibles.forEach(collapsible => {
+            const icon = collapsible.querySelector('i');
+            const collapseElement = document.querySelector(collapsible.getAttribute('href'));
+
+            // Initialize icon based on collapse state
+            if (collapseElement.classList.contains('show')) {
+                icon.classList.remove('bi-plus-circle');
+                icon.classList.add('bi-dash-circle');
+            }
+
+            // Add event listener for collapse toggle
+            collapsible.addEventListener('click', function() {
+                // Check if the collapse is open or closed
+                if (collapseElement.classList.contains('show')) {
+                    // If expanded, change icon to minus
+                    icon.classList.remove('bi-plus-circle');
+                    icon.classList.add('bi-dash-circle');
+                } else {
+                    // If collapsed, change icon to plus
+                    icon.classList.remove('bi-dash-circle');
+                    icon.classList.add('bi-plus-circle');
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
