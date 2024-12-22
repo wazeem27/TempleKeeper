@@ -219,6 +219,7 @@ class WalletCollection(models.Model):
 
 
 class Expense(models.Model):
+    temple = models.ForeignKey(Temple, on_delete=models.CASCADE, related_name='temple_expenses')
     item_name = models.CharField(max_length=255, verbose_name="Item Name")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Price")
     quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
@@ -228,6 +229,7 @@ class Expense(models.Model):
         verbose_name="User"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    expense_date = models.DateTimeField()
 
     @property
     def total_cost(self):

@@ -1,7 +1,7 @@
 from django import forms
 
 
-from .models import WalletCollection
+from .models import WalletCollection, Expense
 
 
 class WalletCollectionForm(forms.ModelForm):
@@ -65,3 +65,9 @@ class WalletCollectionForm(forms.ModelForm):
         initial=0, 
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Count of 500 Rupee Notes', 'oninput': 'calculateTotal()'})
     )
+
+
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = ['item_name', 'price', 'quantity', 'expense_date']

@@ -11,7 +11,7 @@ import re
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 from django.http import JsonResponse, Http404
-from .forms import WalletCollectionForm
+from .forms import WalletCollectionForm, ExpenseForm
 from .services import WalletService
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http import HttpResponseForbidden
@@ -26,7 +26,7 @@ from offering_services.models import VazhipaduOffering, Star
 from temple_auth.models import Temple
 from collections import defaultdict
 from django.utils.timezone import localtime
-from billing_manager.models import Bill, BillOther, BillVazhipaduOffering, PersonDetail
+from billing_manager.models import Bill, BillOther, BillVazhipaduOffering, PersonDetail, Expense
 from typing import Dict, Any
 from temple_auth.models import UserProfile
 
@@ -1090,10 +1090,70 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
         context['wallet_details'] = wallet_details
         context['total_coin_sum'] = total_coin_sum
         context['total_note_sum'] = total_note_sum
+        context['total'] = total_coin_sum + total_note_sum
         context['date'] = date
         return context
 
 
 
 
+class ExpenseView(LoginRequiredMixin, View):
+    template_name = 'billing_manager/expense_list.html'
 
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET request to list all expenses for the logged-in user.
+        """
+        expenses = Expense.objects.filter(created_by=request.user).order_by('-created_at')
+        context = {'expenses': expenses}
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST request to create a new expense.
+        """
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            expense = form.save(commit=False)
+            expense.temple = temple
+            expense.created_by = request.user
+            expense.save()
+            messages.success(request, f"Expense '{expense.item_name}' added successfully.")
+        else:
+            messages.error(request, "Failed to add expense. Please correct the errors.")
+        return redirect('expense-list')
+
+
+class ExpenseDeleteView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        expense = get_object_or_404(Expense, id=kwargs.get('pk'), temple=temple)
+        expense.delete()
+        messages.success(request, f"Offering '{expense.item_name}' successfully deleted.")
+        return redirect('expense-list')
+
+class ExpenseUpdateView(LoginRequiredMixin, View):
+    template_name = 'billing_manager/expense_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        expense = get_object_or_404(Expense, id=kwargs.get('pk'), temple=temple)
+        form = ExpenseForm(instance=expense)
+        context = {'form': form, 'expense': expense, 'temple': temple}
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        expense = get_object_or_404(Expense, id=kwargs.get('pk'), temple=temple)
+        form = ExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Expense '{expense.item_name}' successfully updated.")
+        else:
+            messages.error(request, "Invalid data, please correct the errors.")
+        return redirect('expense-list')

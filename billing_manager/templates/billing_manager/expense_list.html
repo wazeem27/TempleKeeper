@@ -1,0 +1,301 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+{% endblock %}
+
+
+{% block custom-styles %}
+
+/* General Styles */
+.pagetitle h1 {
+    font-size: 1.75rem;
+    color: #343a40;
+    margin-bottom: 20px;
+}
+
+.breadcrumb {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.breadcrumb-item {
+    font-size: 0.875rem;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table th {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+.table td {
+    text-align: center;
+}
+
+/* Responsive table for mobile view */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Button styles */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: white;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    justify-content: space-between;
+}
+
+/* Custom Scroll for Modal */
+.modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Handle mobile responsiveness */
+@media (max-width: 767.98px) {
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow: scroll;
+        width: 100%;
+    }
+
+    .table th, .table td {
+        white-space: nowrap;
+        padding: 10px;
+        font-size: 14px;
+        text-align: left;
+        display: block;
+    }
+
+    .table th::before {
+        content: attr(data-label);
+        font-weight: bold;
+        padding-right: 10px;
+    }
+}
+
+{% endblock %}
+
+
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Expenses</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active">Expenses</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    {% if messages %}
+    <div role="alert">
+        {% for message in messages %}
+            <div style="padding: 10px; margin: 5px 0;">
+                {% if message.tags == 'success' %}
+                    <div style="color: green; background-color: #d4edda; border: 1px solid green;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div style="color: red; background-color: #f8d7da; border: 1px solid red;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: orange; background-color: #fff3cd; border: 1px solid orange;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const alertMessages = document.querySelectorAll('.alert-message');
+            alertMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease';
+                message.style.opacity = '0';
+                setTimeout(() => {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
+
+{% endif %}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addExpenseModal">Add New Expense</button>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Sl no:</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Total Amount</th>
+                                        <th scope="col">Expense Date</th>
+                                        <th scope="col">Expense Added On</th>
+                                        <th scope="col">Added By</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in expenses %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ expense.item_name }}</td>
+                                        <td>{{ expense.quantity }}</td>
+                                        <td>{{ expense.price }}</td>
+                                        <td>{{ expense.expense_date|date:"M d, Y, h:i A" }}</td>
+                                        <td>{{ expense.created_at|date:"M d, Y, h:i A" }}</td>
+                                        <td>{{ expense.created_by.username }}</td>
+                                        <td>
+                                            <a href="{% url 'expense-edit' expense.id %}" class="btn btn-warning btn-sm">Edit</a>
+                                       
+                                            <form method="POST" action="{% url 'expense-delete' expense.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="button" class="btn btn-danger btn-sm delete-button" data-item-name="{{ expense.item_name }}">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addExpenseModalLabel">Add New Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addExpenseForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="expenseName" class="form-label">Item</label>
+                        <input type="text" class="form-control" id="expenseName" name="item_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expenseAmount" class="form-label">Total Amount</label>
+                        <input type="number" class="form-control" id="expenseAmount" name="price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expenseDate" class="form-label">Expense Date</label>
+                        <input type="date" class="form-control" id="expenseDate" name="expense_date" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Expense Modal -->
+
+<!-- Delete Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the item "<span id="deleteItemName"></span>"?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+        </div>
+    </section>
+</main>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    let deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+    let deleteItemName = document.getElementById("deleteItemName");
+    let deleteForm;
+
+    // Handle delete button click
+    document.querySelectorAll(".delete-button").forEach(button => {
+        button.addEventListener("click", function () {
+            let itemName = this.getAttribute("data-item-name");
+            let form = this.closest("form");
+
+            // Populate modal with item details
+            deleteItemName.textContent = itemName;
+            deleteForm = form; // Store form for submission
+            new bootstrap.Modal(document.getElementById("confirmDeleteModal")).show();
+        });
+    });
+
+    // Handle modal confirm delete
+    deleteConfirmBtn.addEventListener("click", () => {
+        if (deleteForm) {
+            deleteForm.submit();
+        }
+    });
+});
+</script>
+
+{% endblock %}
