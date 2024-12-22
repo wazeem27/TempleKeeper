@@ -172,11 +172,10 @@
                                 <thead>
                                     <tr>
                                         <th>Sl no:</th>
+                                        <th scope="col">Expense Date</th>
                                         <th scope="col">Item</th>
                                         <th scope="col">Quantity</th>
                                         <th scope="col">Total Amount</th>
-                                        <th scope="col">Expense Date</th>
-                                        <th scope="col">Expense Added On</th>
                                         <th scope="col">Added By</th>
                                         <th scope="col">Action</th>
                                     </tr>
@@ -185,11 +184,10 @@
                                     {% for expense in expenses %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
+                                        <td>{{ expense.expense_date|date:"M d, Y, h:i A" }}</td>
                                         <td>{{ expense.item_name }}</td>
                                         <td>{{ expense.quantity }}</td>
                                         <td>{{ expense.price }}</td>
-                                        <td>{{ expense.expense_date|date:"M d, Y, h:i A" }}</td>
-                                        <td>{{ expense.created_at|date:"M d, Y, h:i A" }}</td>
                                         <td>{{ expense.created_by.username }}</td>
                                         <td>
                                             <a href="{% url 'expense-edit' expense.id %}" class="btn btn-warning btn-sm">Edit</a>
