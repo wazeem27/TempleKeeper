@@ -16,7 +16,7 @@ from .services import WalletService
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http import HttpResponseForbidden
 from django.core.exceptions import ValidationError
-from datetime import datetime, time
+from datetime import datetime, time, date
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.contrib.auth.decorators import login_required
@@ -1235,24 +1235,59 @@ class ExpenseOverallCalendarView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class OverallExpenseList(LoginRequiredMixin, View):
+
+class OverallExpenseList(LoginRequiredMixin, ListView):
+    model = Expense
     template_name = 'billing_manager/overall_expense_list.html'
+    context_object_name = 'expenses'
+    paginate_by = 100
 
-    def get(self, request, *args, **kwargs):
+    def get_queryset(self):
         """
-        Handle GET request to list all expenses for the logged-in user.
+        Returns a filtered queryset for expenses. By default, it shows the current month's expenses.
+        Validates start_date and end_date if provided.
         """
-        date = request.GET.get('date')
         temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
 
-        try:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
-        except (ValueError, TypeError):
-            raise Http404("Invalid date format")
-        if not date:
-            raise Http404("Date parameter is required")
+        # Get filter parameters
+        start_date_str = self.request.GET.get('start_date', '')
+        end_date_str = self.request.GET.get('end_date', '')
 
-        # Try to retrieve the existing WalletCollection for the provided date
-        expenses = Expense.objects.filter(expense_date=date, temple=temple_id)
-        context = {'expenses': expenses}
-        return render(request, self.template_name, context)
+        # Parse dates if provided
+        start_date = parse_date(start_date_str) if start_date_str else None
+        end_date = parse_date(end_date_str) if end_date_str else None
+
+        # Validate dates
+        if start_date and end_date and start_date > end_date:
+            return HttpResponseBadRequest("Start date cannot be later than end date.")
+
+        # Convert dates to timezone-aware datetimes
+        if start_date:
+            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))  # 00:00:00
+        if end_date:
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
+
+        # Default to the current month's expenses if no start_date and end_date are provided
+        if not start_date and not end_date:
+            today = date.today()
+            start_date = today.replace(day=1)  # First day of the current month
+            end_date = today.replace(month=today.month + 1, day=1) if today.month < 12 else today.replace(month=1, year=today.year + 1, day=1)
+
+        # Query expenses based on the calculated or provided dates
+        queryset = Expense.objects.filter(
+            expense_date__gte=start_date,
+            expense_date__lt=end_date,
+            temple_id=temple_id
+        )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """
+        Add additional context data to the template, including current month info.
+        """
+        context = super().get_context_data(**kwargs)
+        today = date.today()
+        context['expense_amount'] = sum([expense.price for expense in self.get_queryset()])
+        context['current_month'] = today.strftime("%B %Y")  # e.g., "October 2024"
+        return context
