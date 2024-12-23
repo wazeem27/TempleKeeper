@@ -1117,7 +1117,7 @@ class ExpenseView(LoginRequiredMixin, View):
             raise Http404("Date parameter is required")
 
         # Try to retrieve the existing WalletCollection for the provided date
-        expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user)
+        expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user).order_by
         context = {'expenses': expenses, 'date': date}
         return render(request, self.template_name, context)
 
@@ -1281,7 +1281,7 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
             expense_date__gte=start_date,
             expense_date__lt=end_date,
             temple_id=temple_id
-        )
+        ).order_by('expense_date')
         return queryset
 
     def get_context_data(self, **kwargs):
