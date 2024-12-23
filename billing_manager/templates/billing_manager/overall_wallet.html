@@ -165,9 +165,9 @@ h2 {
              {% for wallet in wallet_details %}
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header" data-bs-toggle="collapse" href="#{{ wallet.username }}" role="button" aria-expanded="false" aria-controls="individual1">
-                        {{ wallet.username }} 
-                        <i class="bi bi-plus-circle float-end" id="toggle-icon1"></i> <!-- Plus Icon -->
+                    <div class="card-header" data-bs-toggle="collapse" href="#{{ wallet.username }}" role="button" aria-expanded="false" aria-controls="{{ wallet.username }}">
+                        {{ wallet.username }}
+                        <i class="bi bi-plus-circle float-end"></i>
                     </div>
                     <div class="collapse" id="{{ wallet.username }}">
                         <div class="card-body">
@@ -218,35 +218,30 @@ h2 {
 
 <!-- JavaScript for Toggling Icons -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Select all collapsible elements
-        const collapsibles = document.querySelectorAll('.card-header');
+document.addEventListener('DOMContentLoaded', function () {
+    // Select all card headers
+    const headers = document.querySelectorAll('.card-header');
 
-        collapsibles.forEach(collapsible => {
-            const icon = collapsible.querySelector('i');
-            const collapseElement = document.querySelector(collapsible.getAttribute('href'));
+    headers.forEach(header => {
+        const icon = header.querySelector('i');
+        const collapseTarget = document.querySelector(header.getAttribute('href'));
 
-            // Initialize icon based on collapse state
-            if (collapseElement.classList.contains('show')) {
+        // Listen for Bootstrap collapse events
+        if (collapseTarget) {
+            collapseTarget.addEventListener('shown.bs.collapse', function () {
+                // Change icon to `-` when expanded
                 icon.classList.remove('bi-plus-circle');
                 icon.classList.add('bi-dash-circle');
-            }
-
-            // Add event listener for collapse toggle
-            collapsible.addEventListener('click', function() {
-                // Check if the collapse is open or closed
-                if (collapseElement.classList.contains('show')) {
-                    // If expanded, change icon to minus
-                    icon.classList.remove('bi-plus-circle');
-                    icon.classList.add('bi-dash-circle');
-                } else {
-                    // If collapsed, change icon to plus
-                    icon.classList.remove('bi-dash-circle');
-                    icon.classList.add('bi-plus-circle');
-                }
             });
-        });
+
+            collapseTarget.addEventListener('hidden.bs.collapse', function () {
+                // Change icon to `+` when collapsed
+                icon.classList.remove('bi-dash-circle');
+                icon.classList.add('bi-plus-circle');
+            });
+        }
     });
+});
 </script>
 
 {% endblock %}
