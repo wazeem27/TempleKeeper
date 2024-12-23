@@ -152,7 +152,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">From</span>
                                     </div>
-                                    <input type="date" name="start_date" class="form-control" placeholder="From" value="{{ start_date }}">
+                                    <input type="date" name="start_date" class="form-control" placeholder="From" value="{{ start_date|date:'Y-m-d' }}">
                                 </div>
                             </div>
                             <div class="col-12 col-md-auto">
@@ -160,7 +160,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">To</span>
                                     </div>
-                                    <input type="date" name="end_date" class="form-control" placeholder="End Date" value="{{ end_date }}">
+                                    <input type="date" name="end_date" class="form-control" placeholder="End Date" value="{{ end_date|date:'Y-m-d' }}">
                                 </div>
                             </div>
                             <!-- Buttons -->

@@ -34,6 +34,8 @@ class VazhipaduOfferingView(View):
         if form.is_valid():
             offering = form.save(commit=False)
             offering.temple = temple
+            order_number = VazhipaduOffering.objects.last().order + 1
+            offering.order = order_number
             if VazhipaduOffering.objects.filter(name=offering.name, temple=offering.temple).exists():
                 messages.error(request, f"Offering '{offering.name}' already exists in the temple.")
             else:

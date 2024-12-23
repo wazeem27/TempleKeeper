@@ -1118,7 +1118,7 @@ class ExpenseView(LoginRequiredMixin, View):
 
         # Try to retrieve the existing WalletCollection for the provided date
         expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user)
-        context = {'expenses': expenses}
+        context = {'expenses': expenses, 'date': date}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -1275,6 +1275,8 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
             end_date = today.replace(month=today.month + 1, day=1) if today.month < 12 else today.replace(month=1, year=today.year + 1, day=1)
 
         # Query expenses based on the calculated or provided dates
+        self.start_date = start_date
+        self.end_date = end_date
         queryset = Expense.objects.filter(
             expense_date__gte=start_date,
             expense_date__lt=end_date,
@@ -1290,4 +1292,6 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         today = date.today()
         context['expense_amount'] = sum([expense.price for expense in self.get_queryset()])
         context['current_month'] = today.strftime("%B %Y")  # e.g., "October 2024"
+        context['start_date'] = self.start_date
+        context['end_date'] = self.end_date
         return context

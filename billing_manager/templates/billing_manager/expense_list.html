@@ -231,7 +231,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="expenseDate" class="form-label">Expense Date</label>
-                        <input type="date" class="form-control" id="expenseDate" name="expense_date" required>
+                        <input type="date" class="form-control" id="expenseDate" name="expense_date" required value="{{ date|date:'Y-m-d' }}">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

@@ -222,7 +222,7 @@ class Expense(models.Model):
     temple = models.ForeignKey(Temple, on_delete=models.CASCADE, related_name='temple_expenses')
     item_name = models.CharField(max_length=255, verbose_name="Item Name")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Price")
-    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
+    quantity = models.TextField(default=1, blank=True, verbose_name="Quantity")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 

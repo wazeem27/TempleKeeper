@@ -65,6 +65,7 @@ class Command(BaseCommand):
                     temple=Temple.objects.first(),
                     name=name,
                     description="",
+                    order=added_count,
                     defaults={'price': price}
                 )
 
