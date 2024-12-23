@@ -54,7 +54,7 @@
         </div>
         <div class="mb-3">
             <button type="submit" class="btn btn-primary" id="updateButton">Update</button>
-            <a href="{% url 'expense-list' %}" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'expense-list' %}?date={{ expense.expense_date|date:'Y-m-d' }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
