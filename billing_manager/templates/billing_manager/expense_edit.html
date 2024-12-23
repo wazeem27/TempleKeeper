@@ -4,7 +4,7 @@
 
 <main id="main" class="main">
     <div class="pagetitle">
-        <h1>Expense</h1>
+        <h1>Vazhipadu</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
@@ -42,7 +42,7 @@
         </div>
         <div class="mb-3">
             <label for="quantity" class="form-label">Quantity</label>
-            <input type="text" class="form-control" id="quantity" name="quantity" value="{{ expense.quantity }}" required>
+            <input type="number" class="form-control" id="quantity" name="quantity" value="{{ expense.quantity }}" required>
         </div>
         <div class="mb-3">
             <label for="itemPrice" class="form-label">Price</label>
@@ -53,8 +53,8 @@
             <input type="date" class="form-control" id="expenseDate" name="expense_date" value="{{ expense.expense_date|date:'Y-m-d' }}" required>
         </div>
         <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Update</button>
-            <a href="{% url 'expense-list' %}?date={{ expense.expense_date|date:'Y-m-d' }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="updateButton">Update</button>
+            <a href="{% url 'expense-list' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
@@ -66,4 +66,35 @@
 </div>
 </section>
 </main>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const expenseDateInput = document.getElementById("expenseDate");
+    const updateButton = document.getElementById("updateButton");
+
+    if (expenseDateInput && updateButton) {
+        function checkDate() {
+            const selectedDate = new Date(expenseDateInput.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time for accurate comparison
+
+            if (selectedDate > today) {
+                updateButton.disabled = true;
+            } else {
+                updateButton.disabled = false;
+            }
+        }
+
+        // Initial check on page load
+        checkDate();
+
+        // Add event listener for changes in the date input
+        expenseDateInput.addEventListener("input", checkDate);
+    } else {
+        console.error("Elements not found: 'expenseDate' or 'updateButton'");
+    }
+});
+    </script>
 {% endblock %}

@@ -294,6 +294,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const expenseDateInput = document.getElementById("expenseDate");
+    const addButton = document.querySelector("#addExpenseForm button[type='submit']");
+
+    // Function to check if the date is valid
+    const validateDate = () => {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        if (expenseDateInput.value > today) {
+            addButton.disabled = true; // Disable the Add button
+        } else {
+            addButton.disabled = false; // Enable the Add button
+        }
+    };
+
+    // Validate on input change
+    expenseDateInput.addEventListener("input", validateDate);
+
+    // Initial validation when the page loads
+    validateDate();
+});
 </script>
 
 {% endblock %}
