@@ -1202,3 +1202,57 @@ class ExpenseCalendarView(LoginRequiredMixin, TemplateView):
         # Add to context
         context['events'] = expense_list
         return context
+
+
+class ExpenseOverallCalendarView(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/overall_expense_calendar.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        temple_id = self.request.session.get('temple_id')
+        
+        # Filter expenses for the current user and temple
+        expenses = Expense.objects.filter(temple_id=temple_id)
+        
+        # Group by expense_date and calculate the total expense for each date
+        grouped_expenses = (
+            expenses
+            .values('expense_date__date')  # Extract the date part of expense_date
+            .annotate(total_expense=Sum('price'))  # Calculate the sum of the price for each date
+            .order_by('expense_date__date')  # Optional: order by date
+        )
+        
+        # Prepare the data for the calendar
+        expense_list = []
+        for expense in grouped_expenses:
+            expense_list.append({
+                'start': expense['expense_date__date'].strftime("%Y-%m-%d"),
+                'title': f"Total: {expense['total_expense']}",
+            })
+        
+        # Add to context
+        context['events'] = expense_list
+        return context
+
+
+class OverallExpenseList(LoginRequiredMixin, View):
+    template_name = 'billing_manager/overall_expense_list.html'
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET request to list all expenses for the logged-in user.
+        """
+        date = request.GET.get('date')
+        temple_id = self.request.session.get('temple_id')
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            raise Http404("Invalid date format")
+        if not date:
+            raise Http404("Date parameter is required")
+
+        # Try to retrieve the existing WalletCollection for the provided date
+        expenses = Expense.objects.filter(expense_date=date, temple=temple_id)
+        context = {'expenses': expenses}
+        return render(request, self.template_name, context)

@@ -1,0 +1,203 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom_style %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+{% endblock %}
+
+
+{% block custom-styles %}
+
+/* General Styles */
+.pagetitle h1 {
+    font-size: 1.75rem;
+    color: #343a40;
+    margin-bottom: 20px;
+}
+
+.breadcrumb {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.breadcrumb-item {
+    font-size: 0.875rem;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table th {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+.table td {
+    text-align: center;
+}
+
+/* Responsive table for mobile view */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Button styles */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: white;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    justify-content: space-between;
+}
+
+/* Custom Scroll for Modal */
+.modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Handle mobile responsiveness */
+@media (max-width: 767.98px) {
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow: scroll;
+        width: 100%;
+    }
+
+    .table th, .table td {
+        white-space: nowrap;
+        padding: 10px;
+        font-size: 14px;
+        text-align: left;
+        display: block;
+    }
+
+    .table th::before {
+        content: attr(data-label);
+        font-weight: bold;
+        padding-right: 10px;
+    }
+}
+
+{% endblock %}
+
+
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Expenses</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active">Expenses</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    {% if messages %}
+    <div role="alert">
+        {% for message in messages %}
+            <div style="padding: 10px; margin: 5px 0;">
+                {% if message.tags == 'success' %}
+                    <div style="color: green; background-color: #d4edda; border: 1px solid green;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div style="color: red; background-color: #f8d7da; border: 1px solid red;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: orange; background-color: #fff3cd; border: 1px solid orange;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const alertMessages = document.querySelectorAll('.alert-message');
+            alertMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease';
+                message.style.opacity = '0';
+                setTimeout(() => {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
+
+{% endif %}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Sl no:</th>
+                                        <th scope="col">Expense Date</th>
+                                        <th scope="col">Item</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Total Amount</th>
+                                        <th scope="col">Added By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in expenses %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ expense.expense_date|date:"M d, Y, h:i A" }}</td>
+                                        <td>{{ expense.item_name }}</td>
+                                        <td>{{ expense.quantity }}</td>
+                                        <td>{{ expense.price }}</td>
+                                        <td>{{ expense.created_by.username }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+
+{% endblock %}
