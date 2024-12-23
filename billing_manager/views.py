@@ -948,7 +948,7 @@ class WalletCollectionCreateView(LoginRequiredMixin, View):
             'coin_list': coin_list,
             'note_list': note_list,
             'initial_data': initial_data,
-            'date': date
+            'date': date.strftime("%d-%m-%Y")
         }
         return render(request, 'billing_manager/interim.html', context)
 
