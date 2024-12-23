@@ -29,6 +29,8 @@ from django.utils.timezone import localtime
 from billing_manager.models import Bill, BillOther, BillVazhipaduOffering, PersonDetail, Expense
 from typing import Dict, Any
 from temple_auth.models import UserProfile
+from django.db.models import Sum
+from django.utils.dateformat import DateFormat
 
 
 subreceipt_ids = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p']
@@ -1104,7 +1106,18 @@ class ExpenseView(LoginRequiredMixin, View):
         """
         Handle GET request to list all expenses for the logged-in user.
         """
-        expenses = Expense.objects.filter(created_by=request.user).order_by('-created_at')
+        date = request.GET.get('date')
+        temple_id = self.request.session.get('temple_id')
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            raise Http404("Invalid date format")
+        if not date:
+            raise Http404("Date parameter is required")
+
+        # Try to retrieve the existing WalletCollection for the provided date
+        expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user)
         context = {'expenses': expenses}
         return render(request, self.template_name, context)
 
@@ -1123,7 +1136,7 @@ class ExpenseView(LoginRequiredMixin, View):
             messages.success(request, f"Expense '{expense.item_name}' added successfully.")
         else:
             messages.error(request, "Failed to add expense. Please correct the errors.")
-        return redirect('expense-list')
+        return redirect('expense-calendar')
 
 
 class ExpenseDeleteView(LoginRequiredMixin, View):
@@ -1132,8 +1145,9 @@ class ExpenseDeleteView(LoginRequiredMixin, View):
         temple = get_object_or_404(Temple, id=temple_id)
         expense = get_object_or_404(Expense, id=kwargs.get('pk'), temple=temple)
         expense.delete()
-        messages.success(request, f"Offering '{expense.item_name}' successfully deleted.")
-        return redirect('expense-list')
+        exp_date = expense.expense_date.date().__str__()
+        messages.success(request, f"Offering '{expense.item_name}' successfully deleted from expense date: {exp_date}.")
+        return redirect('expense-calendar')
 
 class ExpenseUpdateView(LoginRequiredMixin, View):
     template_name = 'billing_manager/expense_edit.html'
@@ -1156,4 +1170,35 @@ class ExpenseUpdateView(LoginRequiredMixin, View):
             messages.success(request, f"Expense '{expense.item_name}' successfully updated.")
         else:
             messages.error(request, "Invalid data, please correct the errors.")
-        return redirect('expense-list')
+        return redirect('expense-calendar')
+
+
+class ExpenseCalendarView(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/expense_calendar.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        temple_id = self.request.session.get('temple_id')
+        
+        # Filter expenses for the current user and temple
+        expenses = Expense.objects.filter(created_by=self.request.user, temple_id=temple_id)
+        
+        # Group by expense_date and calculate the total expense for each date
+        grouped_expenses = (
+            expenses
+            .values('expense_date__date')  # Extract the date part of expense_date
+            .annotate(total_expense=Sum('price'))  # Calculate the sum of the price for each date
+            .order_by('expense_date__date')  # Optional: order by date
+        )
+        
+        # Prepare the data for the calendar
+        expense_list = []
+        for expense in grouped_expenses:
+            expense_list.append({
+                'start': expense['expense_date__date'].strftime("%Y-%m-%d"),
+                'title': f"Total: {expense['total_expense']}",
+            })
+        
+        # Add to context
+        context['events'] = expense_list
+        return context

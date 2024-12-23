@@ -19,7 +19,8 @@ from billing_manager.views import (
     BillingView, BillListView, BillDetailView, ReceiptView, SubmitBill,
     ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method,
     WalletCalendar, WalletCollectionCreateView, WalletOveralCollectionCalendar,
-    WalletOveralCollectionView, ExpenseView, ExpenseDeleteView, ExpenseUpdateView)
+    WalletOveralCollectionView, ExpenseView, ExpenseDeleteView, ExpenseUpdateView,
+    ExpenseCalendarView)
 
 
 urlpatterns = [
@@ -39,6 +40,7 @@ urlpatterns = [
     path('expenses/', ExpenseView.as_view(), name='expense-list'),
     path('expense/delete/<int:pk>/', ExpenseDeleteView.as_view(), name='expense-delete'),
     path('expense/edit/<int:pk>/', ExpenseUpdateView.as_view(), name='expense-edit'),
+    path('expense_calendar/', ExpenseCalendarView.as_view(), name='expense-calendar'),
     # path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
 
 ]
