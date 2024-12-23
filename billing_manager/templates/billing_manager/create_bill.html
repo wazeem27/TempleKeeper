@@ -338,11 +338,11 @@
                         {% endfor %}
                     </select>    
                 </div>
-                <div class="col-12 col-sm-1 text-center p-1">
-                    <input type="number" name="parent[1][quantity]" class="form-control" placeholder="എണ്ണം" min="1" value="1" required>
-                </div>
                 <div class="col-12 col-sm-2 text-center p-3">
                     <input type="number" name="parent[${parentIdCounter}][price]" class="form-control pooja-price" placeholder="വില" readonly>
+                </div>
+                <div class="col-12 col-sm-1 text-center p-1">
+                    <input type="number" name="parent[1][quantity]" class="form-control" placeholder="എണ്ണം" min="1" value="1" required>
                 </div>
                 <div class="col-12 col-sm-2 text-center p-3">
                     <button type="button" class="btn btn-success add-dynamic" style="display:none;background-color: #28a745;">+</button> <!-- Initially hidden -->
