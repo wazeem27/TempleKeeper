@@ -194,7 +194,7 @@
                                         {% for expense in expenses %}
                                         <tr class="table-light">
                                             <td><strong>{{ forloop.counter }}</strong></td>
-                                            <td>{{ expense.expense_date }}</td>
+                                            <td>{{ expense.expense_date|date:'d-m-Y' }}</td>
                                             <td>{{ expense.item_name }}</td>
                                             <td>{{ expense.quantity }}</td>
                                             <td>{{ expense.price }}</td>
