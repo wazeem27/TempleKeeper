@@ -166,7 +166,7 @@
                             {% if not is_billing_assistant %}
                                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOfferingModal">Add New</button>
                             {% endif %}
-                            <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()">Edit</button>
+                            <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()"><i class="bi bi-lock" style="color: white; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);"></i></button>
                         </div>
                         <!-- Table with stripped rows -->
                         <div class="table-responsive">
@@ -376,8 +376,15 @@ function toggleEdit() {
     // Enable or disable all inputs
     document.querySelectorAll('input').forEach(input => input.disabled = !isDisabled);
 
-    // Update the button text
-    document.getElementById('editButton').textContent = isDisabled ? 'Lock' : 'Edit';
+    // Update the icon in the button
+    const buttonIcon = document.querySelector('#editButton i');
+    if (isDisabled) {
+        buttonIcon.classList.remove('bi-lock');
+        buttonIcon.classList.add('bi-unlock');  // Use edit (pencil) icon
+    } else {
+        buttonIcon.classList.remove('bi-unlock');
+        buttonIcon.classList.add('bi-lock');  // Use lock icon
+    }
 
     // Replace 'nodrag' class with 'draggable' or vice versa
     document.querySelectorAll('td.nodrag').forEach(td => {

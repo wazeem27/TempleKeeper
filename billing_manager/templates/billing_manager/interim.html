@@ -141,7 +141,9 @@
                 <div class="card shadow-lg border-0 rounded-5 overflow-hidden">
                     <div class="card-header bg-gradient-primary text-white rounded-top-5 p-4 d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Coin & Note Calculator</h5>
-                        <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()">Edit</button>
+                        <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()">
+                            <i class="bi bi-lock" style="color: white; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);"></i>
+                        </button>
                     </div>
                     <div class="card-body p-4">
                         <form id="coinForm" method="post">
@@ -237,7 +239,15 @@
     function toggleEdit() {
         const isDisabled = document.querySelectorAll('input[disabled]').length > 0;
         document.querySelectorAll('input').forEach(input => input.disabled = !isDisabled);
-        document.getElementById('editButton').textContent = isDisabled ? 'Lock' : 'Edit';
+            // Update the icon in the button
+        const buttonIcon = document.querySelector('#editButton i');
+        if (isDisabled) {
+            buttonIcon.classList.remove('bi-lock');
+            buttonIcon.classList.add('bi-unlock');  // Use edit (pencil) icon
+        } else {
+            buttonIcon.classList.remove('bi-unlock');
+            buttonIcon.classList.add('bi-lock');  // Use lock icon
+        }
     }
     
     function calculateTotal() {
