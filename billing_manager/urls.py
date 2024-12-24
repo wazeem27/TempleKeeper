@@ -20,7 +20,8 @@ from billing_manager.views import (
     ViewMultiReceipt, BillExportView, cancel_bill, update_payment_method,
     WalletCalendar, WalletCollectionCreateView, WalletOveralCollectionCalendar,
     WalletOveralCollectionView, ExpenseView, ExpenseDeleteView, ExpenseUpdateView,
-    ExpenseCalendarView, ExpenseCalendarView, OverallExpenseList, ExpenseOverallCalendarView)
+    ExpenseCalendarView, ExpenseCalendarView, OverallExpenseList, ExpenseOverallCalendarView,
+    ExpenseExportView)
 
 
 urlpatterns = [
@@ -43,6 +44,7 @@ urlpatterns = [
     path('expense_calendar/', ExpenseCalendarView.as_view(), name='expense-calendar'),
     path('overall_expense_calendar/', ExpenseOverallCalendarView.as_view(), name='overall-expense-calendar'),
     path('overall_expense/', OverallExpenseList.as_view(), name='overall-expense-list'),
+    path('export_expenses/', ExpenseExportView.as_view(), name='export-expenses-as-csv'),
     # path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
 
 ]

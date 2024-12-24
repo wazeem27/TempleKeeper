@@ -173,6 +173,17 @@
                                 </a>
                             </div>
                         </form>
+                        <!-- Export Button Form (separate form) -->
+                        <div class="d-flex justify-content-center mt-2">
+                            <form method="get" action="{% url 'export-expenses-as-csv' %}">
+                                <!-- Include the current filter parameters so they are passed to the export view -->
+                                <input type="hidden" name="start_date" value="{{ start_date }}">
+                                <input type="hidden" name="end_date" value="{{ end_date }}">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    Export to CSV
+                                </button>
+                            </form>
+                        </div>
                     </div>
     
                     <!-- Card Body -->

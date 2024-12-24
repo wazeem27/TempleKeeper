@@ -1295,3 +1295,55 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         context['start_date'] = self.start_date
         context['end_date'] = self.end_date
         return context
+
+
+class ExpenseExportView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        # Get filter parameters from the request
+        start_date_str = request.GET.get('start_date', '')
+        end_date_str = request.GET.get('end_date', '')
+
+        start_date = parse_date(start_date_str) if start_date_str else None
+        end_date = parse_date(end_date_str) if end_date_str else None
+
+        # Filter bills based on the same logic as the get_queryset method
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+
+        is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
+        
+        expenses = Expense.objects.filter(temple_id=temple_id).order_by('expense_date')
+        
+        if start_date:
+            expenses = expenses.filter(expense_date__gte=start_date)
+        if end_date:
+            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
+            expenses = expenses.filter(expense_date__lte=end_date)
+
+        # Prepare the CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="expenses_export.csv"'
+
+        writer = csv.writer(response)
+        
+        # Write the header row
+        writer.writerow([
+            'Sl No', 'Expense Date', 'Item', 'Quantity', 
+            'Total Amount', 'Added By'
+        ])
+
+        # Write the data rows
+        counter = 1
+        for expense in expenses:
+            
+            writer.writerow([
+                counter,
+                expense.expense_date.strftime("%d-%m-%Y"),
+                expense.item_name,
+                expense.quantity,
+                expense.price,
+                expense.created_by.username,
+            ])
+            counter += 1
+
+        return response
