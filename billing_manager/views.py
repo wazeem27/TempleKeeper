@@ -1299,12 +1299,22 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
 
 class ExpenseExportView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+
+
+        # Get the current date and time
+        current_datetime = datetime.now()
+
+        # Format it as a string including seconds
+        formatted_datetime = current_datetime.strftime('%Y-%m-%d_%H:%M:%S')
+
         # Get filter parameters from the request
         start_date_str = request.GET.get('start_date', '')
         end_date_str = request.GET.get('end_date', '')
 
-        start_date = parse_date(start_date_str) if start_date_str else None
-        end_date = parse_date(end_date_str) if end_date_str else None
+
+        # Convert to date objects
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else None
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
 
         # Filter bills based on the same logic as the get_queryset method
         temple_id = request.session.get('temple_id')
@@ -1322,7 +1332,7 @@ class ExpenseExportView(LoginRequiredMixin, View):
 
         # Prepare the CSV response
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="expenses_export.csv"'
+        response['Content-Disposition'] = f'attachment; filename="expenses_export_{formatted_datetime}.csv"'
 
         writer = csv.writer(response)
         

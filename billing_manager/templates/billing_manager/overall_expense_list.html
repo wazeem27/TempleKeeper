@@ -176,9 +176,9 @@
                         <!-- Export Button Form (separate form) -->
                         <div class="d-flex justify-content-center mt-2">
                             <form method="get" action="{% url 'export-expenses-as-csv' %}">
-                                <!-- Include the current filter parameters so they are passed to the export view -->
-                                <input type="hidden" name="start_date" value="{{ start_date }}">
-                                <input type="hidden" name="end_date" value="{{ end_date }}">
+                                <!-- Date input fields to select the date -->
+                                <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="d-none">
+                                <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="d-none">
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     Export to CSV
                                 </button>
