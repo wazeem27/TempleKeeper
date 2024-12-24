@@ -116,7 +116,6 @@ class BillListView(LoginRequiredMixin, ListView):
                 bills = bills.filter(created_at__gte=start_date)
             if end_date:
                 bills = bills.filter(created_at__lte=end_date)
-
         return bills
 
 
@@ -197,6 +196,7 @@ class BillListView(LoginRequiredMixin, ListView):
         context['start_date'] = self.request.GET.get('start_date', '')
         context['req_vazhipadu'] = req_vazhipadu[0] if req_vazhipadu else ""
         context['end_date'] = self.request.GET.get('end_date', '')
+        context['grand_total'] = sum([bill.total_amount for bill in self.get_queryset()])
 
         return context
 
