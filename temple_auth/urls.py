@@ -15,10 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from temple_auth.views import AdminSubMenu, TempleListView
+from temple_auth.views import AdminSubMenu, TempleListView, TempleDetailView
 
 
 urlpatterns = [
     path('admin/', AdminSubMenu.as_view(), name='admin-sub-menu'),
     path('list_temples/', TempleListView.as_view(), name='list-temples'),
+    path('temple/<int:bill_id>/', TempleDetailView.as_view(), name='temple-detail'),
 ]

@@ -8,7 +8,7 @@ from .models import UserProfile, Temple
 from billing_manager.models import Bill
 from temple_inventory.models import InventoryItem
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from django.utils.timezone import localtime
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.contrib.auth.views import LoginView
@@ -182,22 +182,56 @@ class TempleListView(LoginRequiredMixin, ListView):
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         context['active_temple'] = temple.id
-        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
         
         return context
 
 
-# class TempleDetailView(LoginRequiredMixin, View):
-#     template_name = 'temple_auth/temple_list.html'
-#     context_object_name = 'temples'
-#     paginate_by = 100
+class TempleDetailView(LoginRequiredMixin, ListView):
+    model = UserProfile
+    template_name = 'temple_auth/list_temple_users.html'
+    context_object_name = 'users'
+    paginate_by = 100
 
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
+    def get_queryset(self):
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+
+        queryset = UserProfile.objects.filter(
+            temples__id__in=[temple_id]  # Corrected the lookup field
+        ).order_by('user__username')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         
-#         temple_id = self.request.session.get('temple_id')
-#         temple = get_object_or_404(Temple, id=temple_id)
-#         context['active_temple'] = temple.id
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['active_temple'] = temple.id
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
+
+        users_list = []
+        for user in self.get_queryset():
+            if user.user.groups.filter(name='Central Admin').exists():
+                continue
+            user_detail = {}
+            user_detail["username"] = user.user.username
+            role = ""
+            if user.user.groups.filter(name='Temple Admin').exists():
+                role = "Temple Admin"
+            elif user.user.groups.filter(name='Billing Assistant').exists():
+                role = "Billing Assistant"
+
+            user_detail["role"] = role
+            user_detail["first_name"] = user.user.first_name
+            user_detail["last_name"] = user.user.last_name
+            user_detail["email"] = user.user.email
+            user_detail["is_active"] = user.user.is_active
+            user_detail["last_login"] = user.user.last_login.strftime("%d-%m-%Y %I:%M:%S %p")
+            users_list.append(user_detail)
+        context['user_list'] = users_list
+        context['temple'] = temple.temple_short_name + " - " + temple.temple_place
         
-#         return context
+        return context

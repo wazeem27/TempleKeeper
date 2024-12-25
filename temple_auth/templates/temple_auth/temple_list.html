@@ -65,7 +65,7 @@
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-                <li class="breadcrumb-item active">Temple List</li>
+                <li class="breadcrumb-item active">Management</li>
             </ol>
         </nav>
     </div>
@@ -86,18 +86,46 @@
                                         <th>Bill Title</th>
                                         <th>Bill Mid</th>
                                         <th>Bill Footer</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for temple in temples %}
                                     <tr>
                                         <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ forloop.counter }}</td>
-                                        <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ temple.temple_name }}</td>
+                                        <td class="{% if active_temple == temple.id %}highlight-row{% endif %}"><a href="{% url 'temple-detail' temple.id %}">{{ temple.temple_name }}</a></td>
                                         <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ temple.temple_place }}</td>
                                         <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ temple.temple_short_name }}</td>
                                         <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ temple.temple_bill_title }}</td>
                                         <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ temple.temple_bill_mid }}</td>
                                         <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">{{ temple.temple_bill_footer }}</td>
+                                        <td class="{% if active_temple == temple.id %}highlight-row{% endif %}">
+
+                                            <div class="btn-group">
+                                                <a href="#" 
+                                                   class="btn btn-sm btn-warning {% if bill.is_cancelled %}disabled{% endif %}" 
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#paymentMethodModal"
+                                                   title="Update Payment Method"
+                                                   data-id="{{ bill.receipt }}"
+                                                   data-payment-method="{{ bill.payment_method }}">
+                                                   <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                            </div>
+
+                                            <div class="btn-group">
+                                                <a href="#" 
+                                                    class="btn btn-sm btn-danger {% if bill.is_cancelled %}disabled{% endif %}" 
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#cancelBillModal"
+                                                    title="Cancel Bill"
+                                                    data-id="{{ bill.receipt }}">
+                                                    <i class="bi bi-x-circle"></i>
+                                                    </a>
+                                            </div>
+
+
+                                        </td>
                                     </tr>
                                     {% empty %}
                                     <tr>
