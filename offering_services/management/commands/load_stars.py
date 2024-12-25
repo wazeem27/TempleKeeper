@@ -43,6 +43,7 @@ class Command(BaseCommand):
             "പൂരുരുട്ടാതി",
             "ഉത്രട്ടാതി",
             "രേവതി",
+            "ശുഭനക്ഷത്രം"
             # Add more stars as needed
         ]
 
