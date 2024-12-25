@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.views.generic import View, TemplateView, ListView
+from django.views.generic import View, TemplateView, ListView, UpdateView
 from .models import UserProfile, Temple
 from billing_manager.models import Bill
 from temple_inventory.models import InventoryItem
@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.contrib.auth.views import LoginView
 from .forms import CustomAuthenticationForm
+from django.urls import reverse_lazy
 
 
 class CustomLoginView(LoginView):
@@ -235,3 +236,27 @@ class TempleDetailView(LoginRequiredMixin, ListView):
         context['temple'] = temple.temple_short_name + " - " + temple.temple_place
         
         return context
+
+
+class TempleUpdateView(LoginRequiredMixin, UpdateView):
+    model = Temple
+    fields = [
+        "temple_name",
+        "temple_place",
+        "temple_short_name",
+        "temple_bill_title",
+        "temple_bill_mid",
+        "temple_bill_footer",
+    ]
+    template_name = "temple_auth/temple_edit.html"
+    success_url = reverse_lazy("list-temples")  # Redirect to the list view after a successful update
+
+    def form_valid(self, form):
+        # Add a success message
+        temple = form.instance
+        messages.success(self.request, f"Temple '{temple.temple_name}' details updated successfully.")
+        return super().form_valid(form)
+
+    # def test_func(self):
+    #     # Restrict access to staff/admin users
+    #     return self.request.user.is_staff
