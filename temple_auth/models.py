@@ -10,6 +10,7 @@ class Temple(models.Model):
     temple_bill_title = models.CharField(max_length=300, blank=True, null=True)
     temple_bill_mid = models.CharField(max_length=400, blank=True, null=True)
     temple_bill_footer = models.CharField(max_length=320, blank=True, null=True)
+    deactivate = models.BooleanField(default=False)  # For deactivating temple
 
     class Meta:
         unique_together = ['temple_name', 'temple_place']  # Ensures unique combination of name and location

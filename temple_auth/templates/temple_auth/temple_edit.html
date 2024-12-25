@@ -4,11 +4,12 @@
 
 <main id="main" class="main">
     <div class="pagetitle">
-        <h1>Vazhipadu</h1>
+        <h1>{{ temple.temple_name }}</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-                <li class="breadcrumb-item active">Vazhipadu</li>
+                <li class="breadcrumb-item"><a href="{% url 'list-temples' %}">Management</a></li>
+                <li class="breadcrumb-item active">Edit: {{ temple.temple_name }}</li>
             </ol>
         </nav>
     </div><!-- End Page Title -->
