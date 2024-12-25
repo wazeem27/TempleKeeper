@@ -120,7 +120,8 @@ def whats_new_page(request):
         return redirect('temple_selection')
 
     temple = get_object_or_404(Temple, id=temple_id)
-    return render(request, 'temple_auth/whats_new.html', {'temple': temple})
+    is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    return render(request, 'temple_auth/whats_new.html', {'temple': temple, 'is_central_admin': is_central_admin})
 
 
 @login_required
@@ -132,7 +133,11 @@ def settings_view(request):
     user_profile = UserProfile.objects.get(user=request.user)  # Get the logged-in user's profile
 
     temple = get_object_or_404(Temple, id=temple_id)
-    return render(request, 'temple_auth/settings.html', {'temple': temple, 'user_profile': user_profile})
+    is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    return render(
+        request, 'temple_auth/settings.html',
+        {'temple': temple, 'user_profile': user_profile, 'is_central_admin': is_central_admin}
+    )
 
 
 def update_temple_bill(request):
@@ -176,6 +181,8 @@ class TempleListView(LoginRequiredMixin, ListView):
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         context['active_temple'] = temple.id
+        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
         
         return context
 
