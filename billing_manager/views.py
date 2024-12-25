@@ -136,12 +136,13 @@ class BillListView(LoginRequiredMixin, ListView):
         
         for bill in context['bills']:
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
+            other_list = bill.bill_other_items.all()
             sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
             counter = 0
 
             # Construct the dataset
             for vazhipadu_bill in vazhipadu_list:
-                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
+                subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
 
                 bill_entry = {
                     'receipt': bill.id,
@@ -158,10 +159,10 @@ class BillListView(LoginRequiredMixin, ListView):
                 }
                 bill_dataset.append(bill_entry)
                 counter +=1
-            other_list = bill.bill_other_items.all()
+            
             # Construct the dataset
             for other_bill in other_list:
-                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
+                subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
 
                 bill_entry = {
                     'receipt': bill.id,
