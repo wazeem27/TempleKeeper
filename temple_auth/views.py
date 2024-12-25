@@ -44,6 +44,7 @@ def logout_view(request):
 @login_required
 def temple_selection_view(request):
     user_profile = request.user.userprofile
+    is_central_admin = request.user.groups.filter(name='Central Admin').exists()
     if not request.user.is_staff and not user_profile.temples.exists():
         messages.error(request, "No access to any temple.")
         return redirect('dashboard')
@@ -58,7 +59,7 @@ def temple_selection_view(request):
         else:
             messages.error(request, "Invalid selection.")
 
-    return render(request, 'temple_auth/temple_selection.html', {'temples': user_profile.temples.all()})
+    return render(request, 'temple_auth/temple_selection.html', {'temples': user_profile.temples.all(), 'is_central_admin': is_central_admin})
 
 
 @login_required

@@ -170,11 +170,14 @@
             <div>
                 <!-- Submit Button -->
                 <button type="submit" class="btn btn-primary">Select Temple</button>
+
+                {% if is_central_admin %}
                 
                 <!-- Button to open modal for creating temple -->
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#createTempleModal">
                     Create Temple
                 </button>
+                {%endif%}
             </div>
         </form>
     </div>
