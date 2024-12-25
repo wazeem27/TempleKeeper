@@ -1232,7 +1232,6 @@ class ExpenseView(LoginRequiredMixin, View):
         # Try to retrieve the existing WalletCollection for the provided date
         expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user).order_by
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
-        context["is_central_admin"] = is_central_admin
         context = {'expenses': expenses, 'date': date, 'is_central_admin': is_central_admin}
         return render(request, self.template_name, context)
 
