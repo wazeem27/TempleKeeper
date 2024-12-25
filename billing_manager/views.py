@@ -166,7 +166,7 @@ class BillListView(LoginRequiredMixin, ListView):
                 bill_entry = {
                     'receipt': bill.id,
                     'sub_receipt': subreceipt,
-                    'created_at': localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
+                    'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
                     'created_by': bill.user.username,
                     'vazhipadu_name': other_bill.vazhipadu,
                     'name': other_bill.person_name,
@@ -746,6 +746,12 @@ class BillExportView(LoginRequiredMixin, View):
         end_date_str = request.GET.get('end_date', '')
         search_query = request.GET.get('q', '')
 
+        # Get the current date and time
+        current_datetime = datetime.now()
+
+        # Format it as a string including seconds
+        formatted_datetime = current_datetime.strftime('%Y-%m-%d_%H:%M:%S')
+
         start_date = parse_date(start_date_str) if start_date_str else None
         end_date = parse_date(end_date_str) if end_date_str else None
 
@@ -768,7 +774,7 @@ class BillExportView(LoginRequiredMixin, View):
 
         # Prepare the CSV response
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="bills_export.csv"'
+        response['Content-Disposition'] = f'attachment; filename="bills_export_{formatted_datetime}.csv"'
 
         writer = csv.writer(response)
         
@@ -785,6 +791,9 @@ class BillExportView(LoginRequiredMixin, View):
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             
             for vazhipadu_bill in vazhipadu_list:
+                person_details = vazhipadu_bill.person_details.all()
+                names = ",".join([person.person_name for person in person_details])
+                stars = ",".join([star.person_star.name for star in person_details])
                 subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
                 writer.writerow([
                     bill.id,
@@ -792,8 +801,8 @@ class BillExportView(LoginRequiredMixin, View):
                     localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
                     bill.user.username,
                     vazhipadu_bill.vazhipadu_offering.name,
-                    vazhipadu_bill.person_name,
-                    vazhipadu_bill.person_star.name if vazhipadu_bill.person_star else "",
+                    names,
+                    stars,
                     vazhipadu_bill.price,
                 ])
                 counter += 1
