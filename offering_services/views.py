@@ -23,7 +23,11 @@ class VazhipaduOfferingView(View):
 
 
         offerings = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-        context = {'offerings': offerings, 'temple': temple, 'is_billing_assistant': is_billing_assistant}
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context = {
+            'offerings': offerings, 'temple': temple, 'is_billing_assistant': is_billing_assistant,
+            'is_central_admin': is_central_admin
+        }
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -66,7 +70,8 @@ class VazhipaduOfferingUpdateView(View):
         temple = get_object_or_404(Temple, id=temple_id)
         offering = get_object_or_404(VazhipaduOffering, id=kwargs.get('pk'), temple=temple)
         form = VazhipaduOfferingForm(instance=offering)
-        context = {'form': form, 'offering': offering, 'temple': temple}
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context = {'form': form, 'offering': offering, 'temple': temple, 'is_central_admin': is_central_admin}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):

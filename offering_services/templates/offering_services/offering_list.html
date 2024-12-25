@@ -176,7 +176,9 @@
                                         <th>Sl no:</th>
                                         <th scope="col">വഴിപ്പാട്</th>
                                         <th scope="col">വില</th>
+                                        {% if not is_billing_assistant %}
                                         <th scope="col">Allow Multiple</th>
+                                        {% endif %}
                                         {% if not is_billing_assistant %}
                                             <th scope="col">Edit</th>
                                             <th scope="col">Delete</th>
@@ -190,9 +192,11 @@
                                         <td class="sl-no">{{ forloop.counter }}</td>
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.price }}</td>
+                                        {% if not is_billing_assistant %}
                                         <td style="background-color: {% if not item.allow_multiple %}#f8d7da{% else %}#d4edda{% endif %}; color: {% if not item.allow_multiple %}#721c24{% else %}#155724{% endif %};">
                                             {{ item.allow_multiple|yesno:"Yes,No" }}
                                         </td>
+                                        {% endif %}
                                         {% if not is_billing_assistant %}
                                         <td>
                                             <a href="{% url 'offerings-edit' item.id %}" class="btn btn-warning btn-sm">Edit</a>

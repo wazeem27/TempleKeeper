@@ -65,6 +65,14 @@ class BillingView(LoginRequiredMixin, TemplateView):
         context['multi_support_vazhipadu'] = multi_support_vazhipadu
         return context
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is in the 'Central Admin' group
+        if request.user.groups.filter(name='Central Admin').exists():
+            # Redirect to a different view, for example, to the home page
+            return redirect('dashboard')  # Or the URL name of the redirect target
+        return super().dispatch(request, *args, **kwargs)
+
+
 class BillListView(LoginRequiredMixin, ListView):
     model = Bill
     template_name = 'billing_manager/bill_list.html'
@@ -198,6 +206,8 @@ class BillListView(LoginRequiredMixin, ListView):
         context['req_vazhipadu'] = req_vazhipadu[0] if req_vazhipadu else ""
         context['end_date'] = self.request.GET.get('end_date', '')
         context['grand_total'] = sum([bill.total_amount for bill in self.get_queryset()])
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context["is_central_admin"] = is_central_admin
 
         return context
 
@@ -248,6 +258,11 @@ class SubmitBill(LoginRequiredMixin, View):
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         try:
+
+            is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+            if is_central_admin:
+                return redirect('dashboard')
+
             # Parse and validate input data
             data = parse_nested_querydict(request.POST)
             temple = self._get_temple(request.session)
@@ -664,6 +679,8 @@ class BillDetailView(LoginRequiredMixin, DetailView):
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         context['temple'] = temple
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context["is_central_admin"] = is_central_admin
         return context
 
 
@@ -992,6 +1009,8 @@ class WalletCalendar(LoginRequiredMixin, TemplateView):
             wallet_dataset.append(data)
         
         context['events'] = wallet_dataset
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context["is_central_admin"] = is_central_admin
         return context
 
 
@@ -1030,13 +1049,15 @@ class WalletCollectionCreateView(LoginRequiredMixin, View):
 
         # Combine the initial coin and note data
         initial_data = {**initial_coin_data, **initial_note_data}
+        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
 
         # Pass data to the context
         context = {
             'coin_list': coin_list,
             'note_list': note_list,
             'initial_data': initial_data,
-            'date': date.strftime("%d-%m-%Y")
+            'date': date.strftime("%d-%m-%Y"),
+            'is_central_admin': is_central_admin
         }
         return render(request, 'billing_manager/interim.html', context)
 
@@ -1101,6 +1122,8 @@ class WalletOveralCollectionCalendar(LoginRequiredMixin, TemplateView):
             wallet_dataset.append(data)
 
         context['events'] = wallet_dataset
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context["is_central_admin"] = is_central_admin
         return context
 
 
@@ -1182,6 +1205,8 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
         context['total_note_sum'] = total_note_sum
         context['total'] = total_coin_sum + total_note_sum
         context['date'] = date
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context["is_central_admin"] = is_central_admin
         return context
 
 
@@ -1206,7 +1231,9 @@ class ExpenseView(LoginRequiredMixin, View):
 
         # Try to retrieve the existing WalletCollection for the provided date
         expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user).order_by
-        context = {'expenses': expenses, 'date': date}
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context["is_central_admin"] = is_central_admin
+        context = {'expenses': expenses, 'date': date, 'is_central_admin': is_central_admin}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -1245,7 +1272,8 @@ class ExpenseUpdateView(LoginRequiredMixin, View):
         temple = get_object_or_404(Temple, id=temple_id)
         expense = get_object_or_404(Expense, id=kwargs.get('pk'), temple=temple)
         form = ExpenseForm(instance=expense)
-        context = {'form': form, 'expense': expense, 'temple': temple}
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context = {'form': form, 'expense': expense, 'temple': temple, 'is_central_admin': is_central_admin}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -1289,6 +1317,8 @@ class ExpenseCalendarView(LoginRequiredMixin, TemplateView):
         
         # Add to context
         context['events'] = expense_list
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
         return context
 
 
@@ -1320,6 +1350,8 @@ class ExpenseOverallCalendarView(LoginRequiredMixin, TemplateView):
         
         # Add to context
         context['events'] = expense_list
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
         return context
 
 
@@ -1382,6 +1414,8 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         context['current_month'] = today.strftime("%B %Y")  # e.g., "October 2024"
         context['start_date'] = self.start_date
         context['end_date'] = self.end_date
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
         return context
 
 
