@@ -251,9 +251,13 @@ class SubmitBill(LoginRequiredMixin, View):
             data = parse_nested_querydict(request.POST)
             temple = self._get_temple(request.session)
             parents = self._validate_parents_data(data)
+            other_bills = self.validate_other_data(request.POST)
 
             # Calculate total price
             total_price = sum(float(parent["price"]) * int(parent["quantity"]) for parent in parents)
+            
+            total_price += float(sum([other['other_price'] for other in other_bills]))
+
 
             user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple.id)
 
@@ -296,7 +300,24 @@ class SubmitBill(LoginRequiredMixin, View):
                             )
                         )
                 # Bulk create PersonDetail objects
-                PersonDetail.objects.bulk_create(person_details)
+                if person_details:
+                    PersonDetail.objects.bulk_create(person_details)
+
+                for other in other_bills:
+                    bill = self._create_bill(request, temple, float(other.get('other_price')), data.get("payment_method", "cash"))
+                    bill.save()
+                    bill_objects.append(bill)
+
+                    name = other.get("other_name")
+                    other_star = get_object_or_404(Star, name=other.get("other_nakshatram"))
+                    price = other.get("other_price")
+                    vazhipadu = other.get("other_vazhipadu")
+                    BillOther.objects.create(
+                        bill=bill, person_name=name, 
+                        person_star=other_star, vazhipadu=vazhipadu,
+                        price=price
+                    )
+
 
                 bill_ids = ",".join([str(bill.id) for bill in bill_objects])
                 for bill in bill_objects:
@@ -347,8 +368,19 @@ class SubmitBill(LoginRequiredMixin, View):
                         )
 
                 # Bulk create PersonDetail objects
-                PersonDetail.objects.bulk_create(person_details)
+                if person_details:
+                    PersonDetail.objects.bulk_create(person_details)
 
+                for other in other_bills:
+                    name = other.get("other_name")
+                    other_star = get_object_or_404(Star, name=other.get("other_nakshatram"))
+                    price = other.get("other_price")
+                    vazhipadu = other.get("other_vazhipadu")
+                    BillOther.objects.create(
+                        bill=bill, person_name=name, 
+                        person_star=other_star, vazhipadu=vazhipadu,
+                        price=price
+                    )
                 # Return success response
                 return redirect(reverse('receipt', kwargs={'pk': bill.id}))
 
@@ -369,7 +401,7 @@ class SubmitBill(LoginRequiredMixin, View):
     def _validate_parents_data(self, data):
         parents = data.get("parents", [])
         if not parents:
-            raise ValidationError("Parents data is required to create a bill.")
+            return []
         for parent in parents:
             if "pooja" not in parent or "price" not in parent or "name" not in parent or "nakshatram" not in parent:
                 raise ValidationError("Each parent must include 'pooja', 'price', 'name', and 'nakshatram' fields.")
@@ -388,6 +420,38 @@ class SubmitBill(LoginRequiredMixin, View):
             total_amount=Decimal(total_price),
             payment_method=payment_method
         )
+
+
+    def validate_other_data(self, querydict):
+        required_fields = ['other_name[]', 'other_nakshatram[]', 'other_vazhipadu[]', 'other_price[]']
+
+        # Extract values
+        other_names = querydict.getlist('other_name[]')
+        other_nakshatrams = querydict.getlist('other_nakshatram[]')
+        other_vazhipadus = querydict.getlist('other_vazhipadu[]')
+        other_prices = querydict.getlist('other_price[]')
+
+        # Ensure consistent lengths across all fields
+        if not (len(other_names) == len(other_nakshatrams) == len(other_vazhipadus) == len(other_prices)):
+            raise ValidationError("Inconsistent number of items between fields.")
+
+        # Validate and construct the processed data
+        processed_data = []
+        for name, nakshatram, vazhipadu, price in zip(other_names, other_nakshatrams, other_vazhipadus, other_prices):
+            try:
+                price_decimal = Decimal(price)
+            except:
+                raise ValidationError(f"Invalid price value: {price}")
+
+            processed_data.append({
+                'other_name': name,
+                'other_nakshatram': nakshatram,
+                'other_vazhipadu': vazhipadu,
+                'other_price': price_decimal,
+            })
+
+        return processed_data
+
 
 # @login_required
 # def submit_billing(request: HttpRequest) -> HttpResponse:
@@ -721,17 +785,31 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
             # If no vazhipadu offerings, handle other items
             if not bill.bill_vazhipadu_offerings.exists():
                 for other_item in bill.bill_other_items.all():
-                    other_detail = {
-                        "vazhipadu": other_item.vazhipadu,
-                        "price": other_item.price,
-                        "quantity": other_item.quantity,
-                        "primary_person": {
-                            "name": other_item.person_name,
-                            "star": other_item.person_star.name
-                        },
-                        "other_persons": []
-                    }
+                    if isinstance(other_item, BillOther):
+                        other_detail = {
+                            "vazhipadu": other_item.vazhipadu,
+                            "price": other_item.price,
+                            "quantity": 1,
+                            "primary_person": {
+                                "name": other_item.person_name,
+                                "star": other_item.person_star.name
+                            },
+                            "other_persons": []              
+                        }
+                        bill_dict['total_amount'] = other_item.price
+                    else:
+                        other_detail = {
+                            "vazhipadu": other_item.vazhipadu,
+                            "price": other_item.price,
+                            "quantity": other_item.quantity,
+                            "primary_person": {
+                                "name": other_item.person_name,
+                                "star": other_item.person_star.name
+                            },
+                            "other_persons": []
+                        }
                     bill_dict["vazhipadu_list"].append(other_detail)
+                    
 
             bill_list.append(bill_dict)
 
