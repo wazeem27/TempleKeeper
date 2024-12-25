@@ -370,8 +370,6 @@ function handleRowOperation(action = "add", rowToCopy = null) {
     if (action === "copy" && rowToCopy) {
         name = rowToCopy.querySelector('input[name*="[name]"]').value;
         nakshatram = rowToCopy.querySelector('select[name*="[nakshatram]"]').value;
-        pooja = rowToCopy.querySelector('select[name*="[pooja]"]').value;
-        price = rowToCopy.querySelector('input[name*="[price]"]').value;
         quantity = rowToCopy.querySelector('input[name*="[quantity]"]').value || 1;
     }
 
