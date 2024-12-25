@@ -230,7 +230,10 @@ class TempleDetailView(LoginRequiredMixin, ListView):
             user_detail["last_name"] = user.user.last_name
             user_detail["email"] = user.user.email
             user_detail["is_active"] = user.user.is_active
-            user_detail["last_login"] = user.user.last_login.strftime("%d-%m-%Y %I:%M:%S %p")
+            if user.user.last_login:
+                user_detail["last_login"] = user.user.last_login.strftime("%d-%m-%Y %I:%M:%S %p")
+            else:
+                user_detail["last_login"] = ""
             users_list.append(user_detail)
         context['user_list'] = users_list
         context['temple'] = temple.temple_short_name + " - " + temple.temple_place
