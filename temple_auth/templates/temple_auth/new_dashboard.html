@@ -25,19 +25,8 @@
       
             <!-- Sales Card -->
             <div class="col-xxl-4 col-md-6 mb-4">
-              <a href="{% url 'offerings-list' %}" class="text-decoration-none">
-                <div class="card info-card sales-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
-                  <div class="card-body text-center">
-                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Vazhipadu List</h5> <!-- Larger font size -->
-                  </div>
-                </div>
-              </a>
-            </div>
-      
-            <!-- Revenue Card -->
-            <div class="col-xxl-4 col-md-6 mb-4">
               <a href="{% url 'add-bill' %}" class="text-decoration-none">
-                <div class="card info-card revenue-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                <div class="card info-card sales-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
                   <div class="card-body text-center">
                     <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Billing</h5> <!-- Larger font size -->
                   </div>
@@ -45,28 +34,37 @@
               </a>
             </div>
       
-            <!-- Customers Card -->
+            <!-- Revenue Card -->
             <div class="col-xxl-4 col-md-6 mb-4">
               <a href="{% url 'bill-list' %}" class="text-decoration-none">
-                <div class="card info-card customers-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                <div class="card info-card revenue-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
                   <div class="card-body text-center">
                     <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Billing Report</h5> <!-- Larger font size -->
                   </div>
                 </div>
               </a>
             </div>
-            {% if  is_central_admin %}
-            <!-- New Card 2 -->
+      
+            <!-- Customers Card -->
             <div class="col-xxl-4 col-md-6 mb-4">
-              <a href="{% url 'admin-sub-menu' %}" class="text-decoration-none">
-                <div class="card info-card new-card-2" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+              <a href="{% url 'expense-calendar' %}" class="text-decoration-none">
+                <div class="card info-card customers-card" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
                   <div class="card-body text-center">
-                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Admin</h5> <!-- Larger font size -->
+                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Expenses</h5> <!-- Larger font size -->
                   </div>
                 </div>
               </a>
             </div>
-            {% endif %}
+            <!-- New Card 2 -->
+            <div class="col-xxl-4 col-md-6 mb-4">
+              <a href="{% url 'wallet-info' %}" class="text-decoration-none">
+                <div class="card info-card new-card-2" style="background-image: url('{% static 'img/temple_home.avif' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; padding: 30px;">
+                  <div class="card-body text-center">
+                    <h5 class="card-title" style="color: aliceblue; font-size: 1.75rem;">Wallet</h5> <!-- Larger font size -->
+                  </div>
+                </div>
+              </a>
+            </div>
       
           </div>
         </div>
