@@ -10,6 +10,9 @@
     margin-bottom: 20px;
 }
 
+
+
+
 .vazhipadu-form-row {
     display: flex;
     flex-wrap: wrap;
@@ -154,10 +157,25 @@
                                                     <div class="col-12 col-sm-1 text-center p-1">
                                                         <input type="number" name="parent[1][quantity]" class="form-control" placeholder="എണ്ണം" min="1" value="1" required>
                                                     </div>
-                                                    <div class="col-12 col-sm-1 text-center p-1">
-                                                        <button type="button" class="btn btn-success add-dynamic" style="display:none;background-color: #28a745;">+</button> <!-- Initially hidden -->
-                                                       <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; justify-content: center; align-items: center;">X</button>
-                                                       
+                                                    <div class="col-12 col-sm-1 text-center p-1 d-flex justify-content-between">
+                                                        <button type="button" 
+                                                                class="btn btn-success add-dynamic me-2" 
+                                                                style="display:none;background-color: #28a745;" 
+                                                                title="Add Row">
+                                                            +
+                                                        </button>
+                                                        <button type="button" 
+                                                                class="btn btn-warning copy-row me-2" 
+                                                                style="height: 42px; font-size: 20px; justify-content: center; align-items: center;" 
+                                                                title="Copy Row">
+                                                            <i class="bi bi-stickies"></i>
+                                                        </button>
+                                                        <button type="button" 
+                                                                class="btn btn-danger remove-row" 
+                                                                style="height: 42px; font-size: 20px; justify-content: center; align-items: center;" 
+                                                                title="Remove Row">
+                                                            X
+                                                        </button>
                                                     </div>
                                                 </div>
 
@@ -312,70 +330,103 @@
     
         // Add Vazhipadu row
         let parentIdCounter = 2; // To track parent rows
-        document.getElementById('add-vazhipadu-row').addEventListener('click', function () {
-            const containerBody = document.getElementById('vazhipadu-form-container');
-    
-            const newRow = document.createElement('div');
-            newRow.setAttribute('data-parent-id', parentIdCounter);
-            newRow.classList.add('row', 'vazhipadu-form-row');
-            newRow.innerHTML = `
-                <div class="col-12 col-sm-2 text-center p-1">
-                    <input type="text" name="parent[${parentIdCounter}][name]" class="form-control" placeholder="പേര്" required>
-                </div>
-                <div class="col-12 col-sm-2 text-center p-1">
-                    <select name="parent[${parentIdCounter}][nakshatram]" class="form-control" required>
-                        <option value="" disabled selected>നക്ഷത്രം</option>
-                        {% for star in star_items %}
-                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
-                        {% endfor %}
-                    </select>    
-                </div>
-                <div class="col-12 col-sm-2 text-center p-1">
-                    <select name="parent[${parentIdCounter}][pooja]" class="form-control pooja-select" required>
-                        <option value="" disabled selected>വഴിപാട്</option>
-                        {% for vazhipadu in vazhipadu_items %}
-                        <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}">{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
-                        {% endfor %}
-                    </select>    
-                </div>
-                <div class="col-12 col-sm-1 text-center p-1">
-                    <input type="number" name="parent[${parentIdCounter}][price]" class="form-control pooja-price" placeholder="വില" readonly>
-                </div>
-                <div class="col-12 col-sm-1 text-center p-1">
-                    <input type="number" name="parent[${parentIdCounter}][quantity]" class="form-control" placeholder="എണ്ണം" min="1" value="1" required>
-                </div>
-                <div class="col-12 col-sm-1 text-center p-1">
-                    <button type="button" class="btn btn-success add-dynamic" style="display:none;background-color: #28a745;">+</button> <!-- Initially hidden -->
-                    <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; justify-content: center; align-items: center;">X</button>
-                </div>
-            `;
-            containerBody.appendChild(newRow);
-             // Increment parent ID counter
-             parentIdCounter++;
 
-    
-            // Add event listener for validation on new inputs and selects
-            newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
-                field.addEventListener('input', validateForm);
-            });
-    
-            // Add event listener for updating price based on selected pooja
-            newRow.querySelector('.pooja-select').addEventListener('change', function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const price = selectedOption.getAttribute('data-price');
-                newRow.querySelector('.pooja-price').value = price || '';
-            });
-    
-            validateForm(); // Revalidate the form after adding a row
-        });
-    
-        // Remove row event listener (shared for both Vazhipadu and Things)
-        document.addEventListener('click', function (event) {
-            if (event.target.classList.contains('remove-row')) {
-                event.target.closest('.row').remove();
-                validateForm(); // Revalidate the form after removing a row
-            }
-        });
+
+        document.getElementById('add-vazhipadu-row').addEventListener('click', function () {
+    handleRowOperation("add");
+});
+
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('copy-row')) {
+        const rowToCopy = event.target.closest('.row');
+        handleRowOperation("copy", rowToCopy);
+    }
+    if (event.target.classList.contains('remove-row')) {
+        event.target.closest('.row').remove();
+        validateForm(); // Revalidate the form after removing a row
+    }
+});
+
+function handleRowOperation(action = "add", rowToCopy = null) {
+    const containerBody = document.getElementById('vazhipadu-form-container');
+
+    const newRow = document.createElement('div');
+    newRow.setAttribute('data-parent-id', parentIdCounter);
+    newRow.classList.add('row', 'vazhipadu-form-row');
+
+    // If action is "copy", extract values from the row to copy
+    let name = '';
+    let nakshatram = '';
+    let pooja = '';
+    let price = '';
+    let quantity = 1;
+
+    if (action === "copy" && rowToCopy) {
+        name = rowToCopy.querySelector('input[name*="[name]"]').value;
+        nakshatram = rowToCopy.querySelector('select[name*="[nakshatram]"]').value;
+        pooja = rowToCopy.querySelector('select[name*="[pooja]"]').value;
+        price = rowToCopy.querySelector('input[name*="[price]"]').value;
+        quantity = rowToCopy.querySelector('input[name*="[quantity]"]').value || 1;
+    }
+
+    newRow.innerHTML = `
+        <div class="col-12 col-sm-2 text-center p-1">
+            <input type="text" name="parent[${parentIdCounter}][name]" class="form-control" placeholder="പേര്" value="${name}" required>
+        </div>
+        <div class="col-12 col-sm-2 text-center p-1">
+            <select name="parent[${parentIdCounter}][nakshatram]" class="form-control" required>
+                <option value="" disabled ${!nakshatram ? 'selected' : ''}>നക്ഷത്രം</option>
+                {% for star in star_items %}
+                <option value="{{ star.name }}" ${nakshatram === "{{ star.name }}" ? 'selected' : ''}>{{star.id}}: {{ star.name }}</option>
+                {% endfor %}
+            </select>    
+        </div>
+        <div class="col-12 col-sm-2 text-center p-1">
+            <select name="parent[${parentIdCounter}][pooja]" class="form-control pooja-select" required>
+                <option value="" disabled ${!pooja ? 'selected' : ''}>വഴിപാട്</option>
+                {% for vazhipadu in vazhipadu_items %}
+                <option value="{{ vazhipadu.name }}" data-price="{{ vazhipadu.price }}" ${pooja === "{{ vazhipadu.name }}" ? 'selected' : ''}>{{vazhipadu.order}} - {{ vazhipadu.name }} - ({{ vazhipadu.price }})</option>
+                {% endfor %}
+            </select>    
+        </div>
+        <div class="col-12 col-sm-1 text-center p-1">
+            <input type="number" name="parent[${parentIdCounter}][price]" class="form-control pooja-price" placeholder="വില" value="${price}" readonly>
+        </div>
+        <div class="col-12 col-sm-1 text-center p-1">
+            <input type="number" name="parent[${parentIdCounter}][quantity]" class="form-control" placeholder="എണ്ണം" min="1" value="${quantity}" required>
+        </div>
+        <div class="col-12 col-sm-1 text-center p-1">
+            <button type="button" class="btn btn-success add-dynamic" style="display:none;background-color: #28a745;">+</button> <!-- Initially hidden -->
+            <button type="button" class="btn btn-warning copy-row" style="height: 42px; font-size: 20px; justify-content: center; align-items: center;" title="Copy Row">
+                <i class="bi bi-stickies"></i>
+            </button>
+            <button type="button" class="btn btn-danger remove-row" style="height: 42px; font-size: 20px; justify-content: center; align-items: center;">X</button>
+        </div>
+    `;
+
+    containerBody.appendChild(newRow);
+
+    // Increment parent ID counter
+    parentIdCounter++;
+
+    // Add event listener for validation on new inputs and selects
+    newRow.querySelectorAll('input[required], select[required]').forEach(function (field) {
+        field.addEventListener('input', validateForm);
+    });
+
+    // Add event listener for updating price based on selected pooja
+    newRow.querySelector('.pooja-select').addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+        newRow.querySelector('.pooja-price').value = price || '';
+    });
+
+    validateForm(); // Revalidate the form after adding a row
+}
+
+
+
+
     
     
     
