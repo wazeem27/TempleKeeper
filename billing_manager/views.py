@@ -146,7 +146,7 @@ class BillListView(LoginRequiredMixin, ListView):
                 bill_entry = {
                     'receipt': bill.id,
                     'sub_receipt': subreceipt,
-                    'created_at': localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
+                    'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
                     'created_by': bill.user.username,
                     'vazhipadu_name': vazhipadu_bill.vazhipadu_offering.name,
                     'name': ",".join([vazhipadu.person_name for vazhipadu in vazhipadu_bill.person_details.all()]),
