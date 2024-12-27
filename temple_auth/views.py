@@ -60,6 +60,8 @@ def temple_selection_view(request):
         if temple:
             request.session['temple_id'] = temple.id
             messages.success(request, f"Access granted to {temple.temple_name}.")
+            if is_central_admin:
+                return redirect('list-temples')
             return redirect('dashboard')
         else:
             messages.error(request, "Invalid selection.")
