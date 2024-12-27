@@ -56,7 +56,7 @@ class Command(BaseCommand):
         ]
 
         # Initialize a counter for the number of offerings added
-        added_count = 0
+        added_count = 1
 
         for name, price in vazhipadu_offerings:
             try:
