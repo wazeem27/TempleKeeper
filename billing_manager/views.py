@@ -31,10 +31,14 @@ from typing import Dict, Any
 from temple_auth.models import UserProfile
 from django.db.models import Sum
 from django.utils.dateformat import DateFormat
+from billing_manager.decorators import check_temple_session
+from django.utils.decorators import method_decorator
 
 
 subreceipt_ids = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p']
 
+
+@method_decorator(check_temple_session, name='dispatch')
 class BillingView(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/create_bill.html"
 
@@ -52,6 +56,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
         
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
+
         
         context['vazhipadu_items'] = self.get_vazhipadu_queryset(temple)
         context['inventory_items'] = self.get_inventory_queryset(temple)
@@ -73,6 +78,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class BillListView(LoginRequiredMixin, ListView):
     model = Bill
     template_name = 'billing_manager/bill_list.html'
@@ -208,7 +214,7 @@ class BillListView(LoginRequiredMixin, ListView):
         context['grand_total'] = sum([bill.total_amount for bill in self.get_queryset()])
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context["is_central_admin"] = is_central_admin
-
+        context["temple"] = temple
         return context
 
 
@@ -251,7 +257,7 @@ def parse_nested_querydict(querydict):
 
 
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class SubmitBill(LoginRequiredMixin, View):
     template_name = "bill/create_bill.html"
 
@@ -469,205 +475,7 @@ class SubmitBill(LoginRequiredMixin, View):
         return processed_data
 
 
-# @login_required
-# def submit_billing(request: HttpRequest) -> HttpResponse:
-#     """Handle billing submission and create associated records for the specified temple."""
-#     if request.method == 'POST':
-#         # Retrieve temple from the session
-        
-#         temple_id = request.session.get('temple_id')
-#         temple = get_object_or_404(Temple, id=temple_id)
-#         data = parse_nested_querydict(request.POST)
-
-#         # Calculate total price
-#         total_price = sum(float(parent['price']) for parent in data['parents'])
-#         payment_method = data.get("payment_method", "cash")
-
-#         import ipdb;ipdb.set_trace()
-
-
-#         # Retrieve user profile for split bill preference
-#         user_profile = get_object_or_404(UserProfile, user=request.user, temples__id=temple_id)
-
-#         # Begin transaction to ensure atomicity
-#         try:
-#             with transaction.atomic():
-#                 if user_profile.is_split_bill:
-#                     # Create separate bills for each offering or item
-#                     bill_objects = []
-
-#                     if request.POST.getlist('pooja[]'):
-#                         names = request.POST.getlist('name[]')
-#                         vazhipadu_list = request.POST.getlist('pooja[]')
-#                         stars = request.POST.getlist('nakshatram[]')
-#                         vazhipadu_prices = request.POST.getlist('pooja_price[]')
-                        
-#                         for index, vazhipadu_name in enumerate(vazhipadu_list):
-#                             if vazhipadu_name.strip():
-#                                 vazhipadu_offering = get_object_or_404(
-#                                     VazhipaduOffering, name=vazhipadu_name, temple=temple)
-#                                 price = Decimal(vazhipadu_prices[index])
-#                                 customer_star = get_object_or_404(Star, name=stars[index])
-
-#                                 # Create a new bill for this offering
-#                                 bill = Bill.objects.create(
-#                                     user=request.user,
-#                                     temple=temple,
-#                                     total_amount=price,
-#                                     payment_method=payment_method
-#                                 )
-#                                 bill_objects.append(bill)
-
-#                                 # Create associated BillVazhipaduOffering record
-#                                 BillVazhipaduOffering.objects.create(
-#                                     bill=bill,
-#                                     vazhipadu_offering=vazhipadu_offering,
-#                                     person_name=names[index],
-#                                     person_star=customer_star,
-#                                     quantity=1,
-#                                     price=price
-#                                 )
-
-#                     if request.POST.getlist('other_name[]'):
-#                         other_names = request.POST.getlist('other_name[]')
-#                         other_stars = request.POST.getlist('other_nakshatram[]')
-#                         other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
-#                         other_prices = request.POST.getlist('other_price[]')
-
-#                         for index, other_name in enumerate(other_names):
-#                             if other_name.strip():
-#                                 other_star = get_object_or_404(Star, name=other_stars[index])
-#                                 vazhipadu = other_vazhipadugal[index]
-#                                 price = Decimal(other_prices[index])
-
-#                                 # Create a new bill for this inventory item
-#                                 bill = Bill.objects.create(
-#                                     user=request.user,
-#                                     temple=temple,
-#                                     total_amount=price
-#                                 )
-#                                 bill_objects.append(bill)
-
-#                                 # Create associated BillInventoryItem record
-#                                 BillOther.objects.create(
-#                                     bill=bill,
-#                                     person_name=other_name,
-#                                     person_star=other_star,
-#                                     vazhipadu=vazhipadu,
-#                                     price=price
-#                                 )
-#                     bill_ids = ",".join([str(bill.id) for bill in bill_objects])
-#                     for bill in bill_objects:
-#                         bill.related_bills = bill_ids
-#                         bill.save()
-
-#                     messages.success(request, "Separate bills have been successfully recorded.")
-#                     query_string = f"ids={'&'.join(map(str, [bill.id for bill in bill_objects]))}"
-#                     url = f"{reverse('view_multi_receipt')}?{query_string}"
-#                     return redirect(url)
-
-#                 else:
-#                     # Create a single consolidated bill
-#                     total_pooja_price = total_price
-#                     bill = Bill.objects.create(
-#                         user=request.user,
-#                         temple=temple,
-#                         total_amount=Decimal(total_pooja_price),
-#                         payment_method=payment_method
-#                     )
-
-
-#                     # New way of Implementation here...............................
-
-#                     for vazhipadu_detail in data.get("parents", []):
-#                         vazhipadu_offering = get_object_or_404(
-#                             VazhipaduOffering, name=vazhipadu_detail.get('pooja'), temple=temple
-#                         )
-#                         vazhipadu_bill = BillVazhipaduOffering.objects.create(
-#                             bill=bill,
-#                             vazhipadu_offering=vazhipadu_offering,
-#                             quantity=1,
-#                             price=vazhipadu_detail.get('price')
-#                         )
-
-#                         # Vazhipadu Bill created now add person details to vazhipadu
-#                         person_detail = PersonDetail.objects.create(
-#                             bill_vazhipadu_offering=vazhipadu_bill,
-#                             person_name=vazhipadu_detail.get('name'),
-#                             star=get_object_or_404(Star, name=vazhipadu_detail.get('nakshatram')),
-#                         )
-#                         for other_person in vazhipadu_detail.get('children'):
-#                             person_detail = PersonDetail.objects.create(
-#                                 bill_vazhipadu_offering=vazhipadu_bill,
-#                                 person_name=other_person.get('name'),
-#                                 star=get_object_or_404(Star, name=other_person.get('nakshatram')),
-#                             )
-
-                        
-
-                    # End #########################################################
-
-
-
-                    # # Add offerings to the single bill
-                    # if request.POST.getlist('pooja[]'):
-                    #     names = request.POST.getlist('name[]')
-                    #     vazhipadu_list = request.POST.getlist('pooja[]')
-                    #     stars = request.POST.getlist('nakshatram[]')
-                    #     vazhipadu_prices = request.POST.getlist('pooja_price[]')
-
-                    #     for index, vazhipadu_name in enumerate(vazhipadu_list):
-                    #         if vazhipadu_name.strip():
-                    #             vazhipadu_offering = get_object_or_404(
-                    #                 VazhipaduOffering, name=vazhipadu_name, temple=temple)
-                    #             price = Decimal(vazhipadu_prices[index])
-                    #             customer_star = get_object_or_404(Star, name=stars[index])
-
-                    #             BillVazhipaduOffering.objects.create(
-                    #                 bill=bill,
-                    #                 vazhipadu_offering=vazhipadu_offering,
-                    #                 person_name=names[index],
-                    #                 person_star=customer_star,
-                    #                 quantity=1,
-                    #                 price=price
-                    #             )
-
-                    # # Add inventory items to the single bill
-                    # if request.POST.getlist('other_name[]'):
-                    #     other_names = request.POST.getlist('other_name[]')
-                    #     other_stars = request.POST.getlist('other_nakshatram[]')
-                    #     other_vazhipadugal = request.POST.getlist('other_vazhipadu[]')
-                    #     other_prices = request.POST.getlist('other_price[]')
-
-                    #     for index, other_name in enumerate(other_names):
-                    #         if other_name.strip():
-                    #             other_star = get_object_or_404(Star, name=other_stars[index])
-                    #             vazhipadu = other_vazhipadugal[index]
-                    #             price = Decimal(other_prices[index])
-
-                    #             BillOther.objects.create(
-                    #                 bill=bill,
-                    #                 person_name=other_name,
-                    #                 person_star=other_star,
-                    #                 vazhipadu=vazhipadu,
-                    #                 price=price,
-                    #                 payment_method=payment_method
-                    #             )
-
-    #                 messages.success(request, "Billing details have been successfully recorded.")
-    #                 return redirect(reverse('receipt', kwargs={'pk': bill.id}))
-
-    #     except Exception as e:
-    #         # Rollback transaction on error
-    #         messages.error(request, f"An error occurred while processing the billing: {e}")
-    #         return redirect('add-bill')
-
-    # messages.error(request, "Invalid request method.")
-    # return redirect('add-bill')
-
-
-
-
+@method_decorator(check_temple_session, name='dispatch')
 class BillDetailView(LoginRequiredMixin, DetailView):
     model = Bill
     template_name = "billing_manager/bill_detail.html"
@@ -684,6 +492,7 @@ class BillDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class ReceiptView(LoginRequiredMixin, DetailView):
     model = Bill
     context_object_name = "bill"
@@ -741,7 +550,7 @@ class ReceiptView(LoginRequiredMixin, DetailView):
         return context
 
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/new_bill_receipt.html"
 
@@ -835,6 +644,7 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
         return context
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class BillExportView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # Get filter parameters from the request
@@ -922,6 +732,7 @@ class BillExportView(LoginRequiredMixin, View):
 
 
 @login_required
+@check_temple_session
 def cancel_bill(request, bill_id):
     if request.method == "POST":
         bill_id = int(request.POST.get('bill_id'))
@@ -947,6 +758,7 @@ def cancel_bill(request, bill_id):
 
 
 @login_required
+@check_temple_session
 def update_payment_method(request):
     """
     Update the payment method for a bill.
@@ -994,6 +806,7 @@ def update_payment_method(request):
     return redirect('receipt', receipt=bill.id)
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class WalletCalendar(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/wallet_calendar.html"
 
@@ -1009,11 +822,14 @@ class WalletCalendar(LoginRequiredMixin, TemplateView):
             wallet_dataset.append(data)
         
         context['events'] = wallet_dataset
+        temple = get_object_or_404(Temple, id=temple_id)
+        context["temple"] = temple
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context["is_central_admin"] = is_central_admin
         return context
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class WalletCollectionCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # Get the 'date' query parameter
@@ -1050,14 +866,15 @@ class WalletCollectionCreateView(LoginRequiredMixin, View):
         # Combine the initial coin and note data
         initial_data = {**initial_coin_data, **initial_note_data}
         is_central_admin = request.user.groups.filter(name='Central Admin').exists()
-
+        temple = get_object_or_404(Temple, id=temple_id)
         # Pass data to the context
         context = {
             'coin_list': coin_list,
             'note_list': note_list,
             'initial_data': initial_data,
             'date': date.strftime("%d-%m-%Y"),
-            'is_central_admin': is_central_admin
+            'is_central_admin': is_central_admin,
+            'temple': temple
         }
         return render(request, 'billing_manager/interim.html', context)
 
@@ -1095,6 +912,7 @@ class WalletCollectionCreateView(LoginRequiredMixin, View):
         return render(request, 'billing_manager/wallet_calendar.html', {'form': form, 'date': date})
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class WalletOveralCollectionCalendar(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/wallet_overall_calendar.html"
 
@@ -1122,11 +940,14 @@ class WalletOveralCollectionCalendar(LoginRequiredMixin, TemplateView):
             wallet_dataset.append(data)
 
         context['events'] = wallet_dataset
+        temple = get_object_or_404(Temple, id=temple_id)
+        context["temple"] = temple
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context["is_central_admin"] = is_central_admin
         return context
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/overall_wallet.html"
 
@@ -1205,13 +1026,15 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
         context['total_note_sum'] = total_note_sum
         context['total'] = total_coin_sum + total_note_sum
         context['date'] = date
+        temple = get_object_or_404(Temple, id=temple_id)
+        context["temple"] = temple
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context["is_central_admin"] = is_central_admin
         return context
 
 
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class ExpenseView(LoginRequiredMixin, View):
     template_name = 'billing_manager/expense_list.html'
 
@@ -1221,6 +1044,7 @@ class ExpenseView(LoginRequiredMixin, View):
         """
         date = request.GET.get('date')
         temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
 
         try:
             date = datetime.strptime(date, "%Y-%m-%d").date()
@@ -1232,7 +1056,10 @@ class ExpenseView(LoginRequiredMixin, View):
         # Try to retrieve the existing WalletCollection for the provided date
         expenses = Expense.objects.filter(expense_date=date, temple=temple_id, created_by=request.user).order_by
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
-        context = {'expenses': expenses, 'date': date, 'is_central_admin': is_central_admin}
+        context = {
+            'expenses': expenses, 'date': date, 'is_central_admin': is_central_admin,
+            'temple': temple
+        }
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -1253,6 +1080,7 @@ class ExpenseView(LoginRequiredMixin, View):
         return redirect('expense-calendar')
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class ExpenseDeleteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         temple_id = request.session.get('temple_id')
@@ -1263,6 +1091,7 @@ class ExpenseDeleteView(LoginRequiredMixin, View):
         messages.success(request, f"Offering '{expense.item_name}' successfully deleted from expense date: {exp_date}.")
         return redirect('expense-calendar')
 
+@method_decorator(check_temple_session, name='dispatch')
 class ExpenseUpdateView(LoginRequiredMixin, View):
     template_name = 'billing_manager/expense_edit.html'
 
@@ -1288,6 +1117,7 @@ class ExpenseUpdateView(LoginRequiredMixin, View):
         return redirect('expense-calendar')
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class ExpenseCalendarView(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/expense_calendar.html"
 
@@ -1318,9 +1148,12 @@ class ExpenseCalendarView(LoginRequiredMixin, TemplateView):
         context['events'] = expense_list
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
+        temple = get_object_or_404(Temple, id=temple_id)
+        context["temple"] = temple
         return context
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class ExpenseOverallCalendarView(LoginRequiredMixin, TemplateView):
     template_name = "billing_manager/overall_expense_calendar.html"
 
@@ -1351,10 +1184,11 @@ class ExpenseOverallCalendarView(LoginRequiredMixin, TemplateView):
         context['events'] = expense_list
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
+        context["temple"] = temple_id
         return context
 
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class OverallExpenseList(LoginRequiredMixin, ListView):
     model = Expense
     template_name = 'billing_manager/overall_expense_list.html'
@@ -1368,6 +1202,7 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         """
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
+        self.temple = temple
 
         # Get filter parameters
         start_date_str = self.request.GET.get('start_date', '')
@@ -1415,9 +1250,11 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         context['end_date'] = self.end_date
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
+        context["temple"] = self.temple
         return context
 
 
+@method_decorator(check_temple_session, name='dispatch')
 class ExpenseExportView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
 

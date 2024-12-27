@@ -9,10 +9,13 @@ from django.http import JsonResponse
 from django.views import View
 from .forms import VazhipaduOfferingForm
 from .models import VazhipaduOffering
+from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
+from billing_manager.decorators import check_temple_session
 
 
-@method_decorator(login_required, name='dispatch')
-class VazhipaduOfferingView(View):
+@method_decorator(check_temple_session, name='dispatch')
+class VazhipaduOfferingView(LoginRequiredMixin, View):
     template_name = 'offering_services/offering_list.html'
 
     def get(self, request, *args, **kwargs):
@@ -50,8 +53,8 @@ class VazhipaduOfferingView(View):
         return redirect('offerings-list')
 
 
-@method_decorator(login_required, name='dispatch')
-class VazhipaduOfferingDeleteView(View):
+@method_decorator(check_temple_session, name='dispatch')
+class VazhipaduOfferingDeleteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
@@ -61,8 +64,8 @@ class VazhipaduOfferingDeleteView(View):
         return redirect('offerings-list')
 
 
-@method_decorator(login_required, name='dispatch')
-class VazhipaduOfferingUpdateView(View):
+@method_decorator(check_temple_session, name='dispatch')
+class VazhipaduOfferingUpdateView(LoginRequiredMixin, View):
     template_name = 'offering_services/offering_edit.html'
 
     def get(self, request, *args, **kwargs):
@@ -87,7 +90,9 @@ class VazhipaduOfferingUpdateView(View):
         return redirect('offerings-list')
 
 
+
 @login_required
+@check_temple_session
 def offering_main_view(request):
     temple_id = request.session.get('temple_id')
     if not temple_id:
@@ -96,8 +101,11 @@ def offering_main_view(request):
     temple = get_object_or_404(Temple, id=temple_id)
     return render(request, 'offering_services/offering_main.html', {'temple': temple})
 
+
+
 @method_decorator(csrf_exempt, name='dispatch')
-class UpdateOrderView(View):
+@method_decorator(check_temple_session, name='dispatch')
+class UpdateOrderView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         import json
         from django.http import JsonResponse

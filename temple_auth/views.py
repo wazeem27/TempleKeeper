@@ -15,6 +15,10 @@ from django.contrib.auth.views import LoginView
 from .forms import CustomAuthenticationForm
 from django.urls import reverse_lazy
 
+from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
+from billing_manager.decorators import check_temple_session
+
 
 class CustomLoginView(LoginView):
     template_name = 'temple_auth/login.html'
@@ -99,6 +103,7 @@ def temple_creation_view(request):
     return render(request, 'temple_auth/temple_selection.html')
 
 @login_required
+@check_temple_session
 def dashboard_view(request):
     temple_id = request.session.get('temple_id')
     if not temple_id:
@@ -116,6 +121,7 @@ def dashboard_view(request):
 
 
 @login_required
+@check_temple_session
 def whats_new_page(request):
     temple_id = request.session.get('temple_id')
     if not temple_id:
@@ -127,6 +133,7 @@ def whats_new_page(request):
 
 
 @login_required
+@check_temple_session
 def settings_view(request):
     temple_id = request.session.get('temple_id')
     if not temple_id:
@@ -142,6 +149,8 @@ def settings_view(request):
     )
 
 
+@login_required
+@check_temple_session
 def update_temple_bill(request):
     if request.method == "POST":
         temple_id = request.session.get('temple_id')
@@ -152,7 +161,8 @@ def update_temple_bill(request):
         return redirect('settings')  # Redirect after saving
 
 
-
+@login_required
+@check_temple_session
 def update_split_receipt(request):
     user_profile = UserProfile.objects.get(user=request.user)  # Get the logged-in user's profile
 
@@ -166,11 +176,11 @@ def update_split_receipt(request):
         messages.success(request, "Split receipt preference updated successfully!")
         return redirect('settings')  # Redirect after saving
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class AdminSubMenu(LoginRequiredMixin, TemplateView):
     template_name = 'temple_auth/admin_section.html'
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class TempleListView(LoginRequiredMixin, ListView):
     model = Temple
     template_name = 'temple_auth/temple_list.html'
@@ -185,10 +195,11 @@ class TempleListView(LoginRequiredMixin, ListView):
         context['active_temple'] = temple.id
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
+        context['temple'] = temple
         
         return context
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class TempleDetailView(LoginRequiredMixin, ListView):
     model = UserProfile
     template_name = 'temple_auth/list_temple_users.html'
@@ -236,11 +247,13 @@ class TempleDetailView(LoginRequiredMixin, ListView):
                 user_detail["last_login"] = ""
             users_list.append(user_detail)
         context['user_list'] = users_list
-        context['temple'] = temple.temple_short_name + " - " + temple.temple_place
-        
+        shortname = temple.temple_short_name  if temple.temple_short_name  else ""
+        place = temple.temple_place if temple.temple_place else ""
+        context['temple_breadcrumb'] = str(shortname) + str(place)
+        context['temple'] = temple
         return context
 
-
+@method_decorator(check_temple_session, name='dispatch')
 class TempleUpdateView(LoginRequiredMixin, UpdateView):
     model = Temple
     fields = [
