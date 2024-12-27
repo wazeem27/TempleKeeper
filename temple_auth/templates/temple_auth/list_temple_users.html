@@ -70,6 +70,42 @@
             </ol>
         </nav>
     </div>
+    {% if messages %}
+    <div role="alert">
+        {% for message in messages %}
+            <div style="padding: 10px; margin: 5px 0;">
+                {% if message.tags == 'success' %}
+                    <div style="color: green; background-color: #d4edda; border: 1px solid green;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div style="color: red; background-color: #f8d7da; border: 1px solid red;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: orange; background-color: #fff3cd; border: 1px solid orange;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Set a timeout to remove alert messages after 5 seconds
+        setTimeout(() => {
+            const alertMessages = document.querySelectorAll('.alert-message');
+            alertMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease'; // Optional: add transition effect
+                message.style.opacity = '0'; // Fade out the message
+                setTimeout(() => {
+                    message.remove(); // Remove the message from the DOM
+                }, 500); // Wait for the fade-out effect to complete
+            });
+        }, 5000); // 5 seconds
+    </script>
+
+{% endif %}
 
     <section class="section">
         <div class="row">
@@ -107,7 +143,26 @@
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.is_active }}</td>
                                         <td>{{ user.last_login }}</td>
-                                        <td></td>
+                                        <td>
+
+                                            <div class="btn-group">
+                                                <a href="#" 
+                                                   class="btn btn-sm btn-warning" 
+                                                   title="Edit User">
+                                                   <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                            </div>
+
+                                            <div class="btn-group">
+                                                <a href="#" 
+                                                    class="btn btn-sm btn-danger {% if bill.is_cancelled %}disabled{% endif %}" 
+                                                    title="Deactivate User">
+                                                    <i class="bi bi-x-circle"></i>
+                                                    </a>
+                                            </div>
+
+
+                                        </td>
                                     </tr>
                                     {% empty %}
                                     <tr>
@@ -130,7 +185,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addOfferingModalLabel">Add New User Into {{temple}}</h5>
+                <h5 class="modal-title" id="addOfferingModalLabel">Add New User Into {{ temple_breadcrumb }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -138,22 +193,59 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="offeringName" name="name" required>
+                        <input type="text" class="form-control" id="offeringName" name="username" required>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="offeringPrice" name="price" required>
+                        <input type="email" class="form-control" id="offeringPrice" name="email" required>
                     </div>
                     <div class="mb-3">
                         <label for="first_name" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="offeringName" name="name">
+                        <input type="text" class="form-control" id="offeringName" name="first_name">
                     </div>
                     <div class="mb-3">
                         <label for="last_name" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="offeringName" name="name">
+                        <input type="text" class="form-control" id="offeringName" name="last_name">
                     </div>
-
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div id="passwordFeedback" class="invalid-feedback">
+                            Password must be at least 8 characters, contain an uppercase letter, a number, and a special character.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="retypePassword" class="form-label">Re-type Password</label>
+                        <input type="password" class="form-control" id="retypePassword" name="retypePassword" required>
+                        <div id="matchFeedback" class="invalid-feedback">
+                            Passwords do not match.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Password Strength</label>
+                        <div id="passwordStrength" class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="option1" value="Billing Assistant">
+                            <label class="form-check-label" for="option1">
+                                Biller
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="option" id="option2" value="Temple Admin">
+                            <label class="form-check-label" for="option2">
+                                Admin
+                            </label>
+                        </div>
+                    </div>
                     <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -161,4 +253,89 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    const passwordInput = document.getElementById("password");
+    const retypePasswordInput = document.getElementById("retypePassword");
+    const passwordStrengthBar = document.querySelector("#passwordStrength .progress-bar");
+    const passwordFeedback = document.getElementById("passwordFeedback");
+    const matchFeedback = document.getElementById("matchFeedback");
+
+    // Password Strength Criteria
+    const passwordCriteria = {
+        minLength: 8,
+        hasUpperCase: /[A-Z]/,
+        hasNumber: /\d/,
+        hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/
+    };
+
+    // Function to validate password strength
+    function validatePasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= passwordCriteria.minLength) strength += 25;
+        if (passwordCriteria.hasUpperCase.test(password)) strength += 25;
+        if (passwordCriteria.hasNumber.test(password)) strength += 25;
+        if (passwordCriteria.hasSpecialChar.test(password)) strength += 25;
+
+        // Update progress bar width and color
+        passwordStrengthBar.style.width = strength + "%";
+        passwordStrengthBar.setAttribute("aria-valuenow", strength);
+
+        // Color code the progress bar based on strength
+        if (strength < 50) {
+            passwordStrengthBar.classList.remove("bg-warning", "bg-success");
+            passwordStrengthBar.classList.add("bg-danger");  // Red for weak password
+        } else if (strength >= 50 && strength < 75) {
+            passwordStrengthBar.classList.remove("bg-danger", "bg-success");
+            passwordStrengthBar.classList.add("bg-warning"); // Orange for medium strength
+        } else {
+            passwordStrengthBar.classList.remove("bg-danger", "bg-warning");
+            passwordStrengthBar.classList.add("bg-success"); // Green for strong password
+        }
+
+        // Provide feedback based on strength
+        if (strength < 100) {
+            passwordFeedback.classList.add("invalid-feedback");
+            passwordFeedback.classList.remove("valid-feedback");
+        } else {
+            passwordFeedback.classList.add("valid-feedback");
+            passwordFeedback.classList.remove("invalid-feedback");
+        }
+    }
+
+    // Check password match
+    function checkPasswordMatch() {
+        if (passwordInput.value !== retypePasswordInput.value) {
+            matchFeedback.style.display = 'block';
+            retypePasswordInput.classList.add('is-invalid');
+        } else {
+            matchFeedback.style.display = 'none';
+            retypePasswordInput.classList.remove('is-invalid');
+        }
+    }
+
+    // Real-time event listeners
+    passwordInput.addEventListener('input', function () {
+        validatePasswordStrength(passwordInput.value);
+    });
+
+    retypePasswordInput.addEventListener('input', checkPasswordMatch);
+
+    // Form submit validation
+    document.querySelector("form").addEventListener("submit", function (event) {
+        if (passwordInput.value !== retypePasswordInput.value) {
+            event.preventDefault();
+            alert("Passwords do not match.");
+        }
+
+        if (!passwordCriteria.hasUpperCase.test(passwordInput.value) || 
+            !passwordCriteria.hasNumber.test(passwordInput.value) || 
+            !passwordCriteria.hasSpecialChar.test(passwordInput.value) || 
+            passwordInput.value.length < passwordCriteria.minLength) {
+            event.preventDefault();
+            alert("Password does not meet the strength requirements.");
+        }
+    });
+</script>
 {% endblock %}

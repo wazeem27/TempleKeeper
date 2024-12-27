@@ -18,6 +18,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from billing_manager.decorators import check_temple_session
+from django.contrib.auth.models import User, Group
 
 
 class CustomLoginView(LoginView):
@@ -269,6 +270,59 @@ class TempleDetailView(LoginRequiredMixin, ListView):
         context['temple_breadcrumb'] = str(shortname) + str(place)
         context['temple'] = temple
         return context
+
+    def post(self, request, *args, **kwargs):
+        temple_id = self.kwargs['temple_id']
+
+        # Access all input data
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        password = request.POST.get('password')
+        re_password = request.POST.get('retypePassword')
+        group_name = request.POST.get('role')
+
+        # Validation
+        if not username or not password or not re_password or not group_name:
+            messages.error(request, "All fields are required.")
+            return redirect('temple-detail', temple_id=temple_id)
+
+        if password != re_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect('temple-detail', temple_id=temple_id)
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists.")
+            return redirect('temple-detail', temple_id=temple_id)
+
+        try:
+            group = Group.objects.get(name=group_name)
+        except Group.DoesNotExist:
+            messages.error(request, f'Group "{group_name}" does not exist')
+            return redirect('temple-detail', temple_id=temple_id)
+
+        temples = Temple.objects.filter(id__in=[temple_id])
+
+        if not temples.exists():
+            messages.error(request, "At least one valid temple must be selected.")
+            return redirect('temple-detail', temple_id=temple_id)
+
+        # User Creation
+        user = User.objects.create(username=username)
+        user.set_password(password)
+        user.save()
+
+        # User Profile Creation
+        user_profile = UserProfile.objects.create(user=user)
+        user_profile.temples.set(temples)
+
+        # Add User to Group
+        user.groups.add(group)
+        messages.success(request, f'User "{username}" created, added to privilege "{group_name}", and linked to selected temples.')
+        return redirect('temple-detail', temple_id=temple_id)
+
+
 
 @method_decorator(check_temple_session, name='dispatch')
 class TempleUpdateView(LoginRequiredMixin, UpdateView):

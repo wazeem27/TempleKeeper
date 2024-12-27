@@ -21,7 +21,7 @@ from temple_auth.views import AdminSubMenu, TempleListView, TempleDetailView, Te
 urlpatterns = [
     path('admin/', AdminSubMenu.as_view(), name='admin-sub-menu'),
     path('list_temples/', TempleListView.as_view(), name='list-temples'),
-    path('temple/<int:bill_id>/', TempleDetailView.as_view(), name='temple-detail'),
+    path('temple/<int:temple_id>/', TempleDetailView.as_view(), name='temple-detail'),
     path('temple/update/<int:pk>/', TempleUpdateView.as_view(), name='temple-update'),
     path('deselect-temple/', temple_deselect_view, name='deselect-temple'),
 ]
