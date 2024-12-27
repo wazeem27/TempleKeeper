@@ -1,7 +1,7 @@
 {% extends "temple_auth/new_base.html" %}
 {% load static %}
 
-{% block custom_style %}
+{% block custom-style %}
 
 form {
   max-width: 600px;
@@ -65,6 +65,12 @@ label.fw-bold {
   margin-bottom: 1.5rem;
 }
 
+
+
+.reduced-gap {
+  margin-top: 2px;
+  margin-bottom: -3px;
+}
 
 {% endblock %}
 
@@ -176,7 +182,7 @@ label.fw-bold {
               <div class="card-title text-center" style="color: black;">
                   Sample Bill View
               </div>
-                <div class="card-body center">
+                <div class="card-body d-flex justify-content-center align-items-center"">
                     <!-- Receipt Content -->
                     <div class="receipt-card" style="width: 80mm; padding: 5mm; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
                         <!-- Print Icon -->
@@ -185,15 +191,15 @@ label.fw-bold {
                         </div>
         
                         <!-- Header -->
-                        <p class="text-center mb-1" style="font-weight: bold;">{{ temple.temple_bill_title }}</p>
-                        <p class="text-center mb-1 mt-1" style="font-size: 0.8rem;">{{ temple.temple_bill_mid }}</p>
-                        <p class="text-center mb-1 mt-1" style="font-weight: bold; font-size: 0.9rem;">വഴിപാട് രസീത്</p>
+                        <p class="text-center reduced-gap" style="font-weight: bold;">{{ title }}</p>
+                        <p class="text-center reduced-gap" style="font-size: 0.8rem;">{{ mid }}</p>
+                        <p class="text-center mb-1 mt-1" style="font-size: 0.9rem;">വഴിപാട് രസീത്</p>
+                        <p class="text-center mb-1 mt-1" style="font-size: 0.9rem;">Date: 24/12/2024</p>
                         <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
         
                         <!-- Receipt Number and Date -->
                         <p class="mb-1" style="font-size: 0.8rem;">
-                            <span>രസീത് നം: {{ bill.id }}</span>
-                            <span class="float-end">തിയതി: {{ bill.created_at|date:"d/m/Y" }}</span>
+                            <span>രസീത് നം: 1</span>
                         </p>
                         <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
         
@@ -220,7 +226,7 @@ label.fw-bold {
                                 </tr>
                             </tbody>
                         </table>
-                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+                        <div style="border-top: 1px dashed #000; margin: 0px 0;"></div>
         
                         <!-- Inventory Items Table -->
                         <table class="table table-borderless" style="font-size: 0.8rem;">
@@ -252,7 +258,7 @@ label.fw-bold {
         
                         <!-- Footer -->
                         <div class="footer" style="text-align: center; font-size: 0.7rem; margin-top: 4px;">
-                            <p class="thanks" style="font-weight: bold;">{{ temple.temple_bill_footer }}</p>
+                            <p class="thanks" style="font-weight: bold;">{{ footer }}</p>
                         </div>
                     </div>
                 </div>

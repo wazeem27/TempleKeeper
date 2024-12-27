@@ -146,9 +146,15 @@ def settings_view(request):
 
     temple = get_object_or_404(Temple, id=temple_id)
     is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    title = temple.temple_bill_title if temple.temple_bill_title else ""
+    mid = temple.temple_bill_mid if temple.temple_bill_mid else ""
+    footer = temple.temple_bill_footer if temple.temple_bill_footer else ""
     return render(
         request, 'temple_auth/settings.html',
-        {'temple': temple, 'user_profile': user_profile, 'is_central_admin': is_central_admin}
+        {
+            'temple': temple, 'user_profile': user_profile, 'is_central_admin': is_central_admin,
+            'title': title, 'mid': mid, 'footer': footer
+        }
     )
 
 
