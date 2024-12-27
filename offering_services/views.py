@@ -41,8 +41,9 @@ class VazhipaduOfferingView(LoginRequiredMixin, View):
         if form.is_valid():
             offering = form.save(commit=False)
             offering.temple = temple
-            order_number = VazhipaduOffering.objects.last().order + 1
-            offering.order = order_number
+            current_temple_vazhipadu = VazhipaduOffering.objects.filter(temple=temple)
+            order_num = current_temple_vazhipadu.last() if current_temple_vazhipadu.last() else 1
+            offering.order = order_num
             if VazhipaduOffering.objects.filter(name=offering.name, temple=offering.temple).exists():
                 messages.error(request, f"Offering '{offering.name}' already exists in the temple.")
             else:

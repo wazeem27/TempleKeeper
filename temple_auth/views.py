@@ -358,6 +358,15 @@ class TempleUpdateView(LoginRequiredMixin, UpdateView):
     #     # Restrict access to staff/admin users
     #     return self.request.user.is_staff
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['active_temple'] = temple.id
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
+        return context
 
 @login_required
 def temple_deselect_view(request):
@@ -386,3 +395,14 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
             messages.success(self.request, f"Successfully updated details for user: {user.username}")
             return reverse_lazy("temple-detail", kwargs={'temple_id': temple})
         return reverse_lazy("list-temples")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        context['active_temple'] = temple.id
+        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        context['is_central_admin'] = is_central_admin
+        context["username"] = User.objects.get(id=self.object.pk).username
+        return context
