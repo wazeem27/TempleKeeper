@@ -1,0 +1,220 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom-style %}
+
+form {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  form h4 {
+    color: #007bff;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  form .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  form .form-group input,
+  form .form-group select,
+  form .form-group textarea {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 8px 10px;
+  }
+  
+  form .form-group input:focus,
+  form .form-group select:focus,
+  form .form-group textarea:focus {
+    border-color: #80bdff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  
+  form .text-danger {
+    font-size: 0.75rem;
+  }
+  
+  form button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    transition: background-color 0.3s;
+  }
+  
+  form button:hover {
+    background-color: #218838;
+  }
+
+{%endblock%}
+
+{% block main-content %}
+
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>{{ temple.temple_name }}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'list-temples' %}">Management</a></li>
+                <li class="breadcrumb-item active">Edit: {{ temple.temple_name }}</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    {% if messages %}
+    <div role="alert">
+        {% for message in messages %}
+            <div style="padding: 10px; margin: 5px 0;">
+                {% if message.tags == 'success' %}
+                    <div style="color: green; background-color: #d4edda; border: 1px solid green;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div style="color: red; background-color: #f8d7da; border: 1px solid red;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: orange; background-color: #fff3cd; border: 1px solid orange;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Set a timeout to remove alert messages after 5 seconds
+        setTimeout(() => {
+            const alertMessages = document.querySelectorAll('.alert-message');
+            alertMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease'; // Optional: add transition effect
+                message.style.opacity = '0'; // Fade out the message
+                setTimeout(() => {
+                    message.remove(); // Remove the message from the DOM
+                }, 500); // Wait for the fade-out effect to complete
+            });
+        }, 5000); // 5 seconds
+    </script>
+
+{% endif %}
+
+
+
+<section class="section profile">
+    <div class="row">
+      <div class="col-xl-8">
+        <div class="card">
+          <div class="card-body pt-3">
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs nav-tabs-bordered">
+              <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#update-details">Update Details</button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#update-password">Update Password</button>
+              </li>
+            </ul>
+  
+            <!-- Tabs Content -->
+            <div class="tab-content pt-2">
+              <!-- Update Details Tab -->
+              <div class="tab-pane fade show active" id="update-details">
+                <form method="POST" action="" class="p-4 border rounded bg-white shadow-sm">
+                    {% csrf_token %}
+                    <h4 class="mb-4 text-primary fw-bold text-center">Update Details</h4>
+            
+                    <div class="row g-3">
+                        {% for field in form %}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.errors %}
+                                <div class="text-danger small">
+                                    {{ field.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+            
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="submit" class="btn btn-success px-5 py-2 shadow-sm rounded-pill">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+              
+  
+              <!-- Update Password Tab -->
+              <div class="tab-pane fade" id="update-password">
+                <form method="POST" action="#" class="p-3 border rounded bg-light shadow-sm">
+                  {% csrf_token %}
+                  
+                  <div class="row mb-3">
+                    <label for="current_password" class="col-md-4 col-lg-3 col-form-label fw-bold">Current Password</label>
+                    <div class="col-md-8 col-lg-9">
+                      <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <label for="new_password" class="col-md-4 col-lg-3 col-form-label fw-bold">New Password</label>
+                    <div class="col-md-8 col-lg-9">
+                      <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <label for="confirm_password" class="col-md-4 col-lg-3 col-form-label fw-bold">Confirm Password</label>
+                    <div class="col-md-8 col-lg-9">
+                      <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary px-4 py-2">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div><!-- End Tabs Content -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+
+
+</main>
+
+<!-- Optional JavaScript for Bootstrap Validation -->
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+{% endblock %}

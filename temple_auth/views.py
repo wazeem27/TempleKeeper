@@ -12,7 +12,7 @@ from django.utils.timezone import localtime
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.contrib.auth.views import LoginView
-from .forms import CustomAuthenticationForm, TempleCreateForm
+from .forms import CustomAuthenticationForm, TempleCreateForm, UserUpdateForm
 from django.urls import reverse_lazy
 
 from django.utils.decorators import method_decorator
@@ -264,6 +264,7 @@ class TempleDetailView(LoginRequiredMixin, ListView):
             user_detail["first_name"] = user.user.first_name
             user_detail["last_name"] = user.user.last_name
             user_detail["email"] = user.user.email
+            user_detail["id"] = user.id
             user_detail["is_active"] = user.user.is_active
             if user.user.last_login:
                 user_detail["last_login"] = user.user.last_login.strftime("%d-%m-%Y %I:%M:%S %p")
@@ -316,6 +317,9 @@ class TempleDetailView(LoginRequiredMixin, ListView):
 
         # User Creation
         user = User.objects.create(username=username)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
         user.set_password(password)
         user.save()
 
@@ -366,3 +370,19 @@ def temple_deselect_view(request):
 
     # Redirect the user back to the temple selection page
     return redirect('temple_selection')
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserUpdateForm
+    template_name = "temple_auth/user_edit.html"
+
+    def get_success_url(self):
+        # Redirect to the temple detail page with the user's pk
+        user = User.objects.get(id=self.object.pk)
+        profile = UserProfile.objects.get(user=user)
+        if profile.temples:
+            temple = profile.temples.values()[0].get('id')
+            messages.success(self.request, f"Successfully updated details for user: {user.username}")
+            return reverse_lazy("temple-detail", kwargs={'temple_id': temple})
+        return reverse_lazy("list-temples")

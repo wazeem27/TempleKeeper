@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
 from temple_auth.models import Temple
-
+from django.contrib.auth.models import User
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -43,3 +43,15 @@ class TempleCreateForm(forms.ModelForm):
         if not name:
             raise forms.ValidationError("temple_name is required.")
         return name
+
+
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username", "email"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})

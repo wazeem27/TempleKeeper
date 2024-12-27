@@ -136,7 +136,7 @@
                                     {% for user in user_list %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
-                                        <td><a href="#">{{ user.username }}</a></td>
+                                        <td>{{ user.username }}</td>
                                         <td>{{ user.role }}</td>
                                         <td>{{ user.first_name }}</td>
                                         <td>{{ user.last_name }}</td>
@@ -146,7 +146,7 @@
                                         <td>
 
                                             <div class="btn-group">
-                                                <a href="#" 
+                                                <a href="{% url 'user-update' user.id %}" 
                                                    class="btn btn-sm btn-warning" 
                                                    title="Edit User">
                                                    <i class="bi bi-pencil-square"></i>
