@@ -278,3 +278,16 @@ class TempleUpdateView(LoginRequiredMixin, UpdateView):
     # def test_func(self):
     #     # Restrict access to staff/admin users
     #     return self.request.user.is_staff
+
+
+@login_required
+def temple_deselect_view(request):
+    # Check if the temple_id exists in the session
+    if 'temple_id' in request.session:
+        del request.session['temple_id']  # Remove the temple_id from the session
+        messages.success(request, "You have been logged out of the temple.")
+    else:
+        messages.error(request, "You are not currently logged into any temple.")
+
+    # Redirect the user back to the temple selection page
+    return redirect('temple_selection')
