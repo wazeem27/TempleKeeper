@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User, Group
 from temple_auth.models import UserProfile, Temple
 
+
 class Command(BaseCommand):
     help = 'Create predefined sample users and assign them to groups, also creating UserProfile for each user.'
 

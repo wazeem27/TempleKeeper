@@ -135,12 +135,6 @@ label.fw-bold {
                 </li>
 
 
-
-
-                <li class="nav-item">
-                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Receipt Content</button>
-                </li>
-
               </ul>
               <div class="tab-content pt-2">
 
@@ -169,33 +163,6 @@ label.fw-bold {
                     </div>
                   </form>
 
-                </div>
-
-
-                <div class="tab-pane fade pt-3" id="profile-change-password">
-                  <!-- Change Password Form -->
-                  <form method="POST" action="{% url 'update_temple_bill' %}" class="p-3 border rounded bg-light shadow-sm">
-                    {% csrf_token %}
-                    
-                    
-                    <div class="row mb-3 align-items-center">
-                      <label for="templeBillFooter" class="col-md-4 col-lg-3 col-form-label fw-bold">Bill Footer</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input 
-                          name="temple_bill_footer" 
-                          type="text" 
-                          class="form-control" 
-                          id="templeBillFooter" 
-                          placeholder="Enter Bill Footer" 
-                          value="{{ temple.temple_bill_footer }}">
-                      </div>
-                    </div>
-                    
-                    <div class="text-center">
-                      <button type="submit" class="btn btn-primary px-4 py-2">Save Changes</button>
-                    </div>
-                  </form>
-                  
                 </div>
 
               </div><!-- End Bordered Tabs -->
