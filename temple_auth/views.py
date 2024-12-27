@@ -12,7 +12,7 @@ from django.utils.timezone import localtime
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.contrib.auth.views import LoginView
-from .forms import CustomAuthenticationForm
+from .forms import CustomAuthenticationForm, TempleCreateForm
 from django.urls import reverse_lazy
 
 from django.utils.decorators import method_decorator
@@ -200,6 +200,21 @@ class TempleListView(LoginRequiredMixin, ListView):
         context['temple'] = temple
         
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = TempleCreateForm(request.POST)
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+
+        if form.is_valid():
+            new_temple = form.save(commit=False)
+            new_temple.save()
+            messages.success(request, f"'{new_temple.temple_name}' successfully added.")
+        else:
+            messages.error(request, "Invalid input given for temple creation.")
+        return redirect('list-temples')
+
+
 
 @method_decorator(check_temple_session, name='dispatch')
 class TempleDetailView(LoginRequiredMixin, ListView):

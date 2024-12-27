@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
+from temple_auth.models import Temple
+
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -26,3 +28,18 @@ class CustomAuthenticationForm(AuthenticationForm):
             )
 
         return self.cleaned_data
+
+
+class TempleCreateForm(forms.ModelForm):
+    class Meta:
+        model = Temple
+        fields = [
+            'temple_name', 'temple_place', 'temple_short_name',
+            'temple_bill_title', 'temple_bill_mid', 'temple_bill_footer'
+        ]
+
+    def clean_name(self):
+        name = self.cleaned_data.get('temple_name')
+        if not name:
+            raise forms.ValidationError("temple_name is required.")
+        return name
