@@ -231,12 +231,12 @@ class TempleDetailView(LoginRequiredMixin, ListView):
     paginate_by = 100
 
     def get_queryset(self):
-        temple_id = self.request.session.get('temple_id')
-        temple = get_object_or_404(Temple, id=temple_id)
+        temple_id = self.kwargs['temple_id']
+        self.temple = get_object_or_404(Temple, id=temple_id)
 
         queryset = UserProfile.objects.filter(
-            temples__id__in=[temple_id]  # Corrected the lookup field
-        ).order_by('user__username')
+            temples=self.temple  # Corrected the lookup field
+        )
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -244,7 +244,7 @@ class TempleDetailView(LoginRequiredMixin, ListView):
         
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
-        context['active_temple'] = temple.id
+        context['active_temple'] = self.temple.id
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
 
@@ -272,8 +272,8 @@ class TempleDetailView(LoginRequiredMixin, ListView):
                 user_detail["last_login"] = ""
             users_list.append(user_detail)
         context['user_list'] = users_list
-        shortname = temple.temple_short_name  if temple.temple_short_name  else ""
-        place = temple.temple_place if temple.temple_place else ""
+        shortname = self.temple.temple_short_name  if self.temple.temple_short_name  else ""
+        place = self.temple.temple_place if self.temple.temple_place else ""
         context['temple_breadcrumb'] = str(shortname) + str(place)
         context['temple'] = temple
         return context
