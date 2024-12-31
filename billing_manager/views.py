@@ -687,8 +687,8 @@ class BillExportView(LoginRequiredMixin, View):
         # Write the header row
         writer.writerow([
             'Receipt No', 'Sub Receipt', 'Billed By', 'Date',
-            'Vazhipadu', 'Customer Name', 'Star', 'Price', 'Comment',
-            "Payment Method"
+            'Vazhipadu', 'Customer Name', 'Star', 'Price', "Payment Method",
+            'Comment',
         ])
 
         # Write the data rows
@@ -711,8 +711,9 @@ class BillExportView(LoginRequiredMixin, View):
                     names,
                     stars,
                     vazhipadu_bill.price,
-                    bill.cancel_reason,
                     bill.payment_method,
+                    bill.cancel_reason,
+
                 ])
                 counter += 1
 
@@ -728,8 +729,8 @@ class BillExportView(LoginRequiredMixin, View):
                     other_bill.person_name,
                     other_bill.person_star.name if other_bill.person_star else "",
                     other_bill.price,
-                    "",
-                    "",
+                    bill.payment_method,
+                    bill.cancel_reason,
                 ])
                 counter += 1
 
