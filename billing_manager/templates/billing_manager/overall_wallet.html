@@ -194,9 +194,14 @@ h2 {
              {% for wallet in wallet_details %}
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header" data-bs-toggle="collapse" href="#{{ wallet.username }}" role="button" aria-expanded="false" aria-controls="{{ wallet.username }}">
-                        {{ wallet.username }}
-                        <i class="bi bi-plus-circle float-end"></i>
+                    <div class="card-header d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#{{ wallet.username }}" role="button" aria-expanded="false" aria-controls="{{ wallet.username }}">
+                        <div>
+                            {{ wallet.username }}
+                            <span class="text-muted small d-block text-truncate" style="max-width: 200px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; color: black !important;">
+                                coin: {{wallet.coin_value}}; note: {{ wallet.note_value }}; total: {{ wallet.sum }}
+                            </span>
+                        </div>
+                        <i class="bi bi-plus-circle"></i>
                     </div>
                     <div class="collapse" id="{{ wallet.username }}">
                         <div class="card-body">

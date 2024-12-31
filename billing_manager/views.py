@@ -718,7 +718,7 @@ class BillExportView(LoginRequiredMixin, View):
 
             other_list = bill.bill_other_items.all()
             for other_bill in other_list:
-                subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
+                subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
                 writer.writerow([
                     bill.id,
                     subreceipt,
@@ -989,10 +989,13 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
         total_note_sum = 0
 
         # Iterate over all user profiles for the temple
+        user_exp_detail = {}
         for profile in user_profiles:
             if profile.user.username == 'central_admin':
                 continue
             total = 0
+            user_coin_sum = 0
+            user_note_sum = 0
             # Initialize wallet data with default 0 for each coin and note
             wallet_coin = {f"{denomination}": {"count": 0, "value": 0} for denomination in coin_list}
             wallet_note = {f"{denomination}": {"count": 0, "value": 0} for denomination in note_list}
@@ -1007,6 +1010,7 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
                     wallet_coin[f"{coin}"]["count"] = count
                     wallet_coin[f"{coin}"]["value"] = int(count) * int(coin)
                     total_coin_sum += wallet_coin[f"{coin}"]["value"]
+                    user_coin_sum += wallet_coin[f"{coin}"]["value"]
 
                 for note in note_list:
                     field_name = f"note_{note}"
@@ -1014,6 +1018,7 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
                     wallet_note[f"{note}"]["count"] = count
                     wallet_note[f"{note}"]["value"] = int(count) * int(note)
                     total_note_sum += wallet_note[f"{note}"]["value"]
+                    user_note_sum += wallet_note[f"{note}"]["value"]
 
                 total = user_collection.__sum__()
 
@@ -1022,7 +1027,9 @@ class WalletOveralCollectionView(LoginRequiredMixin, TemplateView):
                 'username': profile.user.username,
                 'wallet_coin': wallet_coin,
                 'wallet_note': wallet_note,
-                'sum': total
+                'sum': total,
+                'coin_value': user_coin_sum,
+                'note_value': user_note_sum
             })
         
         # Add the wallet details and total sums to the context
