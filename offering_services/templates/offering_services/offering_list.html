@@ -302,32 +302,33 @@
 
 // Function to save the new order via AJAX
 function saveNewOrder() {
-    const rows = document.querySelectorAll('#sortable-table tr');
-    const orderData = Array.from(rows).map(row => row.dataset.id); // Collect row IDs in new order
+        const rows = document.querySelectorAll("#sortable-table tr");
+        const orderData = Array.from(rows).map((row, index) => ({
+            id: row.dataset.id.trim(), // Fetch the actual ID from the data-id attribute
+            order: index + 1,          // Set the order based on the row's position
+        }));
 
-    fetch("{% url 'update_order' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token for security
-        },
-        body: JSON.stringify({ order: orderData })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to save the new order.');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            console.log('Order updated successfully.');
-        } else {
-            console.error('Order update failed:', data.message);
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+        fetch("{% url 'update_order' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}", // Ensure CSRF token is included
+            },
+            body: JSON.stringify(orderData),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to update order.");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Order updated successfully:", data);
+            })
+            .catch((error) => {
+                console.error("Error updating order:", error);
+            });
+    }
 
 // Attach delete button actions
 document.querySelectorAll('.delete-btn').forEach(button => {
