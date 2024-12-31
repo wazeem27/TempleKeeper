@@ -25,7 +25,7 @@ class VazhipaduOfferingView(LoginRequiredMixin, View):
         is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
 
 
-        offerings = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
+        offerings = VazhipaduOffering.objects.filter(temple=temple, is_deleted=False).order_by('order')
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context = {
             'offerings': offerings, 'temple': temple, 'is_billing_assistant': is_billing_assistant,
@@ -60,7 +60,14 @@ class VazhipaduOfferingDeleteView(LoginRequiredMixin, View):
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         offering = get_object_or_404(VazhipaduOffering, id=kwargs.get('pk'), temple=temple)
-        offering.delete()
+        offering.is_deleted = True
+        deleted_order = offering.order
+        offering_list = VazhipaduOffering.objects.filter(temple=temple, is_deleted=False, order__gt=offering.order)
+        for offg in offering_list:
+            offg.order -= 1
+            offg.save() 
+        offering.order = 0
+        offering.save()
         messages.success(request, f"Offering '{offering.name}' successfully deleted.")
         return redirect('offerings-list')
 

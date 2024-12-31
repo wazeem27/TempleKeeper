@@ -46,7 +46,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
         return InventoryItem.objects.filter(temple=temple)
 
     def get_vazhipadu_queryset(self, temple: Temple) -> Any:
-        return VazhipaduOffering.objects.filter(temple=temple).order_by('order')
+        return VazhipaduOffering.objects.filter(temple=temple, is_deleted=False).order_by('order')
 
     def get_star_queryset(self) -> Any:
         return Star.objects.all().order_by('id')
@@ -65,7 +65,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
 
         multi_support_vazhipadu = [
             vazhipadu.name for vazhipadu in
-            VazhipaduOffering.objects.filter(temple=temple, allow_multiple=True)
+            VazhipaduOffering.objects.filter(temple=temple, allow_multiple=True, is_deleted=False)
         ]
         context['multi_support_vazhipadu'] = multi_support_vazhipadu
         return context
