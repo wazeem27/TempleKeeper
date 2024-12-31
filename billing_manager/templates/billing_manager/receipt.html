@@ -74,7 +74,7 @@
         }
 
         .table th {
-            font-weight: bold;
+            font-weight: lighter;
         }
 
         .total {
@@ -162,10 +162,14 @@
         </div>
 
         <!-- Receipt Content -->
+         {% if temple.temple_bill_title %}
         <div class="header">
             <p>{{ temple.temple_bill_title }}</p>
         </div>
+        {% endif %}
+        {% if temple.temple_bill_mid  %}
         <p class="text-center mb-1 mt-1">{{ temple.temple_bill_mid }}</p>
+        {% endif %}
 
         <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
 
@@ -264,10 +268,12 @@
         <!-- Total -->
         <p class="total mb-1">Total: ₹{{ bill.total_amount }}</p>
 
+        {% if temple.temple_bill_footer %}
         <!-- Footer -->
         <div class="footer">
             <p class="thanks">{{ temple.temple_bill_footer }}</p>
         </div>
+        {% endif %}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
