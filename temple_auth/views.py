@@ -405,4 +405,5 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
         context["username"] = User.objects.get(id=self.object.pk).username
+        context['temple'] = temple
         return context
