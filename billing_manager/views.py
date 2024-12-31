@@ -726,7 +726,7 @@ class BillExportView(LoginRequiredMixin, View):
                     other_bill.person_name,
                     other_bill.person_star.name if other_bill.person_star else "",
                     other_bill.price,
-                    other_bill.cancel_reason
+                    ""
                 ])
                 counter += 1
 
