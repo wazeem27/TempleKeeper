@@ -300,76 +300,73 @@
         });
     }
 
-    function saveNewOrder() {
-        const rows = document.querySelectorAll("#sortable-table tr");
-        const orderData = Array.from(rows).map((row, index) => ({
-            id: row.dataset.id.trim(), // Fetch the actual ID from the data-id attribute
-            order: index + 1,          // Set the order based on the row's position
-        }));
+// Function to save the new order via AJAX
+function saveNewOrder() {
+    const rows = document.querySelectorAll('#sortable-table tr');
+    const orderData = Array.from(rows).map(row => row.dataset.id); // Collect row IDs in new order
 
-        fetch("{% url 'update_order' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}", // Ensure CSRF token is included
-            },
-            body: JSON.stringify(orderData),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to update order.");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log("Order updated successfully:", data);
-            })
-            .catch((error) => {
-                console.error("Error updating order:", error);
-            });
-    }
+    fetch("{% url 'update_order' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token for security
+        },
+        body: JSON.stringify({ order: orderData })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to save the new order.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log('Order updated successfully.');
+        } else {
+            console.error('Order update failed:', data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 
-    // Delete button click handling
-    document.querySelectorAll('.delete-btn').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const itemId = this.getAttribute('data-id');
-            const itemName = this.getAttribute('data-name');
-
-            // Update modal content
-            document.getElementById('deleteItemName').innerText = itemName;
-            document.getElementById('deleteConfirmBtn').setAttribute('data-id', itemId);
-
-            // Check if the modal opens properly (debugging step)
-            console.log("Delete button clicked. Item ID: " + itemId + ", Item Name: " + itemName);
+// Attach delete button actions
+document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', event => {
+        const itemName = event.target.dataset.name;
+        const itemId = event.target.dataset.id;
+        document.getElementById('deleteItemName').textContent = `Do you really want to delete "${itemName}"?`;
+        document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
+            deleteOffering(itemId);
         });
     });
+});
 
-    // Attach click event to the "Delete" button in the modal
-    document.getElementById('deleteConfirmBtn').addEventListener('click', function () {
-        const itemId = this.getAttribute('data-id');
-        const form = document.getElementById('deleteForm-' + itemId);
-
-        // Debugging the form submission (check if the correct form is being selected)
-        console.log("Form is submitting for Item ID: " + itemId);
-
-        form.submit();
-    });
-
-    document.querySelectorAll('.delete-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var itemName = this.getAttribute('data-name');
-            var itemId = this.getAttribute('data-id');
-            document.getElementById('deleteItemName').textContent = itemName;
-            document.getElementById('deleteConfirmBtn').setAttribute('data-id', itemId);
-        });
-    });
-
-    document.getElementById('deleteConfirmBtn').addEventListener('click', function () {
-        var itemId = this.getAttribute('data-id');
-        var form = document.getElementById('deleteForm-' + itemId);
-        form.submit();
-    });
-
+// Function to delete an offering
+function deleteOffering(itemId) {
+    fetch(`{% url 'offerings-delete' 0 %}`.replace('0', itemId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => {
+        console.log(response);
+        if (response.redirected) {
+            // If the response is a redirect, follow it
+            window.location.href = response.url;
+        } else if (!response.ok) {
+            throw new Error('Failed to delete the offering.');
+        } else {
+            return response.json(); // Handle JSON response if needed
+        }
+    })
+    .then(data => {
+        if (data && data.success) {
+            console.log('Offering deleted successfully.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 
 
 

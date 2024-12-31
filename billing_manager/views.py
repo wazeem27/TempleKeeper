@@ -1077,7 +1077,9 @@ class ExpenseView(LoginRequiredMixin, View):
             messages.success(request, f"Expense '{expense.item_name}' added successfully.")
         else:
             messages.error(request, "Failed to add expense. Please correct the errors.")
-        return redirect('expense-calendar')
+            return redirect(reverse('receipt', kwargs={'pk': bill.id}))
+        exp_url = f"{reverse('expense-list')}?date={self.request.POST['expense_date']}"
+        return redirect(exp_url)
 
 
 @method_decorator(check_temple_session, name='dispatch')
