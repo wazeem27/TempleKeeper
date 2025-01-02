@@ -15,7 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from temple_auth.views import AdminSubMenu, TempleListView, TempleDetailView, TempleUpdateView, temple_deselect_view, UserUpdateView
+from temple_auth.views import (
+    AdminSubMenu, TempleListView, TempleDetailView, TempleUpdateView, temple_deselect_view,
+    UserUpdateView, update_password_view)
 
 
 urlpatterns = [
@@ -25,4 +27,5 @@ urlpatterns = [
     path('temple/update/<int:pk>/', TempleUpdateView.as_view(), name='temple-update'),
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='user-update'),
     path('deselect-temple/', temple_deselect_view, name='deselect-temple'),
+    path("update-password/<int:user_id>/", update_password_view, name="update_user_password"),
 ]

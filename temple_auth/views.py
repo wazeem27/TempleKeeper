@@ -14,7 +14,7 @@ from django.views.generic import View
 from django.contrib.auth.views import LoginView
 from .forms import CustomAuthenticationForm, TempleCreateForm, UserUpdateForm
 from django.urls import reverse_lazy
-
+from django.contrib.auth.hashers import make_password
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from billing_manager.decorators import check_temple_session
@@ -405,5 +405,37 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context['is_central_admin'] = is_central_admin
         context["username"] = User.objects.get(id=self.object.pk).username
+        context['user_to_edit'] = User.objects.get(id=self.object.pk)
         context['temple'] = temple
         return context
+
+
+@login_required
+def update_password_view(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    # Ensure only superusers can update passwords for other users
+    is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    if not is_central_admin:
+        return HttpResponseForbidden("You are not authorized to perform this action.")
+
+    if request.method == "POST":
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # Validate new passwords
+        if new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+            return redirect("user-update", pk=user.id)
+
+        if len(new_password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return redirect("user-update", pk=user.id)
+
+        # Update the password
+        user.password = make_password(new_password)
+        user.save()
+        messages.success(request, f"Password for {user.username} updated successfully.")
+        return redirect("user-update", pk=user.id)
+    message.error("Invalid request.")
+    return redirect("user-update", pk=user.id)
