@@ -211,7 +211,7 @@ class BillListView(LoginRequiredMixin, ListView):
         context['start_date'] = self.request.GET.get('start_date', '')
         context['req_vazhipadu'] = req_vazhipadu[0] if req_vazhipadu else ""
         context['end_date'] = self.request.GET.get('end_date', '')
-        context['grand_total'] = sum([bill.total_amount for bill in self.get_queryset()])
+        context['grand_total'] = sum([bill.get('amount', 0) for bill in bill_dataset])
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
         context["is_central_admin"] = is_central_admin
         context["temple"] = temple
