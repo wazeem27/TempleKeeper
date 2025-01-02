@@ -274,8 +274,8 @@ class TempleDetailView(LoginRequiredMixin, ListView):
         context['user_list'] = users_list
         shortname = self.temple.temple_short_name  if self.temple.temple_short_name  else ""
         place = self.temple.temple_place if self.temple.temple_place else ""
-        context['temple_breadcrumb'] = str(shortname) + str(place)
-        context['temple'] = temple
+        context['temple_breadcrumb'] = str(shortname) + " - " + str(place)
+        context['temple'] = self.temple
         return context
 
     def post(self, request, *args, **kwargs):
@@ -411,6 +411,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
 
 @login_required
+@check_temple_session
 def update_password_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
@@ -439,3 +440,27 @@ def update_password_view(request, user_id):
         return redirect("user-update", pk=user.id)
     message.error("Invalid request.")
     return redirect("user-update", pk=user.id)
+
+
+@login_required
+@check_temple_session
+def update_deactivate_view(request, temple_id, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    # Ensure only superusers can update passwords for other users
+    is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    temple = get_object_or_404(Temple, id=temple_id)
+    if not is_central_admin:
+        return HttpResponseForbidden("You are not authorized to perform this action.")
+
+    if request.method == "POST":
+
+        # Update the password
+        is_active = "Deactivate" if user.is_active else "Activated"
+        user.is_active = False if user.is_active else True
+        user.save()
+
+        messages.success(request, f"User {user.username} is {is_active} successfully.")
+        return redirect("temple-detail", temple_id=temple.id)
+    message.error("Invalid request.")
+    return redirect("temple-detail", temple_id=temple.id)

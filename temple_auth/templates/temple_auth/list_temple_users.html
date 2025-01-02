@@ -153,12 +153,13 @@
                                                 </a>
                                             </div>
 
-                                            <div class="btn-group">
-                                                <a href="#" 
-                                                    class="btn btn-sm btn-danger {% if bill.is_cancelled %}disabled{% endif %}" 
-                                                    title="Deactivate User">
-                                                    <i class="bi bi-x-circle"></i>
-                                                    </a>
+                                            <div class="btn-group" title="deactivate">
+                                                <form method="POST" action="{% url 'user-deactivate' temple.id user.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="button" class="{% if user.is_active %}btn btn-danger{% else %}btn btn-success{% endif %} btn-sm deactivate-button" data-item-name="{{ user.username }}">
+                                                        <i class="bi bi-person-x-fill"></i>
+                                                    </button>
+                                                </form>
                                             </div>
 
 
@@ -255,7 +256,56 @@
 </div>
 
 
+
+<!-- Delete Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to activate/deactivate the User "<span id="deleteItemName"></span>" from {{temple_breadcrumb}}?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    let deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+    let deleteItemName = document.getElementById("deleteItemName");
+    let deleteForm;
+
+    // Handle delete button click
+    document.querySelectorAll(".deactivate-button").forEach(button => {
+        button.addEventListener("click", function () {
+            let itemName = this.getAttribute("data-item-name");
+            let form = this.closest("form");
+
+            // Populate modal with item details
+            deleteItemName.textContent = itemName;
+            deleteForm = form; // Store form for submission
+            new bootstrap.Modal(document.getElementById("confirmDeleteModal")).show();
+        });
+    });
+
+    // Handle modal confirm delete
+    deleteConfirmBtn.addEventListener("click", () => {
+        if (deleteForm) {
+            deleteForm.submit();
+        }
+    });
+});
+
+
     const passwordInput = document.getElementById("password");
     const retypePasswordInput = document.getElementById("retypePassword");
     const passwordStrengthBar = document.querySelector("#passwordStrength .progress-bar");

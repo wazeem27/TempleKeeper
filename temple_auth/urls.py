@@ -17,7 +17,7 @@ Including another URLconf
 from django.urls import path
 from temple_auth.views import (
     AdminSubMenu, TempleListView, TempleDetailView, TempleUpdateView, temple_deselect_view,
-    UserUpdateView, update_password_view)
+    UserUpdateView, update_password_view, update_deactivate_view)
 
 
 urlpatterns = [
@@ -28,4 +28,5 @@ urlpatterns = [
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='user-update'),
     path('deselect-temple/', temple_deselect_view, name='deselect-temple'),
     path("update-password/<int:user_id>/", update_password_view, name="update_user_password"),
+    path("user_deactivate/<int:temple_id>/<int:user_id>/", update_deactivate_view, name="user-deactivate"),
 ]
