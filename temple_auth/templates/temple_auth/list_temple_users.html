@@ -157,7 +157,7 @@
                                             <div class="btn-group" title="{% if user.is_active %}deactivate{% else %}activate{% endif %}">
                                                 <form method="POST" action="{% url 'user-deactivate' temple.id user.id %}" style="display: inline;">
                                                     {% csrf_token %}
-                                                    <button type="button" class="{% if user.is_active %}btn btn-danger{% else %}btn btn-success{% endif %} btn-sm deactivate-button" data-item-name="{{ user.username }}">
+                                                    <button type="button" class="{% if user.is_active %}btn btn-success{% else %}btn btn-danger{% endif %} btn-sm deactivate-button" data-item-name="{{ user.username }}">
                                                         <i class="bi bi-person-x-fill"></i>
                                                     </button>
                                                 </form>

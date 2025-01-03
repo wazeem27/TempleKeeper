@@ -19,7 +19,8 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from billing_manager.decorators import check_temple_session
 from django.contrib.auth.models import User, Group
-
+from .models import Note
+from .forms import NoteForm
 
 class CustomLoginView(LoginView):
     template_name = 'temple_auth/login.html'
@@ -466,14 +467,12 @@ def update_deactivate_view(request, temple_id, user_id):
     return redirect("temple-detail", temple_id=temple.id)
 
 
-from .models import Note
-from .forms import NoteForm
 
 class NoteListView(LoginRequiredMixin, View):
     template_name = "temple_auth/user_note.html"
 
     def get(self, request):
-        notes = Note.objects.filter(user=request.user).order_by('-created_at')
+        notes = Note.objects.filter(user=request.user).order_by('-updated_at')
         return render(request, self.template_name, {'notes': notes})
 
 class NoteCreateView(LoginRequiredMixin, View):

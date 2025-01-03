@@ -35,7 +35,31 @@
     border-color: #ffc107;
     color: #856404;
 }
+.note-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
 
+.note-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+    background-color: #f8f9fa; /* Light gray background on hover */
+}
+
+.note-hover h5 {
+    color: #343a40; /* Default darker text */
+}
+
+.note-hover:hover h5 {
+    color: #007bff; /* Blue color on hover */
+}
+
+.note-hover small {
+    color: #6c757d; /* Muted text for small elements */
+}
+
+.note-hover:hover small {
+    color: #0056b3; /* Darker blue for small text on hover */
+}
 {% endblock %}
 
 {% block main-content %}
@@ -84,22 +108,23 @@
             <div class="col-md-12">
                 <div class="list-group">
                     {% for note in notes %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="{% url 'note_update' note.id %}" class="mb-1">
-                            <h5 class="mb-1 text-dark">{{ note.content|truncatechars:50 }}</h5>
-                            <small class="text-muted">{{ note.created_at|date:"M d, Y H:i" }}</small>
-                        </a>
+                    <div class="list-group-item d-flex justify-content-between align-items-center note-hover border rounded p-3 mb-3 shadow-sm">
+                        <div class="note-content">
+                            <a href="{% url 'note_update' note.id %}" class="text-decoration-none">
+                                <h5 class="mb-1 font-weight-bold text-truncate" title="{{ note.content|striptags }}">{{ note.content|striptags }}</h5>
+                                <small>Created on: {{ note.created_at|date:"M d, Y H:i" }}</small>
+                            </a>
+                        </div>
                         <div class="btn-group">
-                            <!-- Delete Button with Modal Trigger -->
-                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ note.id }}">
+                            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ note.id }}">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
                     </div>
-
+                    
                     <!-- Modal for Deleting Note -->
                     <div class="modal fade" id="deleteModal{{ note.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ note.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="deleteModalLabel{{ note.id }}">Confirm Deletion</h5>
@@ -119,6 +144,7 @@
                         </div>
                     </div>
                     {% endfor %}
+                    
                 </div>
             </div>
             {% else %}
