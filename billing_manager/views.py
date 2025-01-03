@@ -206,6 +206,7 @@ class BillListView(LoginRequiredMixin, ListView):
 
         context['bills'] = bill_dataset
         user_profiles = UserProfile.objects.filter(temples__id=temple_id)
+        user_profiles = [user for user in user_profiles if not user.user.groups.filter(name='Central Admin').exists()]
         context['user_list'] = [usr_prof.user.username for usr_prof in user_profiles]
         context['search_query'] = self.request.GET.get('q', '')
         context['start_date'] = self.request.GET.get('start_date', '')

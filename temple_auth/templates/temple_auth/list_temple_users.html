@@ -109,6 +109,7 @@
 
     <section class="section">
         <div class="row">
+            
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
@@ -135,15 +136,15 @@
                                 <tbody>
                                     {% for user in user_list %}
                                     <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ user.username }}</td>
-                                        <td>{{ user.role }}</td>
-                                        <td>{{ user.first_name }}</td>
-                                        <td>{{ user.last_name }}</td>
-                                        <td>{{ user.email }}</td>
-                                        <td>{{ user.is_active }}</td>
-                                        <td>{{ user.last_login }}</td>
-                                        <td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ forloop.counter }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.username }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.role }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.first_name }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.last_name }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.email }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.is_active }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>{{ user.last_login }}</td>
+                                        <td {% if not user.is_active %}style="background-color: #f19696;"{% endif %}>
 
                                             <div class="btn-group">
                                                 <a href="{% url 'user-update' user.id %}" 
@@ -153,7 +154,7 @@
                                                 </a>
                                             </div>
 
-                                            <div class="btn-group" title="deactivate">
+                                            <div class="btn-group" title="{% if user.is_active %}deactivate{% else %}activate{% endif %}">
                                                 <form method="POST" action="{% url 'user-deactivate' temple.id user.id %}" style="display: inline;">
                                                     {% csrf_token %}
                                                     <button type="button" class="{% if user.is_active %}btn btn-danger{% else %}btn btn-success{% endif %} btn-sm deactivate-button" data-item-name="{{ user.username }}">
@@ -270,7 +271,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Submit</button>
+                <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Apply</button>
             </div>
         </div>
     </div>
