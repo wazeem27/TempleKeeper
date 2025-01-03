@@ -1,0 +1,108 @@
+{% extends "temple_auth/new_base.html" %}
+{% load static %}
+
+{% block custom-style %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+
+{% endblock %}
+
+{% block main-content %}
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h4 class="d-none d-sm-block">Expense</h4>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active">Expense</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    {% if messages %}
+    <div role="alert">
+        {% for message in messages %}
+            <div style="padding: 10px; margin: 5px 0;">
+                {% if message.tags == 'success' %}
+                    <div style="color: green; background-color: #d4edda; border: 1px solid green;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div style="color: red; background-color: #f8d7da; border: 1px solid red;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: orange; background-color: #fff3cd; border: 1px solid orange;" class="alert-message">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Set a timeout to remove alert messages after 5 seconds
+        setTimeout(() => {
+            const alertMessages = document.querySelectorAll('.alert-message');
+            alertMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease'; // Optional: add transition effect
+                message.style.opacity = '0'; // Fade out the message
+                setTimeout(() => {
+                    message.remove(); // Remove the message from the DOM
+                }, 500); // Wait for the fade-out effect to complete
+            });
+        }, 5000); // 5 seconds
+    </script>
+
+{% endif %}
+
+<section class="section dashboard">
+    <div class="container-fluid mt-4">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="card shadow-lg border-0">
+
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="form-group mb-4">
+                                <label for="noteContent" class="form-label text-muted">
+                                    <strong>Note Content</strong>
+                                </label>
+                                <textarea id="noteContent" name="content" class="form-control tinymce-editor" rows="10">
+                                    {{ form.content.value|safe }}
+                                </textarea>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'note_list' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Notes
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Update Note
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section><!-- End Section -->
+
+</main>
+
+
+
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="{% static 'js/tinymce/tinymce.min.js' %}"></script>
+<script>
+    tinymce.init({
+        selector: '.tinymce-editor',
+        menubar: true,
+        plugins: 'lists link image table code',
+        toolbar: 'undo redo | bold italic underline | bullist numlist | link image | table code',
+        height: 400,
+        branding: false, // Removes the TinyMCE "Upgrade" icon
+        content_style: 'body { font-family:Arial,Helvetica,sans-serif; font-size:14px; }'
+    });
+</script>
+{% endblock %}

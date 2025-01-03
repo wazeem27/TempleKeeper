@@ -63,3 +63,16 @@ class UserUpdateForm(forms.ModelForm):
         if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
             raise ValidationError(_("This username is already taken. Please choose a different one."))
         return username
+
+
+from .models import Note
+
+
+
+class NoteForm(forms.ModelForm):
+    class Meta:
+        model = Note
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Write your note here...'}),
+        }

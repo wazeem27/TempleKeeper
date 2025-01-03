@@ -464,3 +464,59 @@ def update_deactivate_view(request, temple_id, user_id):
         return redirect("temple-detail", temple_id=temple.id)
     message.error("Invalid request.")
     return redirect("temple-detail", temple_id=temple.id)
+
+
+from .models import Note
+from .forms import NoteForm
+
+class NoteListView(LoginRequiredMixin, View):
+    template_name = "temple_auth/user_note.html"
+
+    def get(self, request):
+        notes = Note.objects.filter(user=request.user).order_by('-created_at')
+        return render(request, self.template_name, {'notes': notes})
+
+class NoteCreateView(LoginRequiredMixin, View):
+    template_name = "temple_auth/user_note_create.html"
+
+    def get(self, request):
+        form = NoteForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = NoteForm(request.POST)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.user = request.user
+            note.save()
+            return redirect('note_list')
+        return render(request, self.template_name, {'form': form})
+
+class NoteUpdateView(LoginRequiredMixin, View):
+    template_name = "temple_auth/note_update.html"
+
+    def get(self, request, pk):
+        # Fetch the note instance for the logged-in user
+        note = get_object_or_404(Note, pk=pk, user=request.user)
+        form = NoteForm(instance=note)  # Pre-fill the form with the note's data
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, pk):
+        note = get_object_or_404(Note, pk=pk, user=request.user)
+        form = NoteForm(request.POST, instance=note)
+        if form.is_valid():
+            form.save()
+            return redirect('note_list')  # Redirect to the note list after saving
+        return render(request, self.template_name, {'form': form})
+
+class NoteDeleteView(LoginRequiredMixin, View):
+    template_name = "note_confirm_delete.html"
+
+    def get(self, request, pk):
+        note = get_object_or_404(Note, pk=pk, user=request.user)
+        return render(request, self.template_name, {'note': note})
+
+    def post(self, request, pk):
+        note = get_object_or_404(Note, pk=pk, user=request.user)
+        note.delete()
+        return redirect('note_list')

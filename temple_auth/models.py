@@ -48,3 +48,13 @@ class UserProfile(models.Model):
         # Helper method to check if the user has selected a temple
         return hasattr(self, 'selected_temple') and self.selected_temple is not None
 
+
+
+class Note(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Note by {self.user.username} at {self.created_at}"
