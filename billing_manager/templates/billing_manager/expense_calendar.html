@@ -183,7 +183,9 @@
             },
             dateClick: function (info) {
                 selectedDate = info.dateStr;
-                selectedDateSpan.textContent = selectedDate;
+                const parts = selectedDate.split('-'); // Split into [yyyy, mm, dd]
+                const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // Rearrange to dd-mm-yyyy
+                selectedDateSpan.textContent = formattedDate; // Update the span with the formatted date
                 modal.show();
             },
             events: [
