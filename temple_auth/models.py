@@ -1,9 +1,16 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 
 
 class Temple(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     temple_name = models.CharField(max_length=500)
     temple_place = models.CharField(max_length=120, blank=True, null=True)  # Optional field
     temple_short_name = models.CharField(max_length=120, blank=True, null=True)  # Optional field
@@ -35,6 +42,12 @@ class Temple(models.Model):
 
 
 class UserProfile(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     temples = models.ManyToManyField(Temple, blank=True)  # Multiple temples for each user
     is_approved_by_admin = models.BooleanField(default=False)  # For admin approval
@@ -51,6 +64,12 @@ class UserProfile(models.Model):
 
 
 class Note(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

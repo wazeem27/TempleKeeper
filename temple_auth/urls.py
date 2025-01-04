@@ -24,16 +24,16 @@ from temple_auth.views import (
 urlpatterns = [
     path('admin/', AdminSubMenu.as_view(), name='admin-sub-menu'),
     path('list_temples/', TempleListView.as_view(), name='list-temples'),
-    path('temple/<int:temple_id>/', TempleDetailView.as_view(), name='temple-detail'),
-    path('temple/update/<int:pk>/', TempleUpdateView.as_view(), name='temple-update'),
+    path('temple/<uuid:temple_id>/', TempleDetailView.as_view(), name='temple-detail'),
+    path('temple/update/<uuid:pk>/', TempleUpdateView.as_view(), name='temple-update'),
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='user-update'),
     path('deselect-temple/', temple_deselect_view, name='deselect-temple'),
     path("update-password/<int:user_id>/", update_password_view, name="update_user_password"),
-    path("user_deactivate/<int:temple_id>/<int:user_id>/", update_deactivate_view, name="user-deactivate"),
+    path("user_deactivate/<uuid:temple_id>/<int:user_id>/", update_deactivate_view, name="user-deactivate"),
 
     path('notes/', NoteListView.as_view(), name='note_list'),
     path('notes/create/', NoteCreateView.as_view(), name='note_create'),
-    path('note/<int:pk>/update/', NoteUpdateView.as_view(), name='note_update'),
-    path('note/<int:pk>/delete/', NoteDeleteView.as_view(), name='note_delete'),
+    path('note/<uuid:pk>/update/', NoteUpdateView.as_view(), name='note_update'),
+    path('note/<uuid:pk>/delete/', NoteDeleteView.as_view(), name='note_delete'),
 
 ]

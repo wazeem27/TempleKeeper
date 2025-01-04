@@ -25,8 +25,8 @@ urlpatterns = [
     path('main/', offering_main_view, name='ofering_main'),
     # VazhipaduOffering URLs
     path('offerings/', VazhipaduOfferingView.as_view(), name='offerings-list'),
-    path('offerings/delete/<int:pk>/', VazhipaduOfferingDeleteView.as_view(), name='offerings-delete'),
-    path('offerings/edit/<int:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
+    path('offerings/delete/<uuid:pk>/', VazhipaduOfferingDeleteView.as_view(), name='offerings-delete'),
+    path('offerings/edit/<uuid:pk>/', VazhipaduOfferingUpdateView.as_view(), name='offerings-edit'),
     path('update-order/', UpdateOrderView.as_view(), name='update_order'),
 
 ]

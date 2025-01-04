@@ -20,8 +20,8 @@ from temple_inventory.views import InventoryItemView, InventoryItemDeleteView, I
 
 urlpatterns = [
     path('list/', InventoryItemView.as_view(), name='inventory-list'),
-    path('delete/<int:pk>/', InventoryItemDeleteView.as_view(), name='inventory-delete'),
-    path('edit/<int:pk>/', InventoryItemUpdateView.as_view(), name='inventory-edit'),
+    path('delete/<uuid:pk>/', InventoryItemDeleteView.as_view(), name='inventory-delete'),
+    path('edit/<uuid:pk>/', InventoryItemUpdateView.as_view(), name='inventory-edit'),
     
 
 ]

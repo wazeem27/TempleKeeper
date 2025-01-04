@@ -180,7 +180,7 @@
                                                         <select name="parent[1][nakshatram]" class="form-control" required>
                                                             <option value="" disabled selected>നക്ഷത്രം</option>
                                                             {% for star in star_items %}
-                                                            <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                                                            <option value="{{ star.name }}">{{ forloop.counter }}: {{ star.name }}</option>
                                                             {% endfor %}
                                                         </select>    
                                                     </div>
@@ -417,7 +417,7 @@ function handleRowOperation(action = "add", rowToCopy = null) {
             <select name="parent[${parentIdCounter}][nakshatram]" class="form-control" required>
                 <option value="" disabled ${!nakshatram ? 'selected' : ''}>നക്ഷത്രം</option>
                 {% for star in star_items %}
-                <option value="{{ star.name }}" ${nakshatram === "{{ star.name }}" ? 'selected' : ''}>{{star.id}}: {{ star.name }}</option>
+                <option value="{{ star.name }}" ${nakshatram === "{{ star.name }}" ? 'selected' : ''}>{{ forloop.counter }}: {{ star.name }}</option>
                 {% endfor %}
             </select>    
         </div>
@@ -524,7 +524,7 @@ function handleRowOperation(action = "add", rowToCopy = null) {
                     <select name="parent[${parentId}][children][${childIdCounter}][nakshatram]" class="form-control" required>
                         <option value="" disabled selected>നക്ഷത്രം</option>
                         {% for star in star_items %}
-                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                        <option value="{{ star.name }}">{{ forloop.counter }}: {{ star.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -562,7 +562,7 @@ function handleRowOperation(action = "add", rowToCopy = null) {
                     <select name="other_nakshatram[]" class="form-control" required>
                         <option value="" disabled selected>നക്ഷത്രം</option>
                         {% for star in star_items %}
-                        <option value="{{ star.name }}">{{star.id}}: {{ star.name }}</option>
+                        <option value="{{ star.name }}">{{ forloop.counter }}: {{ star.name }}</option>
                         {% endfor %}
                     </select>  
                 </div>

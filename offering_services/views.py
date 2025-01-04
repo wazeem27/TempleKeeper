@@ -12,6 +12,8 @@ from .models import VazhipaduOffering
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from billing_manager.decorators import check_temple_session
+from django.db import transaction
+from django.db.models import F
 
 
 @method_decorator(check_temple_session, name='dispatch')
@@ -60,14 +62,22 @@ class VazhipaduOfferingDeleteView(LoginRequiredMixin, View):
         temple_id = request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         offering = get_object_or_404(VazhipaduOffering, id=kwargs.get('pk'), temple=temple)
+
+        # Mark the offering as deleted
         offering.is_deleted = True
         deleted_order = offering.order
-        offering_list = VazhipaduOffering.objects.filter(temple=temple, is_deleted=False, order__gt=offering.order)
-        for offg in offering_list:
-            offg.order -= 1
-            offg.save() 
+        
+        # Update all offerings with order > deleted offering's order in bulk
+        VazhipaduOffering.objects.filter(
+            temple=temple,
+            is_deleted=False,
+            order__gt=deleted_order
+        ).update(order=F('order') - 1)
+
+        # Reset the deleted offering's order
         offering.order = 0
         offering.save()
+
         messages.success(request, f"Offering '{offering.name}' successfully deleted.")
         return redirect('offerings-list')
 

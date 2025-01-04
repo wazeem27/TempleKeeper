@@ -34,7 +34,6 @@ class InventoryItemView(View):
                 item.save()
                 messages.success(request, f"ഐറ്റം '{item.name}' ചേർത്തിരിക്കുന്നു.")
         else:
-            import ipdb;ipdb.set_trace()
             messages.error(request, "കൊടുതിരിക്കുന്നേ വിഷദാആംശം ശരി അല്ലാ.")
         return redirect('inventory-list')
 

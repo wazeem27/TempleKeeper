@@ -159,7 +159,8 @@ class BillListView(LoginRequiredMixin, ListView):
                 subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
 
                 bill_entry = {
-                    'receipt': bill.id,
+                    'id': str(bill.id),
+                    'receipt': bill.receipt_number,
                     'sub_receipt': subreceipt,
                     'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
                     'created_by': bill.user.username,
@@ -179,7 +180,8 @@ class BillListView(LoginRequiredMixin, ListView):
                 subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
 
                 bill_entry = {
-                    'receipt': bill.id,
+                    'id': str(bill.id),
+                    'receipt': bill.receipt_number,
                     'sub_receipt': subreceipt,
                     'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
                     'created_by': bill.user.username,
@@ -204,7 +206,7 @@ class BillListView(LoginRequiredMixin, ListView):
         context["vazhipadu_items"] = [i.name for i in vazhipadu_items]
 
 
-        context['bills'] = bill_dataset
+        context['bills'] = sorted(bill_dataset, key=lambda x: (x["receipt"], x["sub_receipt"]))
         user_profiles = UserProfile.objects.filter(temples__id=temple_id)
         user_profiles = [user for user in user_profiles if not user.user.groups.filter(name='Central Admin').exists()]
         context['user_list'] = [usr_prof.user.username for usr_prof in user_profiles]
@@ -694,7 +696,7 @@ class BillExportView(LoginRequiredMixin, View):
 
         # Write the data rows
         sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
-        for bill in bills:
+        for bill in bills.order_by('receipt_number'):
             counter = 0
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             
@@ -704,7 +706,7 @@ class BillExportView(LoginRequiredMixin, View):
                 stars = ",".join([star.person_star.name for star in person_details])
                 subreceipt = '-' if len(vazhipadu_list) == 1 else sub_receipt_counter[counter]
                 writer.writerow([
-                    bill.id,
+                    bill.receipt_number,
                     subreceipt,
                     bill.user.username,
                     localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
@@ -722,7 +724,7 @@ class BillExportView(LoginRequiredMixin, View):
             for other_bill in other_list:
                 subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
                 writer.writerow([
-                    bill.id,
+                    bill.receipt_number,
                     subreceipt,
                     bill.user.username,
                     localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
@@ -742,7 +744,7 @@ class BillExportView(LoginRequiredMixin, View):
 @check_temple_session
 def cancel_bill(request, bill_id):
     if request.method == "POST":
-        bill_id = int(request.POST.get('bill_id'))
+        bill_id = request.POST.get('bill_id')
         reason = request.POST.get("reason")
         if not request.user.groups.filter(name='Temple Admin').exists() and not request.user.groups.filter(name='Central Admin').exists() :
             messages.error(request, "You dont have privilege to cancel the bill.")
@@ -756,7 +758,7 @@ def cancel_bill(request, bill_id):
             bill.cancel_reason = reason if reason else ""
             bill.save()
 
-            messages.success(request, f"Bill with Rceipt No: {bill.id} was successfully cancelled.")
+            messages.success(request, f"Bill with Rceipt No: {bill.receipt_number} was successfully cancelled.")
 
         except Bill.DoesNotExist:
             messages.error(request, "The bill does not exist.")
@@ -776,7 +778,7 @@ def update_payment_method(request):
 
     # Only process the form if it's a POST request
     if request.method == 'POST':
-        bill_id = int(request.POST.get('bill_id'))
+        bill_id = request.POST.get('bill_id')
         bill = get_object_or_404(Bill, id=bill_id)
         # Get the new payment method from the POST data
         new_payment_method = request.POST.get('payment_method')

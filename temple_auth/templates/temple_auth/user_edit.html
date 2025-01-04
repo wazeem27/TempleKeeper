@@ -50,7 +50,9 @@ form {
   form button:hover {
     background-color: #218838;
   }
-
+  .tox-promotion {
+    display: none !important;
+}
 {%endblock%}
 
 {% block main-content %}
@@ -190,7 +192,14 @@ form {
   
 
 
-
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const promoDivs = document.querySelectorAll('.tox-promotion');
+        promoDivs.forEach(div => {
+            div.style.display = 'none';
+        });
+    });
+</script>
 </main>
 
 <!-- Optional JavaScript for Bootstrap Validation -->
@@ -209,5 +218,40 @@ form {
                 }, false)
             })
     })()
+    document.addEventListener("DOMContentLoaded", function () {
+        const observer = new MutationObserver((mutationsList) => {
+            mutationsList.forEach((mutation) => {
+                const promoDivs = document.querySelectorAll('.tox-promotion');
+                promoDivs.forEach(div => {
+                    div.style.display = 'none';
+                });
+            });
+        });
+
+        // Start observing the body for changes
+        const targetNode = document.body;
+        const config = { childList: true, subtree: true }; // Monitor child elements and subtrees
+        observer.observe(targetNode, config);
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+    const hideIframePromotion = () => {
+        const iframes = document.querySelectorAll('iframe');
+        iframes.forEach((iframe) => {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const promoDiv = iframeDoc.querySelector('.tox-promotion');
+                if (promoDiv) {
+                    promoDiv.style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Cannot access iframe content:", e);
+            }
+        });
+    };
+
+    // Check every 500ms for 5 seconds
+    let checkInterval = setInterval(hideIframePromotion, 500);
+    setTimeout(() => clearInterval(checkInterval), 5000);
+});
 </script>
 {% endblock %}

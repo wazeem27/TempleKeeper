@@ -4,7 +4,9 @@
 {% block custom-style %}
 <!-- FullCalendar CSS -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-
+.tox-promotion {
+    display: none !important;
+}
 {% endblock %}
 
 {% block main-content %}
@@ -92,7 +94,6 @@
 </main>
 
 
-
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script src="{% static 'js/tinymce/tinymce.min.js' %}"></script>
 <script>
@@ -104,6 +105,21 @@
         height: 400,
         branding: false, // Removes the TinyMCE "Upgrade" icon
         content_style: 'body { font-family:Arial,Helvetica,sans-serif; font-size:14px; }'
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        const observer = new MutationObserver((mutationsList) => {
+            mutationsList.forEach((mutation) => {
+                const promoDivs = document.querySelectorAll('.tox-promotion');
+                promoDivs.forEach(div => {
+                    div.style.display = 'none';
+                });
+            });
+        });
+
+        // Start observing the body for changes
+        const targetNode = document.body;
+        const config = { childList: true, subtree: true }; // Monitor child elements and subtrees
+        observer.observe(targetNode, config);
     });
 </script>
 {% endblock %}

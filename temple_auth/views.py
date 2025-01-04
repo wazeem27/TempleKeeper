@@ -60,7 +60,7 @@ def temple_selection_view(request):
         temple_id = request.POST.get('temple_id')
         temple = user_profile.temples.filter(id=temple_id).first()
         if temple:
-            request.session['temple_id'] = temple.id
+            request.session['temple_id'] = str(temple.id)
             messages.success(request, f"Access granted to {temple.temple_name}.")
             if is_central_admin:
                 return redirect('list-temples')
@@ -265,7 +265,7 @@ class TempleDetailView(LoginRequiredMixin, ListView):
             user_detail["first_name"] = user.user.first_name
             user_detail["last_name"] = user.user.last_name
             user_detail["email"] = user.user.email
-            user_detail["id"] = user.id
+            user_detail["id"] = user.user.id
             user_detail["is_active"] = user.user.is_active
             if user.user.last_login:
                 user_detail["last_login"] = user.user.last_login.strftime("%d-%m-%Y %I:%M:%S %p")
@@ -277,6 +277,7 @@ class TempleDetailView(LoginRequiredMixin, ListView):
         place = self.temple.temple_place if self.temple.temple_place else ""
         context['temple_breadcrumb'] = str(shortname) + " - " + str(place)
         context['temple'] = self.temple
+        context["temple_id"] = str(self.temple)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -455,6 +456,7 @@ def update_deactivate_view(request, temple_id, user_id):
         return HttpResponseForbidden("You are not authorized to perform this action.")
 
     if request.method == "POST":
+        import ipdb;ipdb.set_trace()
 
         # Update the password
         is_active = "Deactivate" if user.is_active else "Activated"
@@ -473,14 +475,16 @@ class NoteListView(LoginRequiredMixin, View):
 
     def get(self, request):
         notes = Note.objects.filter(user=request.user).order_by('-updated_at')
-        return render(request, self.template_name, {'notes': notes})
+        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+        return render(request, self.template_name, {'notes': notes, 'is_central_admin': is_central_admin})
 
 class NoteCreateView(LoginRequiredMixin, View):
     template_name = "temple_auth/user_note_create.html"
 
     def get(self, request):
         form = NoteForm()
-        return render(request, self.template_name, {'form': form})
+        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+        return render(request, self.template_name, {'form': form, 'is_central_admin': is_central_admin})
 
     def post(self, request):
         form = NoteForm(request.POST)
@@ -498,7 +502,8 @@ class NoteUpdateView(LoginRequiredMixin, View):
         # Fetch the note instance for the logged-in user
         note = get_object_or_404(Note, pk=pk, user=request.user)
         form = NoteForm(instance=note)  # Pre-fill the form with the note's data
-        return render(request, self.template_name, {'form': form})
+        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+        return render(request, self.template_name, {'form': form, 'is_central_admin': is_central_admin})
 
     def post(self, request, pk):
         note = get_object_or_404(Note, pk=pk, user=request.user)
@@ -513,7 +518,8 @@ class NoteDeleteView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         note = get_object_or_404(Note, pk=pk, user=request.user)
-        return render(request, self.template_name, {'note': note})
+        is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+        return render(request, self.template_name, {'note': note, 'is_central_admin': is_central_admin})
 
     def post(self, request, pk):
         note = get_object_or_404(Note, pk=pk, user=request.user)

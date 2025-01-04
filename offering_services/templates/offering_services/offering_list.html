@@ -344,7 +344,7 @@ document.querySelectorAll('.delete-btn').forEach(button => {
 
 // Function to delete an offering
 function deleteOffering(itemId) {
-    fetch(`{% url 'offerings-delete' 0 %}`.replace('0', itemId), {
+    fetch(`{% url 'offerings-delete' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId), {
         method: 'POST',
         headers: {
             'X-CSRFToken': '{{ csrf_token }}'

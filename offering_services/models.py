@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.conf import settings
 from decimal import Decimal
@@ -5,6 +6,12 @@ from temple_auth.models import Temple
 
 
 class VazhipaduOffering(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     temple = models.ForeignKey(Temple, on_delete=models.CASCADE, related_name='vazhipadu_offerings')
     name = models.CharField(max_length=100, verbose_name='Offering Name')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Price')
@@ -31,6 +38,12 @@ class VazhipaduOffering(models.Model):
 
 
 class Star(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, null=True)
 

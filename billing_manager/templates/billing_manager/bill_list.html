@@ -282,7 +282,7 @@
                                                        data-bs-toggle="modal"
                                                        data-bs-target="#paymentMethodModal"
                                                        title="Update Payment Method"
-                                                       data-id="{{ bill.receipt }}"
+                                                       data-id="{{ bill.id }}"
                                                        data-payment-method="{{ bill.payment_method }}">
                                                        <i class="bi bi-credit-card"></i>
                                                     </a>
@@ -290,7 +290,7 @@
                                                 {% endif %}
 
                                                 <div class="btn-group">
-                                                    <a href="{% url 'receipt' bill.receipt %}" 
+                                                    <a href="{% url 'receipt' bill.id %}" 
                                                        class="btn btn-sm btn-success {% if bill.is_cancelled %}disabled{% endif %}" 
                                                        target="_blank"
                                                        {% if bill.is_cancelled %}aria-disabled="true"{% endif %}>
@@ -305,7 +305,7 @@
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#cancelBillModal"
                                                         title="Cancel Bill"
-                                                        data-id="{{ bill.receipt }}">
+                                                        data-id="{{ bill.id }}">
                                                         <i class="bi bi-x-circle"></i>
                                                         </a>
                                                 </div>
@@ -360,7 +360,7 @@
                                             </div>
                                             <div class="modal-body">
                                                 <p class="fs-5 text-center">Are you sure you want to cancel this bill? This action cannot be undone.</p>
-                                                <form id="cancelBillForm" method="POST" action="{% url 'cancel-bill' bill.receipt %}">
+                                                <form id="cancelBillForm" method="POST" action="{% url 'cancel-bill' bill.id %}">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="bill_id" id="bill_id">
                                                     <div class="mb-3">

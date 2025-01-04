@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.db.models import Max
 from decimal import Decimal
+import uuid
 from django.db import transaction
 from temple_inventory.models import InventoryItem
 from temple_auth.models import Temple
@@ -38,6 +39,13 @@ class Bill(models.Model):
         ('Cash', 'Cash'),
         ('Online', 'Online'),
     ]
+    # New UUID field
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
@@ -87,11 +95,9 @@ class Bill(models.Model):
         """
         return bool(self.related_bills)
 
-
-
     def save(self, *args, **kwargs):
         with transaction.atomic():
-            if not self.pk:  # If this is a new bill (creating a bill)
+            if self._state.adding:  # Detect if this is a new instance
                 # Get the last used receipt number for this temple and increment by 1
                 last_receipt = (
                     Bill.objects.filter(temple=self.temple)
@@ -100,13 +106,14 @@ class Bill(models.Model):
                 )['receipt_number__max']
                 self.receipt_number = (last_receipt or 0) + 1  # Increment the last receipt number by 1
             else:
-                # Prevent changing the receipt_number during an update
-                original = Bill.objects.get(pk=self.pk)
+                # For existing instances, ensure receipt_number is not modified
+                original = Bill.objects.filter(pk=self.pk).first()
+                if not original:
+                    raise ValueError("Attempted to update a Bill that does not exist.")
                 if original.receipt_number != self.receipt_number:
                     self.receipt_number = original.receipt_number  # Revert back to the original receipt_number
 
         super().save(*args, **kwargs)  # Call the super save method to actually save the object
-
 
     class Meta:
         ordering = ['-created_at']
@@ -116,7 +123,8 @@ class Bill(models.Model):
             ("can_delete_bill", "Can delete bill"),
             ("can_view_bill", "Can view bill"),
         ]
-        unique_together = ('temple', 'receipt_number')  # Ensures receipt numbers are unique per temple
+        unique_together = ('temple', 'receipt_number')  # Receipt numbers unique per temple
+
 
 
 class BillVazhipaduOffering(models.Model):
@@ -170,6 +178,12 @@ class PersonDetail(models.Model):
 
 
 class WalletCollection(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
@@ -219,6 +233,12 @@ class WalletCollection(models.Model):
 
 
 class Expense(models.Model):
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False, 
+        verbose_name="Unique ID"
+    )
     temple = models.ForeignKey(Temple, on_delete=models.CASCADE, related_name='temple_expenses')
     item_name = models.CharField(max_length=255, verbose_name="Item Name")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Price")
