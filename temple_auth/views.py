@@ -456,7 +456,6 @@ def update_deactivate_view(request, temple_id, user_id):
         return HttpResponseForbidden("You are not authorized to perform this action.")
 
     if request.method == "POST":
-        import ipdb;ipdb.set_trace()
 
         # Update the password
         is_active = "Deactivate" if user.is_active else "Activated"
