@@ -18,13 +18,14 @@ from django.urls import path
 from temple_auth.views import (
     AdminSubMenu, TempleListView, TempleDetailView, TempleUpdateView, temple_deselect_view,
     UserUpdateView, update_password_view, update_deactivate_view, NoteListView, NoteCreateView,
-    NoteUpdateView, NoteDeleteView)
+    NoteUpdateView, NoteDeleteView, deactivate_temple)
 
 
 urlpatterns = [
     path('admin/', AdminSubMenu.as_view(), name='admin-sub-menu'),
     path('list_temples/', TempleListView.as_view(), name='list-temples'),
     path('temple/<uuid:temple_id>/', TempleDetailView.as_view(), name='temple-detail'),
+    path('temple/deactivate/<uuid:temple_id>/', deactivate_temple, name='deactivate-temple'),
     path('temple/update/<uuid:pk>/', TempleUpdateView.as_view(), name='temple-update'),
     path('user/update/<int:pk>/', UserUpdateView.as_view(), name='user-update'),
     path('deselect-temple/', temple_deselect_view, name='deselect-temple'),

@@ -32,6 +32,13 @@ class CustomLoginView(LoginView):
         user = authenticate(self.request, username=username, password=password)
 
         if user is not None:
+            # Check if the user is in the "Central Admin" group
+            if not user.groups.filter(name='Central Admin').exists():
+                user_temples = user.userprofile.temples.all()
+                if not all([not temple.deactivate for temple in user_temples]):
+                    form.add_error(None, f'Hi {user.username}, Please contact administration for access.')
+                    return self.form_invalid(form)
+
             login(self.request, user)
             user_profile = user.userprofile
             if not user_profile.has_selected_temple():
@@ -52,6 +59,10 @@ def logout_view(request):
 def temple_selection_view(request):
     user_profile = request.user.userprofile
     is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    temples = user_profile.temples.all()
+
+    if not is_central_admin:
+        temples = user_profile.temples.filter(deactivate=False)
     if not request.user.is_staff and not user_profile.temples.exists():
         messages.error(request, "No access to any temple.")
         return redirect('dashboard')
@@ -68,7 +79,7 @@ def temple_selection_view(request):
         else:
             messages.error(request, "Invalid selection.")
 
-    return render(request, 'temple_auth/temple_selection.html', {'temples': user_profile.temples.all(), 'is_central_admin': is_central_admin})
+    return render(request, 'temple_auth/temple_selection.html', {'temples': temples, 'is_central_admin': is_central_admin})
 
 
 @login_required
@@ -387,6 +398,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserUpdateForm
     template_name = "temple_auth/user_edit.html"
+    context_object_name = 'user_to_edit'
 
     def get_success_url(self):
         # Redirect to the temple detail page with the user's pk
@@ -524,3 +536,29 @@ class NoteDeleteView(LoginRequiredMixin, View):
         note = get_object_or_404(Note, pk=pk, user=request.user)
         note.delete()
         return redirect('note_list')
+
+
+@login_required
+@check_temple_session
+def deactivate_temple(request, temple_id):
+
+    # Ensure only superusers can update passwords for other users
+    is_central_admin = request.user.groups.filter(name='Central Admin').exists()        
+    if not is_central_admin:
+        return HttpResponseForbidden("You are not authorized to perform this action.")
+
+    if request.method == "POST":
+        temple = get_object_or_404(Temple, id=temple_id)
+        # Update the password
+        is_active = "Activated" if temple.deactivate else "Deactivated"
+        if temple.deactivate:
+            temple.deactivate = False
+        else:
+            temple.deactivate = True
+        temple.save()
+
+        messages.success(request, f"Temple {temple.temple_short_name} is {is_active} successfully.")
+        return redirect("list-temples")
+    message.error("Invalid request.")
+    return redirect("list-temples")
+

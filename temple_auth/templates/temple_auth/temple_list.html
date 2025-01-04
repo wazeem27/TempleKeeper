@@ -151,12 +151,13 @@
                                                 </a>
                                             </div>
 
-                                            <div class="btn-group">
-                                                <a href="#" 
-                                                    class="btn btn-sm btn-danger {% if bill.is_cancelled %}disabled{% endif %}" 
-                                                    title="Cancel Bill">
-                                                    <i class="bi bi-x-circle"></i>
-                                                    </a>
+                                            <div class="btn-group" title="{% if  temple.deactivate %}activate{% else %}deactivate{% endif %}">
+                                                <form method="POST" action="{% url 'deactivate-temple' temple.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="button" class="{% if not temple.deactivate %}btn btn-success{% else %}btn btn-danger{% endif %} btn-sm deactivate-button">
+                                                        <i class="bi bi-{% if not temple.deactivate %}x-circle{% else %}x-circle-fill{% endif %}"></i>
+                                                    </button>
+                                                </form>
                                             </div>
 
 
@@ -192,23 +193,23 @@
                     </div>
                     <div class="mb-3">
                         <label for="temple_place" class="form-label">Temple Place</label>
-                        <input type="text" class="form-control" id="offeringPrice" name="temple_place" required>
+                        <input type="text" class="form-control" id="offeringPrice" name="temple_place" placeholder="Enter the temple's location" required>
                     </div>
                     <div class="mb-3">
                         <label for="temple_short_name" class="form-label">Temple Short Name (For Dashboard Display)</label>
-                        <input type="text" class="form-control" id="offeringName" name="temple_short_name" required>
+                        <input type="text" class="form-control" id="offeringName" name="temple_short_name" placeholder="Enter a short name for the temple" required>
                     </div>
                     <div class="mb-3">
                         <label for="temple_bill_title" class="form-label">Bill Title</label>
-                        <input type="text" class="form-control" id="offeringName" name="temple_bill_title">
+                        <input type="text" class="form-control" id="offeringName" name="temple_bill_title" placeholder="Enter the title for billing receipts">
                     </div>
                     <div class="mb-3">
                         <label for="temple_bill_mid" class="form-label">Bill Mid</label>
-                        <input type="text" class="form-control" id="offeringName" name="temple_bill_mid">
+                        <input type="text" class="form-control" id="offeringName" name="temple_bill_mid" placeholder="Enter the MID (Merchant ID)">
                     </div>
                     <div class="mb-3">
                         <label for="temple_bill_footer" class="form-label">Bill Footer</label>
-                        <input type="text" class="form-control" id="offeringName" name="temple_bill_footer">
+                        <input type="text" class="form-control" id="offeringName" name="temple_bill_footer" placeholder="Enter footer text for billing receipts">
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">Save</button>
@@ -219,4 +220,49 @@
         </div>
     </div>
 </div>
+
+
+<!-- Delete Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to activate/deactivate the Temple?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    let deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+    let deleteForm;
+
+    // Handle delete button click
+    document.querySelectorAll(".deactivate-button").forEach(button => {
+        button.addEventListener("click", function () {
+            let form = this.closest("form");
+
+            // Populate modal with item details
+            deleteForm = form; // Store form for submission
+            new bootstrap.Modal(document.getElementById("confirmDeleteModal")).show();
+        });
+    });
+
+    // Handle modal confirm delete
+    deleteConfirmBtn.addEventListener("click", () => {
+        if (deleteForm) {
+            deleteForm.submit();
+        }
+    });
+});
+</script>
 {% endblock %}
