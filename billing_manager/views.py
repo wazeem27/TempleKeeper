@@ -160,6 +160,7 @@ class BillListView(LoginRequiredMixin, ListView):
 
                 bill_entry = {
                     'id': str(bill.id),
+                    'is_advance_booking': bill.advance_booking,
                     'receipt': bill.receipt_number,
                     'sub_receipt': subreceipt,
                     'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
@@ -818,7 +819,7 @@ def update_payment_method(request):
         online_payment_amount = request.POST.get('online_payment_amount')  # Assuming online amount is passed
 
         # Validate the payment method
-        if new_payment_method not in ['Cash', 'Online']:
+        if new_payment_method not in ['Cash', 'Online', "Both", "Not Paid"]:
             raise ValidationError("Invalid payment method selected.")
         
         # If the payment method is 'gpay', validate that the online payment amount matches the total bill amount

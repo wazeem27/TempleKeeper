@@ -256,24 +256,24 @@
                                 <tbody>
                                     {% if bills %}
                                         {% for bill in bills %}
-                                        <tr class="table-light" {% if bill.is_cancelled %}style="text-decoration: line-through;"{% endif %}>
-                                            <td  {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><strong>{{ bill.receipt }}</strong></td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.sub_receipt }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.created_at }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.vazhipadu_name }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}
+                                        <tr class="table-light" {% if bill.is_cancelled %}style="text-decoration: line-through;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>
+                                            <td  {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}><strong>{{ bill.receipt }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>{{ bill.sub_receipt }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}><span class="badge bg-info text-dark">{{ bill.created_by }}</span></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>{{ bill.created_at }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>{{ bill.vazhipadu_name }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}
                                                 title="{{ bill.name }}">
                                                 {{ bill.name|truncatechars:15 }}
                                             </td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}
                                                 title="{{ bill.star }}">
                                                 {{ bill.star|truncatechars:15 }}
                                             </td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>{{ bill.payment_method }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>
-                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% endif %}>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}><strong class="text-success">₹{{ bill.amount }}</strong></td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>{{ bill.payment_method }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %} title="{{ bill.cancel_reason }}">{{ bill.cancel_reason }}</td>
+                                            <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>
 
                                                 {% if not is_central_admin %}
                                                 <div class="btn-group">
@@ -332,6 +332,8 @@
                                                                         <select class="form-select" id="payment_method" name="payment_method" required>
                                                                             <option value="Cash">Cash</option>
                                                                             <option value="Online">Online</option>
+                                                                            <option value="Both">Both</option>
+                                                                            <option value="Not Paid">Not Paid</option>
                                                                         </select>
                                                                     </div>
                                                                     <div class="d-flex justify-content-between">
