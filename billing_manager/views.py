@@ -293,6 +293,17 @@ class SubmitBill(LoginRequiredMixin, View):
 
                 for parent in parents:
                     bill = self._create_bill(request, temple, float(parent.get('price')), data.get("payment_method", "cash"))
+                    if request.POST.get('advance_booking_date'):
+                        # if advance booking date is thr flag this as advance booking
+                        # Get the date string from request
+                        date_string = request.POST.get('advance_booking_date')  # Example: '2025-01-23'
+
+                        # Convert the string to a date object
+                        advance_booking_date = datetime.strptime(date_string, '%Y-%m-%d').date()
+                        bill.advance_booking_date = advance_booking_date
+                        bill.mobile_number = request.POST.get('mobile_number',"")
+                        bill.advance_booking = True
+                        bill.is_completed = False
                     bill.save()
                     bill_objects.append(bill)
                     # Save BillVazhipaduOffering (cannot use bulk_create due to unsaved related object)
@@ -330,6 +341,17 @@ class SubmitBill(LoginRequiredMixin, View):
 
                 for other in other_bills:
                     bill = self._create_bill(request, temple, float(other.get('other_price')), data.get("payment_method", "cash"))
+                    if request.POST.get('advance_booking_date'):
+                        # if advance booking date is thr flag this as advance booking
+                        # Get the date string from request
+                        date_string = request.POST.get('advance_booking_date')  # Example: '2025-01-23'
+
+                        # Convert the string to a date object
+                        advance_booking_date = datetime.strptime(date_string, '%Y-%m-%d').date()
+                        bill.advance_booking_date = advance_booking_date
+                        bill.mobile_number = request.POST.get('mobile_number',"")
+                        bill.advance_booking = True
+                        bill.is_completed = False
                     bill.save()
                     bill_objects.append(bill)
 
@@ -356,6 +378,17 @@ class SubmitBill(LoginRequiredMixin, View):
             else:
                 # Step 1: Create the main bill
                 bill = self._create_bill(request, temple, total_price, data.get("payment_method", "cash"))
+                if request.POST.get('advance_booking_date'):
+                    # if advance booking date is thr flag this as advance booking
+                    # Get the date string from request
+                    date_string = request.POST.get('advance_booking_date')  # Example: '2025-01-23'
+
+                    # Convert the string to a date object
+                    advance_booking_date = datetime.strptime(date_string, '%Y-%m-%d').date()
+                    bill.advance_booking_date = advance_booking_date
+                    bill.mobile_number = request.POST.get('mobile_number',"")
+                    bill.advance_booking = True
+                    bill.is_completed = False
                 bill.save()
 
                 # Step 2: Process VazhipaduOfferings and PersonDetails
@@ -1333,3 +1366,43 @@ class ExpenseExportView(LoginRequiredMixin, View):
             counter += 1
 
         return response
+
+
+@method_decorator(check_temple_session, name='dispatch')
+class AdvanceBookingBillView(LoginRequiredMixin, TemplateView):
+    template_name = "billing_manager/advance_booking.html"
+
+    def get_inventory_queryset(self, temple: Temple) -> Any:
+        return InventoryItem.objects.filter(temple=temple)
+
+    def get_vazhipadu_queryset(self, temple: Temple) -> Any:
+        return VazhipaduOffering.objects.filter(temple=temple, is_deleted=False).order_by('order')
+
+    def get_star_queryset(self) -> Any:
+        return Star.objects.all().order_by('id')
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        
+        temple_id = self.request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+
+        
+        context['vazhipadu_items'] = self.get_vazhipadu_queryset(temple)
+        context['inventory_items'] = self.get_inventory_queryset(temple)
+        context['star_items'] = self.get_star_queryset()
+        context['temple'] = temple
+
+        multi_support_vazhipadu = [
+            vazhipadu.name for vazhipadu in
+            VazhipaduOffering.objects.filter(temple=temple, allow_multiple=True, is_deleted=False)
+        ]
+        context['multi_support_vazhipadu'] = multi_support_vazhipadu
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is in the 'Central Admin' group
+        if request.user.groups.filter(name='Central Admin').exists():
+            # Redirect to a different view, for example, to the home page
+            return redirect('dashboard')  # Or the URL name of the redirect target
+        return super().dispatch(request, *args, **kwargs)

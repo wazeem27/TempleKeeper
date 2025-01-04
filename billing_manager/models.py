@@ -8,7 +8,7 @@ from temple_inventory.models import InventoryItem
 from temple_auth.models import Temple
 from django.core.exceptions import ValidationError
 from offering_services.models import VazhipaduOffering, Star
-
+from django.core.validators import RegexValidator
 
 
 class BillOther(models.Model):
@@ -38,6 +38,7 @@ class Bill(models.Model):
     PAYMENT_CHOICES = [
         ('Cash', 'Cash'),
         ('Online', 'Online'),
+        ('Not Paid', 'Not Paid'),
     ]
     # New UUID field
     id = models.UUIDField(
@@ -85,7 +86,20 @@ class Bill(models.Model):
         verbose_name="Receipt Number", 
         editable=False
     )  # Unique per temple
-
+    advance_booking = models.BooleanField(default=False)
+    advance_booking_date = models.DateField(
+        auto_now_add=False, 
+        null=True, 
+        blank=True, 
+        verbose_name="Advance Booking Date"
+    )
+    is_completed = models.BooleanField(default=True)
+    mobile_number = models.CharField(
+        max_length=15,  # Adjust the length as needed
+        null=True,  # Optional field in the database
+        blank=True,  # Optional in forms
+        verbose_name="Mobile Number"
+    )
     def __str__(self):
         return f"Bill #{self.receipt_number} for {self.user.username} at {self.temple.temple_name}"
 
