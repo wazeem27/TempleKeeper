@@ -141,12 +141,13 @@
             <!-- Temple Bill Footer -->
             <div class="mb-3">
                 <label for="templeBillFooter" class="form-label fw-bold">Bill Footer</label>
-                <textarea 
+                <input 
+                    type="text"
                     class="form-control shadow-sm" 
                     id="templeBillFooter" 
                     name="temple_bill_footer" 
-                    rows="3" 
-                    placeholder="Enter footer details">{{ temple.temple_bill_footer|default:"" }}</textarea>
+                    placeholder="Enter footer details"
+                    value='{{ temple.temple_bill_footer|default:"" }}'>
             </div>
     
             <!-- Buttons -->
