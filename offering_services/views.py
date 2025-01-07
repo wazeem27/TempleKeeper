@@ -65,6 +65,8 @@ class VazhipaduOfferingDeleteView(LoginRequiredMixin, View):
 
         # Mark the offering as deleted
         offering.is_deleted = True
+        offering.name = offering.name + "_" + str(offering.id) + "-deleted"
+        # adding id as well to allow to delete multiple offering with same name
         deleted_order = offering.order
         
         # Update all offerings with order > deleted offering's order in bulk

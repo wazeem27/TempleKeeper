@@ -99,12 +99,11 @@ class BillListView(LoginRequiredMixin, ListView):
         end_date_str = self.request.GET.get('end_date', '')
         requested_biller = self.request.GET.getlist('req_biller')
 
-
         start_date = parse_date(start_date_str) if start_date_str else None
         end_date = parse_date(end_date_str) if end_date_str else None
-        
+
         is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
-        
+
         # Convert to timezone-aware datetime if needed
         if start_date:
             start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))  # 00:00:00
@@ -147,7 +146,7 @@ class BillListView(LoginRequiredMixin, ListView):
         is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
         context['is_billing_assistant'] = is_billing_assistant
 
-        
+
         for bill in context['bills']:
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             other_list = bill.bill_other_items.all()
@@ -157,7 +156,10 @@ class BillListView(LoginRequiredMixin, ListView):
             # Construct the dataset
             for vazhipadu_bill in vazhipadu_list:
                 subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
-
+                vazhipadu_name = vazhipadu_bill.vazhipadu_offering.name
+                if vazhipadu_bill.vazhipadu_offering.is_deleted:
+                    vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
+                
                 bill_entry = {
                     'id': str(bill.id),
                     'is_advance_booking': bill.advance_booking,
@@ -165,7 +167,7 @@ class BillListView(LoginRequiredMixin, ListView):
                     'sub_receipt': subreceipt,
                     'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
                     'created_by': bill.user.username,
-                    'vazhipadu_name': vazhipadu_bill.vazhipadu_offering.name,
+                    'vazhipadu_name': vazhipadu_name,
                     'name': ",".join([vazhipadu.person_name for vazhipadu in vazhipadu_bill.person_details.all()]),
                     'star': ",".join([vazhipadu.person_star.name for vazhipadu in vazhipadu_bill.person_details.all()]),
                     'amount': vazhipadu_bill.price,
@@ -202,9 +204,16 @@ class BillListView(LoginRequiredMixin, ListView):
         req_vazhipadu = self.request.GET.getlist('req_vazhipadu')
         if req_vazhipadu:
             bill_dataset = [bill for bill in bill_dataset if bill["vazhipadu_name"] == req_vazhipadu[0]]
-
+        
+        vazhipadu_items_list = []
         vazhipadu_items = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-        context["vazhipadu_items"] = [i.name for i in vazhipadu_items]
+        for item in vazhipadu_items:
+            if item.is_deleted:
+                vazhipadu_items_list.append(item.name[:item.name.rfind('_')])
+            else:
+                vazhipadu_items_list.append(item.name)
+
+        context["vazhipadu_items"] = vazhipadu_items_list
 
 
         context['bills'] = sorted(bill_dataset, key=lambda x: (x["receipt"], x["sub_receipt"]))
@@ -555,8 +564,11 @@ class ReceiptView(LoginRequiredMixin, DetailView):
         bill_detail = {"total_amount": self.get_object().total_amount, "vazhipadu_list": []}
         
         for vazhipadu in self.get_object().bill_vazhipadu_offerings.all():
+            vazhipadu_name = vazhipadu.vazhipadu_offering.name
+            if vazhipadu.vazhipadu_offering.is_deleted:
+                vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
             vazhipadu_detail = {
-                "vazhipadu": vazhipadu.vazhipadu_offering.name,
+                "vazhipadu": vazhipadu_name,
                 "price": vazhipadu.vazhipadu_offering.price,
                 "quantity": vazhipadu.quantity,
                 "primary_person": None,
@@ -617,8 +629,11 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
 
             # Add vazhipadu offerings for the bill
             for vazhipadu in bill.bill_vazhipadu_offerings.all():
+                vazhipadu_name = vazhipadu.vazhipadu_offering.name
+                if vazhipadu.vazhipadu_offering.is_deleted:
+                    vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
                 vazhipadu_detail = {
-                    "vazhipadu": vazhipadu.vazhipadu_offering.name,
+                    "vazhipadu": vazhipadu_name,
                     "price": float(vazhipadu.vazhipadu_offering.price),
                     "quantity": int(vazhipadu.quantity),
                     "total_price": float(vazhipadu.vazhipadu_offering.price) * int(vazhipadu.quantity),
@@ -735,6 +750,11 @@ class BillExportView(LoginRequiredMixin, View):
             vazhipadu_list = bill.bill_vazhipadu_offerings.all()
             
             for vazhipadu_bill in vazhipadu_list:
+
+                vazhipadu_name = vazhipadu_bill.vazhipadu_offering.name
+                if vazhipadu_bill.vazhipadu_offering.is_deleted:
+                    vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
+
                 person_details = vazhipadu_bill.person_details.all()
                 names = ",".join([person.person_name for person in person_details])
                 stars = ",".join([star.person_star.name for star in person_details])
@@ -744,7 +764,7 @@ class BillExportView(LoginRequiredMixin, View):
                     subreceipt,
                     bill.user.username,
                     localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
-                    vazhipadu_bill.vazhipadu_offering.name,
+                    vazhipadu_name,
                     names,
                     stars,
                     vazhipadu_bill.price,
