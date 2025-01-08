@@ -164,8 +164,13 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-3">
                             {% if not is_billing_assistant %}
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOfferingModal">Add New</button>
-                                <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()"><i class="bi bi-lock" style="color: white; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);"></i></button>
+                                <div class="d-inline-flex">
+                                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addOfferingModal">Add New</button>
+                                    <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
+                                </div>
+                                <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()">
+                                    <i class="bi bi-lock" style="color: white; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);"></i>
+                                </button>
                             {% endif %}
                         </div>
                         <!-- Table with stripped rows -->
@@ -273,7 +278,27 @@
     </div>
 </main>
 
-
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Vaxhipadu from CSV file</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Add your import form or upload functionality here -->
+                <form method="post" enctype="multipart/form-data" action="{% url 'import-vazhipadu-list' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="csv_file" class="form-label">Select CSV file</label>
+                        <input class="form-control" type="file" id="csv_file" name="csv_file" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Bootstrap CSS -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <!-- Bootstrap JS and Popper.js -->

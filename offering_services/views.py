@@ -1,3 +1,5 @@
+import csv
+
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -153,3 +155,58 @@ class UpdateOrderView(LoginRequiredMixin, View):
             return JsonResponse({'success': False, 'error': 'Invalid JSON'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+
+
+
+class ImportVazhipaduOfferingView(View):
+
+    def post(self, request, *args, **kwargs):
+        # Check if a file is in the request
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+        if 'csv_file' not in request.FILES:
+            messages.error(request, "No file uploaded.")
+            return redirect('offerings-list')
+        
+        csv_file = request.FILES['csv_file']
+        
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, "Please upload a CSV file.")
+            return redirect('offerings-list')
+
+        try:
+            # Process the CSV file
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.reader(decoded_file)
+
+            # Skip the header row
+            next(reader)
+            
+            # Loop through the CSV data and import offerings
+            added_count = 0
+            for row in reader:
+                # Assuming CSV format is: Name, Price, Description
+                name, price, description = row
+                order_num = VazhipaduOffering.objects.filter(temple=temple).last().order
+                
+                # Check if the offering already exists
+                if not VazhipaduOffering.objects.filter(name=name, temple=temple).exists():
+                    # Create the new offering
+                    VazhipaduOffering.objects.create(
+                        temple=temple,  # Adjust as per your user's temple info
+                        name=name,
+                        price=price,
+                        description=description,
+                        order=order_num+1
+                    )
+                    added_count += 1
+                else:
+                    # Skip if offering exists
+                    continue
+
+            # Display success message
+            messages.success(request, f"Imported {added_count} new offerings successfully.")
+        except Exception as e:
+            messages.error(request, f"An error occurred: Please make sure the csv file has only name,price and description")
+
+        return redirect('offerings-list')
