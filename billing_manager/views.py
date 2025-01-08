@@ -49,7 +49,7 @@ class BillingView(LoginRequiredMixin, TemplateView):
         return VazhipaduOffering.objects.filter(temple=temple, is_deleted=False).order_by('order')
 
     def get_star_queryset(self) -> Any:
-        return Star.objects.all().order_by('id')
+        return Star.objects.all().order_by('order')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -1294,6 +1294,7 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
 
         # Validate dates
         if start_date and end_date and start_date > end_date:
+            from django.http import HttpResponseBadRequest
             return HttpResponseBadRequest("Start date cannot be later than end date.")
 
         # Convert dates to timezone-aware datetimes
