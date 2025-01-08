@@ -160,6 +160,10 @@ class BillListView(LoginRequiredMixin, ListView):
                 if vazhipadu_bill.vazhipadu_offering.is_deleted:
                     vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
                 
+                advance_date = ""
+                if bill.advance_booking_date:
+                    advance_date = bill.advance_booking_date.strftime("%d-%m-%Y")
+                
                 bill_entry = {
                     'id': str(bill.id),
                     'is_advance_booking': bill.advance_booking,
@@ -173,7 +177,8 @@ class BillListView(LoginRequiredMixin, ListView):
                     'amount': vazhipadu_bill.price,
                     'is_cancelled': bill.is_cancelled,
                     'payment_method': bill.payment_method,
-                    'cancel_reason': bill.cancel_reason
+                    'cancel_reason': bill.cancel_reason,
+                    'advance_date': advance_date
                 }
                 bill_dataset.append(bill_entry)
                 counter +=1
@@ -181,7 +186,9 @@ class BillListView(LoginRequiredMixin, ListView):
             # Construct the dataset
             for other_bill in other_list:
                 subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
-
+                advance_date = ""
+                if bill.advance_booking_date:
+                    advance_date = bil.advance_booking_date.strftime("%d-%m-%Y")
                 bill_entry = {
                     'id': str(bill.id),
                     'receipt': bill.receipt_number,
@@ -194,7 +201,8 @@ class BillListView(LoginRequiredMixin, ListView):
                     'amount': other_bill.price,
                     'is_cancelled': bill.is_cancelled,
                     'cancel_reason': bill.cancel_reason,
-                    'payment_method': bill.payment_method
+                    'payment_method': bill.payment_method,
+                    'advance_date':  advance_date
 
                 }
                 bill_dataset.append(bill_entry)       
