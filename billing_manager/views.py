@@ -11,6 +11,7 @@ import re
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 from django.http import JsonResponse, Http404
+from django.http import HttpResponseBadRequest
 from .forms import WalletCollectionForm, ExpenseForm
 from .services import WalletService
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -1289,32 +1290,31 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         end_date_str = self.request.GET.get('end_date', '')
 
         # Parse dates if provided
-        start_date = parse_date(start_date_str) if start_date_str else None
-        end_date = parse_date(end_date_str) if end_date_str else None
+        self.start_date = parse_date(start_date_str) if start_date_str else None
+        self.end_date = parse_date(end_date_str) if end_date_str else None
 
         # Validate dates
-        if start_date and end_date and start_date > end_date:
-            from django.http import HttpResponseBadRequest
-            return HttpResponseBadRequest("Start date cannot be later than end date.")
+        if self.start_date and self.end_date and self.start_date > self.end_date:
+            return []
 
         # Convert dates to timezone-aware datetimes
-        if start_date:
-            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))  # 00:00:00
-        if end_date:
-            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
+        if self.start_date:
+            start_date = timezone.make_aware(datetime.combine(self.start_date, datetime.min.time()))  # 00:00:00
+        if self.end_date:
+            self.end_date = timezone.make_aware(datetime.combine(eself.nd_date, datetime.max.time()))  # 23:59:59
 
         # Default to the current month's expenses if no start_date and end_date are provided
-        if not start_date and not end_date:
+        if not self.start_date and not self.end_date:
             today = date.today()
-            start_date = today.replace(day=1)  # First day of the current month
-            end_date = today.replace(month=today.month + 1, day=1) if today.month < 12 else today.replace(month=1, year=today.year + 1, day=1)
+            self.start_date = today.replace(day=1)  # First day of the current month
+            self.end_date = today.replace(month=today.month + 1, day=1) if today.month < 12 else today.replace(month=1, year=today.year + 1, day=1)
 
         # Query expenses based on the calculated or provided dates
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start_date = self.start_date
+        self.end_date = self.end_date
         queryset = Expense.objects.filter(
-            expense_date__gte=start_date,
-            expense_date__lt=end_date,
+            expense_date__gte=self.start_date,
+            expense_date__lt=self.end_date,
             temple_id=temple_id
         ).order_by('expense_date')
         return queryset
