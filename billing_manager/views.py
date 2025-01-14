@@ -34,7 +34,8 @@ from django.db.models import Sum
 from django.utils.dateformat import DateFormat
 from billing_manager.decorators import check_temple_session
 from django.utils.decorators import method_decorator
-
+from django.http import HttpResponseRedirect
+from math import ceil
 
 subreceipt_ids = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p']
 
@@ -86,6 +87,27 @@ class BillListView(LoginRequiredMixin, ListView):
     context_object_name = 'bills'
     paginate_by = 100
 
+    def get(self, request, *args, **kwargs):
+        """
+        Override the get method to redirect to the last page if 'page' is not specified.
+        """
+        # Get the total number of bills
+        total_bills = self.get_queryset().count()
+        if total_bills == 0:
+            # If no bills, render the default view
+            return super().get(request, *args, **kwargs)
+
+        # Calculate the last page number
+        last_page = (total_bills + self.paginate_by - 1) // self.paginate_by  # Ceiling division
+
+        # Check if the 'page' parameter is already set
+        if not request.GET.get('page'):
+            # Redirect to the last page
+            url = f"{request.path}?page={last_page}"
+            return HttpResponseRedirect(url)
+
+        # Render the page normally if 'page' is set
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         """
@@ -122,7 +144,7 @@ class BillListView(LoginRequiredMixin, ListView):
 
         else:
             # All bills if not a Billing Assistant
-            bills = Bill.objects.filter(temple=temple).order_by('id')
+            bills = Bill.objects.filter(temple=temple).order_by('receipt_number')
             if requested_biller:
                 bills = bills.filter(user__username=requested_biller[0])
 
@@ -728,7 +750,7 @@ class BillExportView(LoginRequiredMixin, View):
 
         is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
         
-        bills = Bill.objects.all().order_by('id')
+        bills = Bill.objects.all(temple=temple).order_by('receipt_number')
 
         if is_billing_assistant:
             bills = bills.filter(user=request.user)

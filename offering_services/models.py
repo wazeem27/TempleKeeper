@@ -8,7 +8,7 @@ from temple_auth.models import Temple
 class VazhipaduOffering(models.Model):
     id = models.UUIDField(
         primary_key=True, 
-        default=uuid.uuid4, 
+        default=uuid.uuid4,
         editable=False, 
         verbose_name="Unique ID"
     )
