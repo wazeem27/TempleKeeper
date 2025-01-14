@@ -186,7 +186,7 @@ class ImportVazhipaduOfferingView(View):
             added_count = 0
             for row in reader:
                 # Assuming CSV format is: Name, Price, Description
-                name, price, description = row
+                name, price, allow_multiple = row
                 order_num = VazhipaduOffering.objects.filter(temple=temple).last().order
                 
                 # Check if the offering already exists
@@ -196,7 +196,7 @@ class ImportVazhipaduOfferingView(View):
                         temple=temple,  # Adjust as per your user's temple info
                         name=name,
                         price=price,
-                        description=description,
+                        allow_multiple=allow_multiple,
                         order=order_num+1
                     )
                     added_count += 1
