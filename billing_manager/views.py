@@ -1323,7 +1323,7 @@ class OverallExpenseList(LoginRequiredMixin, ListView):
         if self.start_date:
             start_date = timezone.make_aware(datetime.combine(self.start_date, datetime.min.time()))  # 00:00:00
         if self.end_date:
-            self.end_date = timezone.make_aware(datetime.combine(eself.nd_date, datetime.max.time()))  # 23:59:59
+            self.end_date = timezone.make_aware(datetime.combine(self.end_date, datetime.max.time()))  # 23:59:59
 
         # Default to the current month's expenses if no start_date and end_date are provided
         if not self.start_date and not self.end_date:
