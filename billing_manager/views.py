@@ -750,7 +750,7 @@ class BillExportView(LoginRequiredMixin, View):
 
         is_billing_assistant = request.user.groups.filter(name='Billing Assistant').exists()
         
-        bills = Bill.objects.all(temple=temple).order_by('receipt_number')
+        bills = Bill.objects.filter(temple=temple).order_by('receipt_number')
 
         if is_billing_assistant:
             bills = bills.filter(user=request.user)
