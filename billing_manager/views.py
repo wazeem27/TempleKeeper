@@ -582,7 +582,7 @@ class ReceiptView(LoginRequiredMixin, DetailView):
             return ["billing_manager/receipt.html"]
         else:
             # Otherwise, return the standard receipt template
-            return ["billing_manager/receipt.html"]
+            return ["billing_manager/receipt_template_2.html"]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -771,7 +771,7 @@ class BillExportView(LoginRequiredMixin, View):
         writer.writerow([
             'Receipt No', 'Sub Receipt', 'Billed By', 'Date',
             'Vazhipadu', 'Customer Name', 'Star', 'Price', "Payment Method",
-            'Comment',
+            'Reason',
         ])
 
         # Write the data rows
