@@ -72,6 +72,15 @@
                 page-break-after: always;
             }
         }
+        .detail-indent {
+        padding-left: 2rem; /* Adjust for alignment */
+        }
+
+        .label {
+            display: inline-block;
+            width: 6rem; /* Ensure all labels align properly */
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -94,71 +103,84 @@
                 <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
                 <p class="text-center mb-1 mt-1">Date: {{ bill.created_at|date:"d/m/Y" }}</p>
                 <div class="line"></div>
-    
+        
                 <!-- Receipt Number -->
                 <p class="mb-1">
                     <span>രസീത് നം: {{ bill.receipt_number }}</span>
                 </p>
                 <div class="line"></div>
+                
                 {% for vazhipadu in bill_detail.vazhipadu_list %}
                 <!-- Vazhipadu Details -->
-                <p class="mb-1"><strong>* വഴിപാട്: </strong>{{ vazhipadu.vazhipadu }}</p>
-                <p class="mb-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⦿ പേര്:
-                    {% if vazhipadu.primary_person %}
-                        {{ vazhipadu.primary_person.name }}
-                    {% endif %}
+                <p class="mb-1"><strong>വഴിപാട്: {{ vazhipadu.vazhipadu }}</strong></p>
+                <p class="mb-1 detail-indent">
+                    <span class="label"><strong>⦿ പേര്:</strong></span>
+                    <span>
+                        <strong>
+                        {% if vazhipadu.primary_person %}
+                            {{ vazhipadu.primary_person.name }}
+                        {% endif %}
+                    </strong>
+                    </span>
                 </p>
-
-                
-                <p class="mb-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;നക്ഷത്രം: 
-                    {% if vazhipadu.primary_person %}
-                        {{ vazhipadu.primary_person.star }}
-                    {% endif %}
+        
+                <p class="mb-1 detail-indent">
+                    <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
+                    <span><strong>
+                        {% if vazhipadu.primary_person %}
+                            {{ vazhipadu.primary_person.star }}
+                        {% endif %}
+                    </strong>
+                    </span>
                 </p>
                 <!-- Loop through other persons -->
                 {% for person in vazhipadu.other_persons %}
-                <p class="mb-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⦿ പേര്:{{ person.name }}</p>
-                <p class="mb-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;നക്ഷത്രം: {{ person.star }}</p>
+                <p class="mb-1 detail-indent">
+                    <span class="label"><strong>⦿ പേര്:</strong></span>
+                    <span><strong>{{ person.name }}</strong></span>
+                </p>
+                <p class="mb-1 detail-indent">
+                    <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
+                    <span><strong>{{ person.star }}</strong></span>
+                </p>
                 {% endfor %}
                 
                 <p class="mb-1">
-                    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Quantity: {{ vazhipadu.quantity }} X</span>
-                    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Price: ₹{{ vazhipadu.price }}</span>
+                    <span class="detail-indent">Quantity: {{ vazhipadu.quantity }} x Price: ₹{{ vazhipadu.price }}</span>
                 </p>
                 <div class="line"></div>
                 {% endfor %}
-
-
+        
                 {% for other in bill.bill_other_items.all %}
                 <!-- Vazhipadu Details -->
-                <p class="mb-1"><strong>* വഴിപാട്: </strong>{{ other.vazhipadu }}</p>
-                <p class="mb-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⦿ പേര്:
-                    {{ other.person_name }}
+                <p class="mb-1"><strong>വഴിപാട്: {{ other.vazhipadu }}</strong></p>
+                <p class="mb-1 detail-indent">
+                    <span class="label"><strong>⦿ പേര്:</strong></span>
+                    <span>{{ other.person_name }}</span>
                 </p>
-
-                
-                <p class="mb-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;നക്ഷത്രം: 
-                    {{ other.person_star.name }}
+                <p class="mb-1 detail-indent">
+                    <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
+                    <span>{{ other.person_star.name }}</span>
                 </p>
-                
                 <p class="mb-1">
-                    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Quantity: 1 X</span>
-                    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Price: ₹{{ other.price }}</span>
+                    <span class="detail-indent">Quantity: 1 x Price: ₹{{ other.price }}</span>
                 </p>
                 <div class="line"></div>
                 {% endfor %}
-                        <!-- Total -->
-        <p class="total mb-1">Total: ₹{{ bill.total_amount }}</p>
-        <div class="line"></div>
-                <!-- Remark -->
+                
+                <!-- Total -->
+                <p class="total mb-1">Total: ₹{{ bill.total_amount }}</p>
+                <div class="line"></div>
+                
                 <!-- Footer -->
-                 {% if temple.temple_bill_footer %}
+                {% if temple.temple_bill_footer %}
                 <div class="footer">
                     <p class="thanks">{{ temple.temple_bill_footer }}</p>
                 </div>
                 {% endif %}
             </div>
         </div>
+        
         
     
 

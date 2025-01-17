@@ -769,9 +769,9 @@ class BillExportView(LoginRequiredMixin, View):
         
         # Write the header row
         writer.writerow([
-            'Receipt No', 'Sub Receipt', 'Billed By', 'Date',
+            'Receipt No', 'Sub Receipt', 'Date',
             'Vazhipadu', 'Customer Name', 'Star', 'Price', "Payment Method",
-            'Reason',
+            "Advance Booking", 'Billed By', 'Reason',
         ])
 
         # Write the data rows
@@ -793,13 +793,14 @@ class BillExportView(LoginRequiredMixin, View):
                 writer.writerow([
                     bill.receipt_number,
                     subreceipt,
-                    bill.user.username,
                     localtime(bill.created_at).strftime("%a, %d %b %Y, %-I:%M %p"),
                     vazhipadu_name,
                     names,
                     stars,
                     vazhipadu_bill.price,
                     bill.payment_method,
+                    bill.advance_booking_date,
+                    bill.user.username,
                     bill.cancel_reason,
 
                 ])
@@ -817,6 +818,7 @@ class BillExportView(LoginRequiredMixin, View):
                     other_bill.person_name,
                     other_bill.person_star.name if other_bill.person_star else "",
                     other_bill.price,
+                    bill.advance_booking_date,
                     bill.payment_method,
                     bill.cancel_reason,
                 ])

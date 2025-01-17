@@ -192,6 +192,7 @@ class ImportVazhipaduOfferingView(View):
                 # Check if the offering already exists
                 if not VazhipaduOffering.objects.filter(name=name, temple=temple).exists():
                     # Create the new offering
+                    allow_multiple = True if allow_multiple == "Yes" else False
                     VazhipaduOffering.objects.create(
                         temple=temple,  # Adjust as per your user's temple info
                         name=name,
