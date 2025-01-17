@@ -81,6 +81,19 @@
             width: 6rem; /* Ensure all labels align properly */
             text-align: left;
         }
+        .print-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #000;
+            z-index: 10;
+        }
+
+        .print-icon:hover {
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
@@ -91,6 +104,9 @@
         
         <div class="col-12 col-md-6 col-lg-4 mb-4">
             <div class="receipt-card">
+                <div class="print-icon" onclick="window.print()" title="Print">
+                    <i class="fas fa-print"></i>
+                </div>
                 <!-- Header -->
                 {% if temple.temple_bill_title %}
                 <div class="header">
@@ -126,10 +142,11 @@
                 </p>
         
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⚝ നക്ഷത്രം:
+                    <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
+                    <span><strong>
                         {% if vazhipadu.primary_person %}
-                        {{ vazhipadu.primary_person.star }}
-                    {% endif %}</strong></span>
+                            {{ vazhipadu.primary_person.star }}
+                        {% endif %}
                     </strong>
                     </span>
                 </p>
@@ -140,7 +157,12 @@
                     <span><strong>{{ person.name }}</strong></span>
                 </p>
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⚝ നക്ഷത്രം: {{ person.star }}</strong></span>
+                    <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
+                    <span>
+                        <strong>
+                            {{ person.star }}
+                        </strong>
+                    </span>
                 </p>
                 {% endfor %}
                 
@@ -158,7 +180,12 @@
                     <span>{{ other.person_name }}</span>
                 </p>
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⚝ നക്ഷത്രം: {{ other.person_star.name }}</strong></span>
+                    <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
+                    <span>
+                        <strong>
+                            {{ other.person_star.name }}
+                        </strong>
+                    </span>
                 </p>
                 <p class="mb-1">
                     <span class="detail-indent">Quantity: 1 x Price: ₹{{ other.price }}</span>
