@@ -94,87 +94,106 @@
 
 <main class="container">
 
-    <div class="pagetitle">
-        <nav>
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'add-bill' %}">Home</a></li>
-            </ol>
-        </nav>
-    </div><!-- End Page Title -->
 
     {% for bill in bills %}
     <div class="receipt-card">
+
         <!-- Header -->
+        {% if temple.temple_bill_title %}
         <div class="header">
             <p>{{ temple.temple_bill_title }}</p>
         </div>
+        {% endif %}
+        {% if temple.temple_bill_mid %}
         <p class="text-center mb-1 mt-1">{{ temple.temple_bill_mid }}</p>
-
+        {% endif %}
         <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
-
-        <p class="text-center mb-1 mt-1">Date: {{ bill.date|date:"d/m/Y" }}</p>
-        <br>
-
+        <p class="text-center mb-1 mt-1">Date: {{ bill.created_at|date:"d/m/Y" }}</p>
         <div class="line"></div>
 
         <!-- Receipt Number -->
         <p class="mb-1">
-            <span>രസീത് നം: {{ bill.receipt_number }}</span> 
+            <span>രസീത് നം: {{ bill.receipt_number }}</span>
+        </p>
+        <div class="line"></div>
+        
+        {% for vazhipadu in bill.vazhipadu_list %}
+        <!-- Vazhipadu Details -->
+        <p class="mb-1"><strong>വഴിപാട്: {{ vazhipadu.vazhipadu }}</strong></p>
+        <p class="mb-1 detail-indent">
+            
+            <span class="label"><strong>⦿ പേര്:</strong></span>
+            <span>
+                <strong>
+                {% if vazhipadu.primary_person %}
+                    {{ vazhipadu.primary_person.name }}
+                {% endif %}
+            </strong>
+            </span>
         </p>
 
-        <!-- Items -->
+        <p class="mb-1 detail-indent">
+            <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
+            <span><strong>
+                {% if vazhipadu.primary_person %}
+                    {{ vazhipadu.primary_person.star }}
+                {% endif %}
+            </strong>
+            </span>
+        </p>
+        <!-- Loop through other persons -->
+        {% for person in vazhipadu.other_persons %}
+        <p class="mb-1 detail-indent">
+            <span class="label"><strong>⦿ പേര്:</strong></span>
+            <span><strong>{{ person.name }}</strong></span>
+        </p>
+        <p class="mb-1 detail-indent">
+            <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
+            <span>
+                <strong>
+                    {{ person.star }}
+                </strong>
+            </span>
+        </p>
+        {% endfor %}
+        
+        <p class="mb-1">
+            <span class="detail-indent">Quantity: {{ vazhipadu.quantity }} x Price: ₹{{ vazhipadu.price }}</span>
+        </p>
         <div class="line"></div>
-        <table class="table table-borderless">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>പേര്</th>
-                    <th>നക്ഷത്രം</th>
-                    <th>വഴിപാട്</th>
-                    <th>എണ്ണം</th>
-                    <th class="text-end">രൂപ</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detail in bill.vazhipadu_list %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>
-                        {% if detail.primary_person %}
-                            {{ detail.primary_person.name }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.primary_person %}
-                            {{ detail.primary_person.star }}
-                        {% endif %}
-                    </td>
-                    <td>{{ detail.vazhipadu }}</td>
-                    <td>{{ detail.quantity }} x </td>
-                    <td class="text-end">{{ detail.price }}</td>
-                </tr>
-                {% for person in detail.other_persons %}
-                <tr>
-                    <td></td>
-                    <td>{{ person.name }}</td>
-                    <td>{{ person.star }}</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
+        {% endfor %}
 
+        {% for other in bill.bill_other_items.all %}
+        <!-- Vazhipadu Details -->
+        <p class="mb-1"><strong>വഴിപാട്: {{ other.vazhipadu }}</strong></p>
+        <p class="mb-1 detail-indent">
+            <span class="label"><strong>⦿ പേര്:</strong></span>
+            <span>{{ other.person_name }}</span>
+        </p>
+        <p class="mb-1 detail-indent">
+            <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
+            <span>
+                <strong>
+                    {{ other.person_star.name }}
+                </strong>
+            </span>
+        </p>
+        <p class="mb-1">
+            <span class="detail-indent">Quantity: 1 x Price: ₹{{ other.price }}</span>
+        </p>
         <div class="line"></div>
-
+        {% endfor %}
+        
         <!-- Total -->
         <p class="total mb-1">Total: ₹{{ bill.total_amount }}</p>
-
+        <div class="line"></div>
+        
         <!-- Footer -->
+        {% if temple.temple_bill_footer %}
         <div class="footer">
             <p class="thanks">{{ temple.temple_bill_footer }}</p>
         </div>
+        {% endif %}
     </div>
     {% endfor %}
 
