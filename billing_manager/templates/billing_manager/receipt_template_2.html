@@ -77,8 +77,8 @@
         }
 
         .label {
-            display: inline-block;
-            width: 6rem; /* Ensure all labels align properly */
+            /*display: inline-block;
+            /*width: 6rem; /* Ensure all labels align properly */
             text-align: left;
         }
         .print-icon {
@@ -131,7 +131,7 @@
                 <p class="mb-1"><strong>വഴിപാട്: {{ vazhipadu.vazhipadu }}</strong></p>
                 <p class="mb-1 detail-indent">
                     
-                    <span class="label"><strong>⦿പേര്:</strong></span>
+                    <span class="label"><strong>⦿ പേര്:</strong></span>
                     <span>
                         <strong>
                         {% if vazhipadu.primary_person %}
@@ -142,7 +142,7 @@
                 </p>
         
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⚝നക്ഷത്രം:</strong></span>
+                    <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
                     <span><strong>
                         {% if vazhipadu.primary_person %}
                             {{ vazhipadu.primary_person.star }}
@@ -153,11 +153,11 @@
                 <!-- Loop through other persons -->
                 {% for person in vazhipadu.other_persons %}
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⦿പേര്:</strong></span>
+                    <span class="label"><strong>⦿ പേര്:</strong></span>
                     <span><strong>{{ person.name }}</strong></span>
                 </p>
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⚝നക്ഷത്രം: </strong></span>
+                    <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
                     <span>
                         <strong>
                             {{ person.star }}
@@ -176,11 +176,11 @@
                 <!-- Vazhipadu Details -->
                 <p class="mb-1"><strong>വഴിപാട്: {{ other.vazhipadu }}</strong></p>
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⦿പേര്:</strong></span>
+                    <span class="label"><strong>⦿ പേര്:</strong></span>
                     <span>{{ other.person_name }}</span>
                 </p>
                 <p class="mb-1 detail-indent">
-                    <span class="label"><strong>⚝നക്ഷത്രം: </strong></span>
+                    <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
                     <span>
                         <strong>
                             {{ other.person_star.name }}
