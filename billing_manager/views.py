@@ -653,7 +653,7 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
 
         for bill in bills:
             bill_dict = {
-                "id": bill.id,
+                "receipt_number": bill.receipt_number,
                 "date": bill.created_at,
                 "vazhipadu_list": []
             }
