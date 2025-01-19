@@ -126,7 +126,11 @@ class Bill(models.Model):
                     raise ValueError("Attempted to update a Bill that does not exist.")
                 if original.receipt_number != self.receipt_number:
                     self.receipt_number = original.receipt_number  # Revert back to the original receipt_number
-
+            if hasattr(self, '_force_receipt_number'):
+                self.receipt_number = self._force_receipt_number
+            if hasattr(self, '_force_created_at'):
+                # Override created_at if provided during creation
+                self.created_at = self._force_created_at
         super().save(*args, **kwargs)  # Call the super save method to actually save the object
 
     class Meta:
