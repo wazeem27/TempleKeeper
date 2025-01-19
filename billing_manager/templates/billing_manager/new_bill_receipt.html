@@ -137,8 +137,8 @@
         
         {% for vazhipadu in bill.vazhipadu_list %}
         <!-- Vazhipadu Details -->
-        <p class="mb-1"><strong>വഴിപാട്: {{ vazhipadu.vazhipadu }}</strong></p>
-        <p class="mb-1 detail-indent">
+        <p class="mb-1"><strong><u>{{ vazhipadu.vazhipadu }}</u></strong></p>
+        <p class="mb-1">
             
             <span class="label"><strong>⦿ പേര്:</strong></span>
             <span>
@@ -150,7 +150,7 @@
             </span>
         </p>
 
-        <p class="mb-1 detail-indent">
+        <p class="mb-1">
             <span class="label"><strong>⚝ നക്ഷത്രം:</strong></span>
             <span><strong>
                 {% if vazhipadu.primary_person %}
@@ -161,11 +161,11 @@
         </p>
         <!-- Loop through other persons -->
         {% for person in vazhipadu.other_persons %}
-        <p class="mb-1 detail-indent">
+        <p class="mb-1">
             <span class="label"><strong>⦿ പേര്:</strong></span>
             <span><strong>{{ person.name }}</strong></span>
         </p>
-        <p class="mb-1 detail-indent">
+        <p class="mb-1">
             <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
             <span>
                 <strong>
@@ -184,11 +184,11 @@
         {% for other in bill.bill_other_items.all %}
         <!-- Vazhipadu Details -->
         <p class="mb-1"><strong>വഴിപാട്: {{ other.vazhipadu }}</strong></p>
-        <p class="mb-1 detail-indent">
+        <p class="mb-1">
             <span class="label"><strong>⦿ പേര്:</strong></span>
             <span>{{ other.person_name }}</span>
         </p>
-        <p class="mb-1 detail-indent">
+        <p class="mb-1">
             <span class="label"><strong>⚝ നക്ഷത്രം: </strong></span>
             <span>
                 <strong>

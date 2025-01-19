@@ -1,4 +1,4 @@
-Receipt ID,Sub Receipt,Billed By,Date,Vazhipadu,Customer Name,Star,Price,Comment
+Receipt ID,Sub Receipt,Created By,Created At,Vazhipadu Name,Name,Star,Amount,Comment
 99,-,admin,"Sun, 29 Dec 2024, 11:14 AM",വിദ്യാമന്ത്ര പുഷ്‌പാഞ്ജലി,അദ്വൈത്,തിരുവോണം,30.00,
 100,-,admin,"Sun, 29 Dec 2024, 11:24 AM",വിഷ്ണുമായസ്വാമിക്ക് കലശം,ശോണിമ,പൂരം,250.00,
 101,-,admin,"Sun, 29 Dec 2024, 11:42 AM",പുഷ്‌പാഞ്ജലി,ശ്രീത,മകം,10.00,

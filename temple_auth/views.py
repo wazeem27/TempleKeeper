@@ -195,7 +195,7 @@ def update_split_receipt(request):
 
         # Add a success message
         messages.success(request, "Split receipt preference updated successfully!")
-        return redirect('settings')  # Redirect after saving
+        return redirect('dashboard')  # Redirect after saving
 
 @method_decorator(check_temple_session, name='dispatch')
 class AdminSubMenu(LoginRequiredMixin, TemplateView):
