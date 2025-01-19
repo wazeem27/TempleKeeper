@@ -211,7 +211,7 @@ class BillListView(LoginRequiredMixin, ListView):
                 subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
                 advance_date = ""
                 if bill.advance_booking_date:
-                    advance_date = bil.advance_booking_date.strftime("%d-%m-%Y")
+                    advance_date = bill.advance_booking_date.strftime("%d-%m-%Y")
                 bill_entry = {
                     'id': str(bill.id),
                     'receipt': bill.receipt_number,
@@ -579,7 +579,7 @@ class ReceiptView(LoginRequiredMixin, DetailView):
         user_profile = UserProfile.objects.filter(user=self.request.user)[0]
         if user_profile.is_split_bill:
             # If the user has selected split billing, return the split receipt template
-            return ["billing_manager/receipt.html"]
+            return ["billing_manager/receipt_template_2.html"]
         else:
             # Otherwise, return the standard receipt template
             return ["billing_manager/receipt_template_2.html"]
