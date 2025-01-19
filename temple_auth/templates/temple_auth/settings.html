@@ -178,92 +178,68 @@ label.fw-bold {
 
         </div>
         <div class="col-xl-4">
-            <div class="card">
+          <div class="card">
               <div class="card-title text-center" style="color: black;">
                   Sample Bill View
               </div>
-                <div class="card-body d-flex justify-content-center align-items-center"">
-                    <!-- Receipt Content -->
-                    <div class="receipt-card" style="width: 80mm; padding: 5mm; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
-                        <!-- Print Icon -->
-                        <div class="print-icon" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 1.5rem; color: #000;" onclick="window.print()" title="Print">
-                            <i class="fas fa-print"></i>
-                        </div>
-        
-                        <!-- Header -->
-                        <p class="text-center reduced-gap" style="font-weight: bold;">{{ title }}</p>
-                        <p class="text-center reduced-gap" style="font-size: 0.8rem;">{{ mid }}</p>
-                        <p class="text-center mb-1 mt-1" style="font-size: 0.9rem;">വഴിപാട് രസീത്</p>
-                        <p class="text-center mb-1 mt-1" style="font-size: 0.9rem;">Date: 24/12/2024</p>
-                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-                        <!-- Receipt Number and Date -->
-                        <p class="mb-1" style="font-size: 0.8rem;">
-                            <span>രസീത് നം: 1</span>
-                        </p>
-                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-                        <!-- Vazhipadu Table -->
-                        <table class="table table-borderless" style="font-size: 0.8rem;">
-                            <thead>
-                                <tr>
-                                  <th>#</th>
-                                  <th>പേര്</th>
-                                  <th>നക്ഷത്രം</th>
-                                  <th>വഴിപാട്</th>
-                                  <th>എണ്ണം</th>
-                                  <th class="text-end">രൂപ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>ദേവി</td>
-                                    <td>അശ്വതി</td>
-                                    <td>പുഷ്‌പാഞ്ജലി</td>
-                                    <td>1 X</td>
-                                    <td class="text-end">10</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="border-top: 1px dashed #000; margin: 0px 0;"></div>
-        
-                        <!-- Inventory Items Table -->
-                        <table class="table table-borderless" style="font-size: 0.8rem;">
-                            <thead>
-                                <tr>
-                                  <th>#</th>
-                                  <th>പേര്</th>
-                                  <th>നക്ഷത്രം</th>
-                                  <th>വഴിപാട്</th>
-                                  <th>എണ്ണം</th>
-                                  <th class="text-end">രൂപ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>ദേവി</td>
-                                    <td>അശ്വതി</td>
-                                    <td>തേങ്ങ</td>
-                                    <td class="text-end">4 X</td>
-                                    <td class="text-end">20</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-                        <!-- Total -->
-                        <p class="total mb-1" style="font-size: 0.9rem; font-weight: bold; text-align: right;">Total: ₹90</p>
-        
-                        <!-- Footer -->
-                        <div class="footer" style="text-align: center; font-size: 0.7rem; margin-top: 4px;">
-                            <p class="thanks" style="font-weight: bold;">{{ footer }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+              <div class="card-body d-flex justify-content-center align-items-center">
+                  <!-- New Receipt Content -->
+                  <div class="receipt-card" style="width: 80mm; padding: 5mm; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+                      <!-- Print Icon -->
+                      <div class="print-icon" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 1.5rem; color: #000;" onclick="window.print()" title="Print">
+                          <i class="fas fa-print"></i>
+                      </div>
+      
+                      <!-- Header -->
+                      {% if temple.temple_bill_title %}
+                      <div class="header text-center" style="font-weight: bold; margin-bottom: 5px;">
+                          <p>{{ temple.temple_bill_title }}</p>
+                      </div>
+                      {% endif %}
+                      {% if temple.temple_bill_mid %}
+                      <p class="text-center mb-1 mt-1">{{ temple.temple_bill_mid }}</p>
+                      {% endif %}
+                      <p class="text-center mb-1 mt-1">വഴിപാട് രസീത്</p>
+                      <p class="text-center mb-1 mt-1">Date: 24-12-2024</p>
+                      <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+      
+                      <!-- Receipt Number -->
+                      <p class="mb-1" style="font-size: 0.8rem;">
+                          <span>രസീത് നം: 1</span>
+                      </p>
+                      <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+      
+                      <!-- Vazhipadu Details -->
+                      <p class="mb-1"><strong><u>പുഷ്‌പാഞ്ജലി</u></strong></p>
+                      <p class="mb-1">
+                          <strong>⦿ പേര്:</strong>
+                          ദേവി
+                      </p>
+                      <p class="mb-1">
+                          <strong>⚝ നക്ഷത്രം:</strong>
+                          അശ്വതി
+                      </p>
+                      <p class="mb-1">
+                          Quantity: 4 x Price: ₹20
+                      </p>
+                      <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+      
+      
+                      <!-- Total -->
+                      <p class="total mb-1" style="font-size: 0.9rem; font-weight: bold; text-align: right;">Total: ₹80</p>
+                      <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+      
+                      <!-- Footer -->
+                      {% if temple.temple_bill_footer %}
+                      <div class="footer text-center" style="font-size: 0.7rem; margin-top: 5px;">
+                          <p class="thanks">{{ temple.temple_bill_footer }}</p>
+                      </div>
+                      {% endif %}
+                  </div>
+              </div>
+          </div>
+      </div>
+      
         
       
       </div>
