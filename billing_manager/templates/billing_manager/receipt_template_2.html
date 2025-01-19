@@ -73,7 +73,7 @@
             }
         }
         .detail-indent {
-        padding-left: 2rem; /* Adjust for alignment */
+        padding-left: 4rem; /* Adjust for alignment */
         }
 
         .label {
@@ -99,6 +99,7 @@
 <body>
 
 <main class="container">
+
     <section class="row justify-content-center align-items-center">
         <!-- Loop through each vazhipadu offering -->
         
@@ -108,6 +109,7 @@
                     <i class="fas fa-print"></i>
                 </div>
                 <!-- Header -->
+                <a href="{% url 'add-bill' %}" class="text-decoration-none">Home</a>
                 {% if temple.temple_bill_title %}
                 <div class="header">
                     <p>{{ temple.temple_bill_title }}</p>

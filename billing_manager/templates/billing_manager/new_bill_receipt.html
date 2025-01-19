@@ -89,7 +89,7 @@
             }
         }
         .detail-indent {
-        padding-left: 2rem; /* Adjust for alignment */
+        padding-left: 4rem; /* Adjust for alignment */
         }
 
         .label {
@@ -112,7 +112,7 @@
 
 <main class="container">
 
-
+    <a href="{% url 'add-bill' %}" class="text-decoration-none">Home</a>
     {% for bill in bills %}
     <div class="receipt-card">
 
