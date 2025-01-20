@@ -59,11 +59,17 @@ form {
 
 <main id="main" class="main">
     <div class="pagetitle">
+        {% if is_central_admin %}
         <h1>{{ temple.temple_name }}</h1>
+        {% endif %}
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                {% if is_central_admin %}
                 <li class="breadcrumb-item"><a href="{% url 'list-temples' %}">Management</a></li>
+                {% else %}
+                <li class="breadcrumb-item"><a href="{% url 'temple-detail' temple_id=request.session.temple_id  %}">Management</a></li>
+                {% endif %}
                 <li class="breadcrumb-item active">Edit: {{ username }}</li>
             </ol>
         </nav>
