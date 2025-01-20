@@ -65,8 +65,14 @@
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                {% if is_central_admin %}
                 <li class="breadcrumb-item"><a href="{% url 'list-temples' %}">Management</a></li>
+                {% else %}
+                <li class="breadcrumb-item"><a >Management</a></li>
+                {% endif %}
+                {% if is_central_admin %}
                 <li class="breadcrumb-item active">{{ temple_breadcrumb }}</li>
+                {% endif %}
             </ol>
         </nav>
     </div>
@@ -114,7 +120,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-3">
-                            {% if not is_billing_assistant %}
+                            {% if is_central_admin %}
                                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOfferingModal">Add User</button>
                             {% endif %}
                         </div>

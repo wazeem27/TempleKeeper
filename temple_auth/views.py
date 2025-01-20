@@ -19,6 +19,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from billing_manager.decorators import check_temple_session
 from django.contrib.auth.models import User, Group
+from django.http import HttpResponseForbidden
 from .models import Note
 from .forms import NoteForm
 
@@ -208,6 +209,18 @@ class TempleListView(LoginRequiredMixin, ListView):
     context_object_name = 'temples'
     paginate_by = 100
 
+
+    def dispatch(self, request, *args, **kwargs):
+        temple_id = self.request.session.get('temple_id')
+
+        # Check if the user is a Central Admin (unrestricted access)
+        if request.user.groups.filter(name='Central Admin').exists():
+            return super().dispatch(request, *args, **kwargs)
+
+        # Deny access to other users (only Central Admins should have access)
+        return render(request, "temple_auth/page_error.html")
+
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
@@ -234,7 +247,6 @@ class TempleListView(LoginRequiredMixin, ListView):
         return redirect('list-temples')
 
 
-
 @method_decorator(check_temple_session, name='dispatch')
 class TempleDetailView(LoginRequiredMixin, ListView):
     model = UserProfile
@@ -242,22 +254,47 @@ class TempleDetailView(LoginRequiredMixin, ListView):
     context_object_name = 'users'
     paginate_by = 100
 
+    def dispatch(self, request, *args, **kwargs):
+        temple_id = self.request.session.get('temple_id')
+        req_temple_id = self.kwargs['temple_id']
+
+        # Check if the user is a Central Admin (unrestricted access)
+        if request.user.groups.filter(name='Central Admin').exists():
+            return super().dispatch(request, *args, **kwargs)
+
+        # Check if the user is a Temple Admin and is accessing their assigned temple
+        if request.user.groups.filter(name='Temple Admin').exists():
+            user_profile = UserProfile.objects.filter(user=request.user).first()
+            if user_profile and user_profile.temples.filter(id=req_temple_id).exists():
+                return super().dispatch(request, *args, **kwargs)
+
+            # Deny access if Temple Admin is trying to access another temple
+            return render(request, "temple_auth/page_error.html")
+
+        # Deny access to other users (only Central Admins or Temple Admins should have access)
+        return HttpResponseForbidden("Access denied: Only Central Admins or Temple Admins can access this view.")
+
     def get_queryset(self):
         temple_id = self.kwargs['temple_id']
         self.temple = get_object_or_404(Temple, id=temple_id)
 
-        queryset = UserProfile.objects.filter(
-            temples=self.temple  # Corrected the lookup field
-        )
+        # Filter queryset by the session's temple for Temple Admins
+        if self.request.user.groups.filter(name='Temple Admin').exists():
+            temple_id_session = self.request.session.get('temple_id')
+            if str(temple_id) != str(temple_id_session):  # Compare as strings
+                return UserProfile.objects.none()  # Return empty queryset for unauthorized access
+
+        queryset = UserProfile.objects.filter(temples=self.temple)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
         context['active_temple'] = self.temple.id
         is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
+        is_temple_admin = self.request.user.groups.filter(name='Temple Admin').exists()
         context['is_central_admin'] = is_central_admin
 
         users_list = []
@@ -284,7 +321,7 @@ class TempleDetailView(LoginRequiredMixin, ListView):
                 user_detail["last_login"] = ""
             users_list.append(user_detail)
         context['user_list'] = users_list
-        shortname = self.temple.temple_short_name  if self.temple.temple_short_name  else ""
+        shortname = self.temple.temple_short_name if self.temple.temple_short_name else ""
         place = self.temple.temple_place if self.temple.temple_place else ""
         context['temple_breadcrumb'] = str(shortname) + " - " + str(place)
         context['temple'] = self.temple
@@ -344,7 +381,6 @@ class TempleDetailView(LoginRequiredMixin, ListView):
         user.groups.add(group)
         messages.success(request, f'User "{username}" created, added to privilege "{group_name}", and linked to selected temples.')
         return redirect('temple-detail', temple_id=temple_id)
-
 
 
 @method_decorator(check_temple_session, name='dispatch')
@@ -431,8 +467,21 @@ def update_password_view(request, user_id):
 
     # Ensure only superusers can update passwords for other users
     is_central_admin = request.user.groups.filter(name='Central Admin').exists()
-    if not is_central_admin:
+    user_to_update_is_cadmin = user.groups.filter(name='Central Admin').exists()
+    if user_to_update_is_cadmin:
         return HttpResponseForbidden("You are not authorized to perform this action.")
+    if not is_central_admin:
+        # Check if the user is a Temple Admin and is updating their users alone
+        is_temple_admin = request.user.groups.filter(name='Temple Admin').exists()
+        user_profile_to_update = UserProfile.objects.get(user=user)
+        temple_id = request.session.get('temple_id')
+        temple = get_object_or_404(Temple, id=temple_id)
+
+        # Check if the user to update is part of the temple from session
+        is_part_of_temple = user_profile_to_update.temples.filter(id=temple.id).exists()
+
+        if not is_temple_admin or not is_part_of_temple:
+            return HttpResponseForbidden("You are not authorized to perform this action.")
 
     if request.method == "POST":
         new_password = request.POST.get("new_password")
@@ -463,12 +512,23 @@ def update_deactivate_view(request, temple_id, user_id):
 
     # Ensure only superusers can update passwords for other users
     is_central_admin = request.user.groups.filter(name='Central Admin').exists()
+    
     temple = get_object_or_404(Temple, id=temple_id)
     if not is_central_admin:
-        return HttpResponseForbidden("You are not authorized to perform this action.")
+        user_to_update_is_cadmin = user.groups.filter(name='Central Admin').exists()
+        if user_to_update_is_cadmin:
+            return HttpResponseForbidden("You are not authorized to perform this action.")
+        # Check if the user is a Temple Admin and is updating their users alone
+        is_temple_admin = request.user.groups.filter(name='Temple Admin').exists()
+        user_profile = UserProfile.objects.filter(user=request.user).first()
+        is_part_of_temple = user_profile.temples.filter(id=temple_id).exists()
+        if not is_temple_admin or not is_part_of_temple:
+            return HttpResponseForbidden("You are not authorized to perform this action.")
 
     if request.method == "POST":
-
+        if user == request.user:
+            messages.error(request, f"You cannot deactivate your own account. Please contact an administrator if needed.")
+            return redirect("temple-detail", temple_id=temple.id)
         # Update the password
         is_active = "Deactivate" if user.is_active else "Activated"
         user.is_active = False if user.is_active else True
@@ -561,4 +621,3 @@ def deactivate_temple(request, temple_id):
         return redirect("list-temples")
     message.error("Invalid request.")
     return redirect("list-temples")
-
