@@ -187,7 +187,10 @@ class ImportVazhipaduOfferingView(View):
             for row in reader:
                 # Assuming CSV format is: Name, Price, Description
                 name, price, allow_multiple = row
-                order_num = VazhipaduOffering.objects.filter(temple=temple).last().order
+                last_vazhipadu = VazhipaduOffering.objects.filter(temple=temple).last()
+                order_num = 0
+                if last_vazhipadu:
+                    order_num = VazhipaduOffering.objects.filter(temple=temple).last().order
                 
                 # Check if the offering already exists
                 if not VazhipaduOffering.objects.filter(name=name, temple=temple).exists():
@@ -208,6 +211,10 @@ class ImportVazhipaduOfferingView(View):
             # Display success message
             messages.success(request, f"Imported {added_count} new offerings successfully.")
         except Exception as e:
-            messages.error(request, f"An error occurred: Please make sure the csv file has only name,price and description")
+            messages.error(
+                request,
+                ("The uploaded CSV file must include the following columns: 'Name', 'Price', and 'Allow Multiple Customers'"
+                "(with 'Yes' or 'No' as values). Please ensure the file format matches this requirement.")
+            )
 
         return redirect('offerings-list')
