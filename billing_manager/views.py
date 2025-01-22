@@ -85,7 +85,7 @@ class BillListView(LoginRequiredMixin, ListView):
     model = Bill
     template_name = 'billing_manager/bill_list.html'
     context_object_name = 'bills'
-    paginate_by = 1000
+    paginate_by = 100
 
     def get(self, request, *args, **kwargs):
         """
