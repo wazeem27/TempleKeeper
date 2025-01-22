@@ -100,6 +100,14 @@ class BillListView(LoginRequiredMixin, ListView):
         # Calculate the last page number
         last_page = (total_bills + self.paginate_by - 1) // self.paginate_by  # Ceiling division
 
+        if (
+            request.GET.get('start_date') or 
+            request.GET.get('end_date') or
+            request.GET.get('req_biller') or 
+            request.GET.get('req_vazhipadu')
+        ):
+            return super().get(request, *args, **kwargs)
+
         # Check if the 'page' parameter is already set
         if not request.GET.get('page'):
             # Redirect to the last page
