@@ -226,8 +226,9 @@
                         </form>
                     
                         <!-- Export Button Form (separate form) -->
-                        <div class="d-flex justify-content-center mt-2">
-                            <form method="get" action="{% url 'export-csv' %}">
+                        <div class="d-flex justify-content-center mt-2 gap-2">
+                            <!-- Export to CSV Button -->
+                            <form method="get" action="{% url 'export-csv' %}" class="d-inline-block">
                                 <!-- Include the current filter parameters so they are passed to the export view -->
                                 <input type="hidden" name="start_date" value="{{ start_date }}">
                                 <input type="hidden" name="end_date" value="{{ end_date }}">
@@ -235,7 +236,16 @@
                                     Export to CSV
                                 </button>
                             </form>
+                        
+                            <!-- View Report Button -->
+                            <form id="viewReportForm" method="GET" action="{% url 'view_multi_receipt' %}" class="d-inline-block">
+                                <input type="hidden" name="ids" id="selectedIds">
+                                <button type="submit" id="viewReportButton" class="btn btn-success btn-sm" disabled>
+                                    <i class="bi bi-file-earmark-bar-graph"></i> Print Selected Bills
+                                </button>
+                            </form>
                         </div>
+                        
                     </div>
     
                     <!-- Card Body -->
@@ -244,6 +254,9 @@
                             <table id="billingTable" class="table table-hover table-bordered text-center align-middle">
                                 <thead class="table-dark">
                                     <tr>
+                                        <th>
+                                            <input type="checkbox" id="selectAll" onclick="toggleAllCheckboxes(this)">
+                                        </th>
                                         <th>Receipt No</th>
                                         <th>Sub Receipt</th>
                                         <th>Date</th>
@@ -262,6 +275,9 @@
                                     {% if bills %}
                                         {% for bill in bills %}
                                         <tr class="table-light" {% if bill.is_cancelled %}style="text-decoration: line-through;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>
+                                            <td>
+                                                <input type="checkbox" class="billCheckbox" value="{{ bill.id }}" onclick="updateViewReportButton()">
+                                            </td>
                                             <td  {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}><strong>{{ bill.receipt }}</strong></td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>{{ bill.sub_receipt }}</td>
                                             <td {% if bill.is_cancelled %}style="background-color: #f19696;"{% elif bill.is_advance_booking %}style="background-color: #e9da8f;"{% endif %}>{{ bill.created_at }}</td>
@@ -509,7 +525,26 @@ function filterTable() {
     }
 }
 
+function toggleAllCheckboxes(checkbox) {
+        const checkboxes = document.querySelectorAll('.billCheckbox');
+        checkboxes.forEach(cb => cb.checked = checkbox.checked);
+        updateViewReportButton();
+    }
 
+    function updateViewReportButton() {
+        const checkboxes = document.querySelectorAll('.billCheckbox:checked');
+        const button = document.getElementById('viewReportButton');
+        const selectedIdsField = document.getElementById('selectedIds');
+
+        if (checkboxes.length > 0) {
+            button.disabled = false;
+            const selectedIds = Array.from(checkboxes).map(cb => cb.value).join('&');
+            selectedIdsField.value = selectedIds;
+        } else {
+            button.disabled = true;
+            selectedIdsField.value = '';
+        }
+    }
 </script>
 
 {% endblock %}

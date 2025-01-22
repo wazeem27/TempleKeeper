@@ -653,7 +653,10 @@ class ViewMultiReceipt(LoginRequiredMixin, TemplateView):
         # Get the list of bill IDs from query parameters
         query_string = self.request.META.get('QUERY_STRING', '')
         bill_ids = query_string.split('=')[1].split(',') if '=' in query_string else []
-        bill_ids = bill_ids[0].split('&')
+        if '%26' in bill_ids[0]:
+            bill_ids = bill_ids[0].split('%26')
+        else:
+            bill_ids = bill_ids[0].split('&')
 
         # Fetch bills belonging to the temple
         bills = Bill.objects.filter(id__in=bill_ids, temple_id=temple_id)
