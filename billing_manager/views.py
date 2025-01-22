@@ -144,24 +144,15 @@ class BillListView(LoginRequiredMixin, ListView):
             # Set end_date to the last moment of the day (23:59:59)
             end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
 
-        if is_billing_assistant:
-            # Only bills related to the current user (Billing Assistant)
-            bills = Bill.objects.filter(temple=temple, user=self.request.user).order_by('id')
-            if start_date:
-                bills = bills.filter(created_at__gte=start_date)
-            if end_date:
-                bills = bills.filter(created_at__lte=end_date)
+        # All bills if not a Billing Assistant
+        bills = Bill.objects.filter(temple=temple).order_by('receipt_number')
+        if requested_biller:
+            bills = bills.filter(user__username=requested_biller[0])
 
-        else:
-            # All bills if not a Billing Assistant
-            bills = Bill.objects.filter(temple=temple).order_by('receipt_number')
-            if requested_biller:
-                bills = bills.filter(user__username=requested_biller[0])
-
-            if start_date:
-                bills = bills.filter(created_at__gte=start_date)
-            if end_date:
-                bills = bills.filter(created_at__lte=end_date)
+        if start_date:
+            bills = bills.filter(created_at__gte=start_date)
+        if end_date:
+            bills = bills.filter(created_at__lte=end_date)
         if only_adv_bkng:
             bills = bills.filter(advance_booking=True)
         return bills
