@@ -328,7 +328,6 @@
                                                                class="dropdown-item {% if bill.is_cancelled %}disabled{% endif %}" 
                                                                data-bs-toggle="modal" 
                                                                data-bs-target="#paymentMethodModal" 
-                                                               title="Update Payment Method" 
                                                                data-id="{{ bill.id }}" 
                                                                data-payment-method="{{ bill.payment_method }}">
                                                                <i class="bi bi-credit-card"></i> Update Payment Method
@@ -349,7 +348,6 @@
                                                                class="dropdown-item {% if bill.is_cancelled %}disabled{% endif %}" 
                                                                data-bs-toggle="modal" 
                                                                data-bs-target="#cancelBillModal" 
-                                                               title="Cancel Bill" 
                                                                data-id="{{ bill.id }}">
                                                                <i class="bi bi-x-circle"></i> Cancel Bill
                                                             </a>
