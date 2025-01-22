@@ -104,7 +104,8 @@ class BillListView(LoginRequiredMixin, ListView):
             request.GET.get('start_date') or 
             request.GET.get('end_date') or
             request.GET.get('req_biller') or 
-            request.GET.get('req_vazhipadu')
+            request.GET.get('req_vazhipadu') or
+            request.GET.get('only_advanced_booking')
         ):
             return super().get(request, *args, **kwargs)
 
@@ -129,6 +130,7 @@ class BillListView(LoginRequiredMixin, ListView):
         start_date_str = self.request.GET.get('start_date', '')
         end_date_str = self.request.GET.get('end_date', '')
         requested_biller = self.request.GET.getlist('req_biller')
+        only_adv_bkng = bool(self.request.GET.get('only_advanced_booking', ''))
 
         start_date = parse_date(start_date_str) if start_date_str else None
         end_date = parse_date(end_date_str) if end_date_str else None
@@ -160,6 +162,8 @@ class BillListView(LoginRequiredMixin, ListView):
                 bills = bills.filter(created_at__gte=start_date)
             if end_date:
                 bills = bills.filter(created_at__lte=end_date)
+        if only_adv_bkng:
+            bills = bills.filter(advance_booking=True)
         return bills
 
 
