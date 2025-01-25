@@ -84,26 +84,41 @@ class Command(BaseCommand):
 
         # Override the created_at field
         bill._force_created_at = created_at
+        bill._force_receipt_number = receipt_number
+
         bill.save()
 
-        # Fetch vazhipadu offering
-        vazhipadu_offering = VazhipaduOffering.objects.get(name=pooja_name, temple=temple)
+        try:
+            # Fetch vazhipadu offering
+            vazhipadu_offering = VazhipaduOffering.objects.get(name=pooja_name, temple=temple)
 
-        # Create BillVazhipaduOffering
-        vazhipadu_bill = BillVazhipaduOffering.objects.create(
-            bill=bill,
-            vazhipadu_offering=vazhipadu_offering,
-            quantity=1,
-            price=price
-        )
+            # Create BillVazhipaduOffering
+            vazhipadu_bill = BillVazhipaduOffering.objects.create(
+                bill=bill,
+                vazhipadu_offering=vazhipadu_offering,
+                quantity=1,
+                price=price
+            )
 
-        # Create PersonDetail
-        star = Star.objects.filter(name=star_name).first()
-        PersonDetail.objects.create(
-            bill_vazhipadu_offering=vazhipadu_bill,
-            person_name=person_name,
-            person_star=star
-        )
+            # Create PersonDetail
+            star = Star.objects.filter(name=star_name).first()
+            PersonDetail.objects.create(
+                bill_vazhipadu_offering=vazhipadu_bill,
+                person_name=person_name,
+                person_star=star
+            )
+        except Exception:
+            print("Adding as Other since Vazhipadu not found in DB")
+                        # Create BillOther as fallback
+            star = Star.objects.filter(name=star_name).first()
+            BillOther.objects.create(
+                bill=bill,
+                person_star=star,
+                person_name=person_name,
+                vazhipadu=pooja_name,
+                price=price
+            )
+
 
     def _process_single_bill(self, temple, created_by, created_at, receipt_number, pooja_name, person_name, star_name, price):
         """Handles the single consolidated bill logic."""
@@ -117,23 +132,36 @@ class Command(BaseCommand):
 
         # Override the created_at field
         bill._force_created_at = created_at
+        bill._force_receipt_number = receipt_number
         bill.save()
 
         # Fetch vazhipadu offering
-        vazhipadu_offering = VazhipaduOffering.objects.get(name=pooja_name, temple=temple)
+        try:
+            vazhipadu_offering = VazhipaduOffering.objects.get(name=pooja_name, temple=temple)
 
-        # Create BillVazhipaduOffering
-        vazhipadu_bill = BillVazhipaduOffering.objects.create(
-            bill=bill,
-            vazhipadu_offering=vazhipadu_offering,
-            quantity=1,
-            price=price
-        )
+            # Create BillVazhipaduOffering
+            vazhipadu_bill = BillVazhipaduOffering.objects.create(
+                bill=bill,
+                vazhipadu_offering=vazhipadu_offering,
+                quantity=1,
+                price=price
+            )
 
-        # Create PersonDetail
-        star = Star.objects.filter(name=star_name).first()
-        PersonDetail.objects.create(
-            bill_vazhipadu_offering=vazhipadu_bill,
-            person_name=person_name,
-            person_star=star
-        )
+            # Create PersonDetail
+            star = Star.objects.filter(name=star_name).first()
+            PersonDetail.objects.create(
+                bill_vazhipadu_offering=vazhipadu_bill,
+                person_name=person_name,
+                person_star=star
+            )
+        except Exception:
+            print("Adding as Other since Vazhipadu not found in DB")
+                        # Create BillOther as fallback
+            star = Star.objects.filter(name=star_name).first()
+            BillOther.objects.create(
+                bill=bill,
+                person_star=star,
+                person_name=person_name,
+                vazhipadu=pooja_name,
+                price=price
+            )
