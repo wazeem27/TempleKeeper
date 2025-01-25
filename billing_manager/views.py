@@ -9,6 +9,7 @@ from decimal import Decimal
 import csv
 import re
 from django.urls import reverse_lazy
+from django.db.models import Q
 from django.views.generic.edit import FormView
 from django.http import JsonResponse, Http404
 from django.http import HttpResponseBadRequest
@@ -125,6 +126,7 @@ class BillListView(LoginRequiredMixin, ListView):
         """
         temple_id = self.request.session.get('temple_id')
         temple = get_object_or_404(Temple, id=temple_id)
+        req_vazhipadu = self.request.GET.get('req_vazhipadu', '')
 
         # Get the filter parameters from the GET request
         start_date_str = self.request.GET.get('start_date', '')
@@ -148,6 +150,11 @@ class BillListView(LoginRequiredMixin, ListView):
         bills = Bill.objects.filter(temple=temple).order_by('receipt_number')
         if requested_biller:
             bills = bills.filter(user__username=requested_biller[0])
+        if req_vazhipadu:
+            # Fetch all bills where at least one associated Vazhipadu Offering has the name "Test vazhipadu1"
+            bills = Bill.objects.filter(
+                Q(bill_vazhipadu_offerings__vazhipadu_offering__name=req_vazhipadu)
+            ).distinct()
 
         if start_date:
             bills = bills.filter(created_at__gte=start_date)
@@ -236,8 +243,6 @@ class BillListView(LoginRequiredMixin, ListView):
 
         # Add paginated dataset and filters to the context
         req_vazhipadu = self.request.GET.getlist('req_vazhipadu')
-        if req_vazhipadu:
-            bill_dataset = [bill for bill in bill_dataset if bill["vazhipadu_name"] == req_vazhipadu[0]]
         
         vazhipadu_items_list = []
         vazhipadu_items = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
