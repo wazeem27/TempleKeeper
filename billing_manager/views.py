@@ -207,7 +207,7 @@ class BillListView(LoginRequiredMixin, ListView):
                     'vazhipadu_name': vazhipadu_name,
                     'name': ",".join([vazhipadu.person_name for vazhipadu in vazhipadu_bill.person_details.all()]),
                     'star': ",".join([vazhipadu.person_star.name for vazhipadu in vazhipadu_bill.person_details.all()]),
-                    'amount': vazhipadu_bill.price,
+                    'amount': int(vazhipadu_bill.price) * int(vazhipadu_bill.quantity),
                     'is_cancelled': bill.is_cancelled,
                     'payment_method': bill.payment_method,
                     'cancel_reason': bill.cancel_reason,
@@ -341,7 +341,8 @@ class SubmitBill(LoginRequiredMixin, View):
                 bill_objects = []
 
                 for parent in parents:
-                    bill = self._create_bill(request, temple, float(parent.get('price')), data.get("payment_method", "cash"))
+                    price_multiply_quantity = float(parent.get('price')) * float(parent.get('quantity'))
+                    bill = self._create_bill(request, temple, price_multiply_quantity, data.get("payment_method", "cash"))
                     if request.POST.get('advance_booking_date'):
                         # if advance booking date is thr flag this as advance booking
                         # Get the date string from request
