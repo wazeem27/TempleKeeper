@@ -153,7 +153,7 @@ class BillListView(LoginRequiredMixin, ListView):
         if req_vazhipadu:
             # Fetch all bills where at least one associated Vazhipadu Offering has the name "Test vazhipadu1"
             bills = Bill.objects.filter(
-                Q(bill_vazhipadu_offerings__vazhipadu_offering__name=req_vazhipadu)
+                Q(bill_vazhipadu_offerings__vazhipadu_offering__name=req_vazhipadu), temple=temple
             ).distinct()
 
         if start_date:
