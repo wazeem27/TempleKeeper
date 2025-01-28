@@ -124,7 +124,7 @@ class BillListView(LoginRequiredMixin, ListView):
             bills = bills.filter(
                 bill_vazhipadu_offerings__vazhipadu_offering__name__icontains=filters['req_vazhipadu']
             ).distinct()
-            filtered_bills = Bill.objects.filter(
+            filtered_bills = Bill.objects.filter(temple=temple,
                 bill_other_items__vazhipadu__icontains=filters['req_vazhipadu']
             ).distinct()
 
