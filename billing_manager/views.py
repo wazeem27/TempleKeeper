@@ -124,6 +124,11 @@ class BillListView(LoginRequiredMixin, ListView):
             bills = bills.filter(
                 bill_vazhipadu_offerings__vazhipadu_offering__name__icontains=filters['req_vazhipadu']
             ).distinct()
+            filtered_bills = Bill.objects.filter(
+                bill_other_items__vazhipadu__icontains=filters['req_vazhipadu']
+            ).distinct()
+
+            bills = (bills | filtered_bills).distinct()
         if filters.get('start_date'):
             bills = bills.filter(created_at__gte=filters['start_date'])
         if filters.get('end_date'):
@@ -208,11 +213,21 @@ class BillListView(LoginRequiredMixin, ListView):
         """
         Fetch Vazhipadu offerings for the temple.
         """
-        return [
-            item.name
-            for item in VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-            if not item.is_deleted
-        ]
+
+        vazhipdu_items = []
+        for item in VazhipaduOffering.objects.filter(temple=temple).order_by('order'):
+            if not item.is_deleted:
+                vazhipdu_items.append(item.name)
+            else:
+                vazhipadu_name = item.name[:item.name.rfind("_")]
+                vazhipdu_items.append(vazhipadu_name)
+
+        vazhipadu_values = BillOther.objects.filter(
+            bill__temple=temple
+        ).values_list('vazhipadu', flat=True)
+
+        vazhipdu_items = list(set(vazhipdu_items)) + list(set(vazhipadu_values))
+        return vazhipdu_items
 
     def _get_user_list(self, temple):
         """
