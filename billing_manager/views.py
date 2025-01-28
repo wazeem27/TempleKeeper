@@ -8,6 +8,10 @@ from .models import WalletCollection
 from decimal import Decimal
 import csv
 import re
+from django.core.cache import cache
+from functools import lru_cache
+from django.db.models import Q, Sum, F
+from django.utils.timezone import make_aware, localtime
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.views.generic.edit import FormView
@@ -27,7 +31,6 @@ from temple_inventory.models import InventoryItem
 from offering_services.models import VazhipaduOffering, Star
 from temple_auth.models import Temple
 from collections import defaultdict
-from django.utils.timezone import localtime
 from billing_manager.models import Bill, BillOther, BillVazhipaduOffering, PersonDetail, Expense
 from typing import Dict, Any
 from temple_auth.models import UserProfile
@@ -88,186 +91,194 @@ class BillListView(LoginRequiredMixin, ListView):
     context_object_name = 'bills'
     paginate_by = 100
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.total_bills = None  # Store total bills for the request
+
     def get(self, request, *args, **kwargs):
         """
-        Override the get method to redirect to the last page if 'page' is not specified.
+        Override the `get` method to redirect to the last page if 'page' is not specified.
         """
-        # Get the total number of bills
-        total_bills = self.get_queryset().count()
-        if total_bills == 0:
-            # If no bills, render the default view
+        self.total_bills = self.get_queryset().count()
+        if self.total_bills == 0:
             return super().get(request, *args, **kwargs)
 
-        # Calculate the last page number
-        last_page = (total_bills + self.paginate_by - 1) // self.paginate_by  # Ceiling division
-
-        if (
-            request.GET.get('start_date') or 
-            request.GET.get('end_date') or
-            request.GET.get('req_biller') or 
-            request.GET.get('req_vazhipadu') or
-            request.GET.get('only_advanced_booking')
-        ):
-            return super().get(request, *args, **kwargs)
-
-        # Check if the 'page' parameter is already set
-        if not request.GET.get('page'):
-            # Redirect to the last page
+        last_page = (self.total_bills + self.paginate_by - 1) // self.paginate_by  # Ceiling division
+        if self._requires_redirect_to_last_page(request):
             url = f"{request.path}?page={last_page}"
             return HttpResponseRedirect(url)
 
-        # Render the page normally if 'page' is set
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         """
-        Returns a filtered queryset for the bills. This method is used to provide the base
-        queryset for filtering but we will manually construct and paginate the dataset.
+        Returns the filtered queryset for bills. Filters are applied based on request parameters.
         """
-        temple_id = self.request.session.get('temple_id')
-        temple = get_object_or_404(Temple, id=temple_id)
-        req_vazhipadu = self.request.GET.get('req_vazhipadu', '')
-
-        # Get the filter parameters from the GET request
-        start_date_str = self.request.GET.get('start_date', '')
-        end_date_str = self.request.GET.get('end_date', '')
-        requested_biller = self.request.GET.getlist('req_biller')
-        only_adv_bkng = bool(self.request.GET.get('only_advanced_booking', ''))
-
-        start_date = parse_date(start_date_str) if start_date_str else None
-        end_date = parse_date(end_date_str) if end_date_str else None
-
-        is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
-
-        # Convert to timezone-aware datetime if needed
-        if start_date:
-            start_date = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))  # 00:00:00
-        if end_date:
-            # Set end_date to the last moment of the day (23:59:59)
-            end_date = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))  # 23:59:59
-
-        # All bills if not a Billing Assistant
+        temple = self._get_temple()
         bills = Bill.objects.filter(temple=temple).order_by('receipt_number')
-        if requested_biller:
-            bills = bills.filter(user__username=requested_biller[0])
-        if req_vazhipadu:
-            # Fetch all bills where at least one associated Vazhipadu Offering has the name "Test vazhipadu1"
-            bills = Bill.objects.filter(
-                Q(bill_vazhipadu_offerings__vazhipadu_offering__name=req_vazhipadu), temple=temple
-            ).distinct()
+        filters = self._get_filters()
 
-        if start_date:
-            bills = bills.filter(created_at__gte=start_date)
-        if end_date:
-            bills = bills.filter(created_at__lte=end_date)
-        if only_adv_bkng:
+        if filters.get('requested_biller'):
+            bills = bills.filter(user__username=filters['requested_biller'])
+        if filters.get('req_vazhipadu'):
+            bills = bills.filter(bill_vazhipadu_offerings__vazhipadu_offering__name=filters['req_vazhipadu']).distinct()
+        if filters.get('start_date'):
+            bills = bills.filter(created_at__gte=filters['start_date'])
+        if filters.get('end_date'):
+            bills = bills.filter(created_at__lte=filters['end_date'])
+        if filters.get('only_advanced_booking'):
             bills = bills.filter(advance_booking=True)
+
         return bills
 
-
     def get_context_data(self, **kwargs):
+        """
+        Add additional context for rendering the template.
+        """
         context = super().get_context_data(**kwargs)
+        temple = self._get_temple()
 
-        # Get temple details
-        temple_id = self.request.session.get('temple_id')
-        temple = get_object_or_404(Temple, id=temple_id)
-        context['temple'] = temple
+        context.update({
+            'temple': temple,
+            'is_billing_assistant': self.request.user.groups.filter(name='Billing Assistant').exists(),
+            'is_central_admin': self.request.user.groups.filter(name='Central Admin').exists(),
+            'vazhipadu_items': self._get_vazhipadu_items(temple),
+            'user_list': self._get_user_list(temple),
+        })
 
-        # Use paginated bills for the current page
-        bill_dataset = []
-        bills = []
-        is_billing_assistant = self.request.user.groups.filter(name='Billing Assistant').exists()
-        context['is_billing_assistant'] = is_billing_assistant
+        # Process bills for display
+        bills_data = self._build_bill_dataset(context['bills'])
+        context.update({
+            'bills': sorted(bills_data, key=lambda x: (x['receipt'], x['sub_receipt'])),
+            'grand_total': sum(bill.get('amount', 0) for bill in bills_data),
+        })
 
+        # Add filters to context
+        filters = self._get_filters_from_request()
+        context.update(filters)
 
-        for bill in context['bills']:
-            vazhipadu_list = bill.bill_vazhipadu_offerings.all()
-            other_list = bill.bill_other_items.all()
-            sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
-            counter = 0
-
-            # Construct the dataset
-            for vazhipadu_bill in vazhipadu_list:
-                subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
-                vazhipadu_name = vazhipadu_bill.vazhipadu_offering.name
-                if vazhipadu_bill.vazhipadu_offering.is_deleted:
-                    vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
-                
-                advance_date = ""
-                if bill.advance_booking_date:
-                    advance_date = bill.advance_booking_date.strftime("%d-%m-%Y")
-                
-                bill_entry = {
-                    'id': str(bill.id),
-                    'is_advance_booking': bill.advance_booking,
-                    'receipt': bill.receipt_number,
-                    'sub_receipt': subreceipt,
-                    'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
-                    'created_by': bill.user.username,
-                    'vazhipadu_name': vazhipadu_name,
-                    'name': ",".join([vazhipadu.person_name for vazhipadu in vazhipadu_bill.person_details.all()]),
-                    'star': ",".join([vazhipadu.person_star.name for vazhipadu in vazhipadu_bill.person_details.all()]),
-                    'amount': int(vazhipadu_bill.price) * int(vazhipadu_bill.quantity),
-                    'is_cancelled': bill.is_cancelled,
-                    'payment_method': bill.payment_method,
-                    'cancel_reason': bill.cancel_reason,
-                    'advance_date': advance_date
-                }
-                bill_dataset.append(bill_entry)
-                counter +=1
-            
-            # Construct the dataset
-            for other_bill in other_list:
-                subreceipt = '-' if len(vazhipadu_list) + len(other_list) == 1 else sub_receipt_counter[counter]
-                advance_date = ""
-                if bill.advance_booking_date:
-                    advance_date = bill.advance_booking_date.strftime("%d-%m-%Y")
-                bill_entry = {
-                    'id': str(bill.id),
-                    'receipt': bill.receipt_number,
-                    'sub_receipt': subreceipt,
-                    'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
-                    'created_by': bill.user.username,
-                    'vazhipadu_name': other_bill.vazhipadu,
-                    'name': other_bill.person_name,
-                    'star': other_bill.person_star.name if other_bill.person_star.name else "",
-                    'amount': other_bill.price,
-                    'is_cancelled': bill.is_cancelled,
-                    'cancel_reason': bill.cancel_reason,
-                    'payment_method': bill.payment_method,
-                    'advance_date':  advance_date
-
-                }
-                bill_dataset.append(bill_entry)       
-                counter += 1     
-
-        # Add paginated dataset and filters to the context
-        req_vazhipadu = self.request.GET.getlist('req_vazhipadu')
-        
-        vazhipadu_items_list = []
-        vazhipadu_items = VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-        for item in vazhipadu_items:
-            if item.is_deleted:
-                vazhipadu_items_list.append(item.name[:item.name.rfind('_')])
-            else:
-                vazhipadu_items_list.append(item.name)
-
-        context["vazhipadu_items"] = vazhipadu_items_list
-
-
-        context['bills'] = sorted(bill_dataset, key=lambda x: (x["receipt"], x["sub_receipt"]))
-        user_profiles = UserProfile.objects.filter(temples__id=temple_id)
-        user_profiles = [user for user in user_profiles if not user.user.groups.filter(name='Central Admin').exists()]
-        context['user_list'] = [usr_prof.user.username for usr_prof in user_profiles]
-        context['search_query'] = self.request.GET.get('q', '')
-        context['start_date'] = self.request.GET.get('start_date', '')
-        context['req_vazhipadu'] = req_vazhipadu[0] if req_vazhipadu else ""
-        context['end_date'] = self.request.GET.get('end_date', '')
-        context['grand_total'] = sum([bill.get('amount', 0) for bill in bill_dataset])
-        is_central_admin = self.request.user.groups.filter(name='Central Admin').exists()
-        context["is_central_admin"] = is_central_admin
-        context["temple"] = temple
         return context
+
+    def _get_temple(self):
+        """
+        Fetch the temple using the session data.
+        """
+        temple_id = self.request.session.get('temple_id')
+        return get_object_or_404(Temple, id=temple_id)
+
+    def _get_filters(self):
+        """
+        Extract filters from the request.
+        """
+        start_date_str = self.request.GET.get('start_date', '')
+        end_date_str = self.request.GET.get('end_date', '')
+
+        return {
+            'req_vazhipadu': self.request.GET.get('req_vazhipadu', ''),
+            'requested_biller': self.request.GET.getlist('req_biller')[0] if self.request.GET.getlist('req_biller') else None,
+            'only_advanced_booking': bool(self.request.GET.get('only_advanced_booking', '')),
+            'start_date': self._parse_date(start_date_str),
+            'end_date': self._parse_date(end_date_str, end_of_day=True),
+        }
+
+    def _get_filters_from_request(self):
+        """
+        Return filters for template rendering.
+        """
+        return {
+            'start_date': self.request.GET.get('start_date', ''),
+            'end_date': self.request.GET.get('end_date', ''),
+            'req_vazhipadu': self.request.GET.get('req_vazhipadu', ''),
+        }
+
+    def _parse_date(self, date_str, end_of_day=False):
+        """
+        Parse a date string into a timezone-aware datetime.
+        """
+        if not date_str:
+            return None
+        date = datetime.strptime(date_str, '%Y-%m-%d')
+        if end_of_day:
+            date = datetime.combine(date, datetime.max.time())
+        return timezone.make_aware(date)
+
+    def _get_vazhipadu_items(self, temple):
+        """
+        Fetch Vazhipadu offerings for the temple.
+        """
+        return [
+            item.name
+            for item in VazhipaduOffering.objects.filter(temple=temple).order_by('order')
+            if not item.is_deleted
+        ]
+
+    def _get_user_list(self, temple):
+        """
+        Get usernames of users associated with the temple, excluding central admins.
+        """
+        user_profiles = UserProfile.objects.filter(temples__id=temple.id)
+        return [
+            user_prof.user.username
+            for user_prof in user_profiles
+            if not user_prof.user.groups.filter(name='Central Admin').exists()
+        ]
+
+    def _requires_redirect_to_last_page(self, request):
+        """
+        Check if the request needs redirection to the last page.
+        """
+        has_filters = any([
+            request.GET.get('start_date'),
+            request.GET.get('end_date'),
+            request.GET.get('req_biller'),
+            request.GET.get('req_vazhipadu'),
+            request.GET.get('only_advanced_booking'),
+        ])
+        return not has_filters and not request.GET.get('page')
+
+    def _build_bill_dataset(self, bills):
+        """
+        Build a dataset for bills with additional details for the template.
+        """
+        bill_dataset = []
+        sub_receipt_counter = "abcdefghijklmnopqrstuvwxyz"
+
+        for bill in bills:
+            counter = 0
+            for vazhipadu_bill in bill.bill_vazhipadu_offerings.all():
+                bill_dataset.append(self._build_bill_entry(bill, vazhipadu_bill, sub_receipt_counter[counter]))
+                counter += 1
+            for other_bill in bill.bill_other_items.all():
+                bill_dataset.append(self._build_bill_entry(bill, other_bill, sub_receipt_counter[counter]))
+                counter += 1
+
+        return bill_dataset
+
+    def _build_bill_entry(self, bill, item, subreceipt):
+        """
+        Build an entry for a bill dataset.
+        """
+        advance_date = bill.advance_booking_date.strftime("%d-%m-%Y") if bill.advance_booking_date else ""
+        vazhipadu_name = item.vazhipadu_offering.name if hasattr(item, 'vazhipadu_offering') else item.vazhipadu
+
+        if hasattr(item, 'vazhipadu_offering') and item.vazhipadu_offering.is_deleted:
+            vazhipadu_name = vazhipadu_name[:vazhipadu_name.rfind('_')]
+
+        return {
+            'id': str(bill.id),
+            'receipt': bill.receipt_number,
+            'sub_receipt': subreceipt,
+            'created_at': localtime(bill.created_at).strftime("%d-%m-%Y, %-I:%M %p"),
+            'created_by': bill.user.username,
+            'vazhipadu_name': vazhipadu_name,
+            'name': ", ".join([vazhipadu.person_name for vazhipadu in item.person_details.all()]) if hasattr(item, 'person_details') else item.person_name,
+            'star': ", ".join([vazhipadu.person_star.name for vazhipadu in item.person_details.all()]) if hasattr(item, 'person_details') else item.person_star.name if item.person_star else "",
+            'amount': item.price * getattr(item, 'quantity', 1),
+            'is_cancelled': bill.is_cancelled,
+            'payment_method': bill.payment_method,
+            'cancel_reason': bill.cancel_reason,
+            'advance_date': advance_date,
+        }
 
 
 def parse_nested_querydict(querydict):
