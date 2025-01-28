@@ -121,7 +121,9 @@ class BillListView(LoginRequiredMixin, ListView):
         if filters.get('requested_biller'):
             bills = bills.filter(user__username=filters['requested_biller'])
         if filters.get('req_vazhipadu'):
-            bills = bills.filter(bill_vazhipadu_offerings__vazhipadu_offering__name=filters['req_vazhipadu']).distinct()
+            bills = bills.filter(
+                bill_vazhipadu_offerings__vazhipadu_offering__name__icontains=filters['req_vazhipadu']
+            ).distinct()
         if filters.get('start_date'):
             bills = bills.filter(created_at__gte=filters['start_date'])
         if filters.get('end_date'):
@@ -209,7 +211,7 @@ class BillListView(LoginRequiredMixin, ListView):
         return [
             item.name
             for item in VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-            if not item.is_deleted
+            if not item.is_deleted else
         ]
 
     def _get_user_list(self, temple):
