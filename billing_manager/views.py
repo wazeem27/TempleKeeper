@@ -211,7 +211,7 @@ class BillListView(LoginRequiredMixin, ListView):
         return [
             item.name
             for item in VazhipaduOffering.objects.filter(temple=temple).order_by('order')
-            if not item.is_deleted else
+            if not item.is_deleted
         ]
 
     def _get_user_list(self, temple):
