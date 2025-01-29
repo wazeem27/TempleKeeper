@@ -106,13 +106,20 @@
             color: #000;
             z-index: 10;
         }
+        @media print {
+    .hide-on-print {
+        display: none !important;
+    }
+}
     </style>
 </head>
 <body>
 
 <main class="container">
 
-    <a href="{% url 'add-bill' %}" class="text-decoration-none">Home</a>
+    <div class="text-center mb-2">
+        <a href="{% url 'add-bill' %}" class="text-decoration-none">Home</a>
+    </div>
     {% for bill in bills %}
     <div class="receipt-card">
 

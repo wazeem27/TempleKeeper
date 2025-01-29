@@ -22,6 +22,8 @@
     border-radius: 5px;
     padding: 5px 10px;
     font-size: 0.9rem; /* Adjust font size */
+    display: flex;
+    justify-content: center; /* Center the items */
 }
 .breadcrumb-item a {
     color: #007bff; /* Match primary color */
@@ -141,9 +143,9 @@
 </head>
 <body>
 
-    <div class="pagetitle">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
+    <div class="pagetitle text-center">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-center">
+            <div class="container-fluid d-flex justify-content-center">
                 <!-- Breadcrumb -->
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
@@ -152,7 +154,7 @@
                 </ol>
             </div>
         </nav>
-    </div><!-- End Page Title -->
+    </div>
     
 
     <div class="receipt-card">
