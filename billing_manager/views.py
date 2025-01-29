@@ -295,6 +295,7 @@ class BillListView(LoginRequiredMixin, ListView):
             'payment_method': bill.payment_method,
             'cancel_reason': bill.cancel_reason,
             'advance_date': advance_date,
+            'is_advance_booking': bill.advance_booking
         }
 
 
