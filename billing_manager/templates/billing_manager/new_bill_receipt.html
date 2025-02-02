@@ -117,8 +117,13 @@
 
 <main class="container">
 
-    <div class="text-center mb-2">
-        <a href="{% url 'add-bill' %}" class="text-decoration-none">Home</a>
+    <div class="text-center mb-3">
+        <a href="{% url 'add-bill' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <button onclick="printEachCard()" class="btn btn-success btn-lg">
+            <i class="fas fa-print"></i> Print All Receipts
+        </button>
     </div>
     {% for bill in bills %}
     <div class="receipt-card">
@@ -226,9 +231,49 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    window.addEventListener('load', function () {
-                window.print();
-            });
-        </script>
+function printEachCard() {
+    const cards = document.querySelectorAll('.receipt-card'); // Select all receipt cards
+    let printWindow = window.open('', '_blank'); // Open a new print window
+
+    function printCard(index) {
+        if (index >= cards.length) {
+            printWindow.close(); // Close window after printing all cards
+            return;
+        }
+
+        // Get styles from the main document
+        const styles = document.head.innerHTML;
+
+        // Clear previous content in print window
+        printWindow.document.body.innerHTML = "";
+
+        // Write HTML content with styles
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print Receipt</title>
+                ${styles} <!-- Include existing styles -->
+            </head>
+            <body>
+                <div class="receipt-container">
+                    ${cards[index].outerHTML}
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+
+        printWindow.onload = function () {
+            printWindow.print(); // Trigger print
+            setTimeout(() => {
+                printCard(index + 1); // Move to next card after delay
+            }, 100); // Delay before next print job
+        };
+    }
+
+    printCard(0); // Start printing the first card
+}
+
+</script>
 </body>
 </html>
